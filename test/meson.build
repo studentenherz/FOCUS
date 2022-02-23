@@ -1,0 +1,1 @@
+executable('load', 'load.cpp', include_directories : incdir)
