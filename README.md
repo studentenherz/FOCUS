@@ -8,9 +8,9 @@ You will need to install [meson](https://mesonbuild.com/Quick-guide.html) and [n
 
 ```bash
 $ meson build	# This will set the project build inside a directory named build
-$ cd build		# feel free to change the name from build to whatever you prefer.
+$ cd build	# feel free to change the name from build to whatever you prefer.
 
-$ ninja			# This will be the one that actually builds the project.
+$ ninja		# This will be the one that actually builds the project.
 ```
 
 ## Contributing
