@@ -41,6 +41,7 @@ void Chebyshev_T(int n, double x, double T[]){
 	}
 	// base cases
 	T[0] = 1; if(n > 0) T[1] = x;
+	// recurrence relation
 	for(int i = 2; i <= n; i++)
 		T[i] = 2 * x * T[i - 1] - T[i -2];
 }
