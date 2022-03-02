@@ -23,7 +23,7 @@
  * @return interpolated f(x, y).
  */
 double four_point_formula(double x, double y, const Matrix2D& f, double x_min, double x_max, double y_min, double y_max){
-	// The interpolatino formula is
+	// The interpolation formula is
 	// f(x0 + ph, y0 + qk) = ....
 	// where (h, k) are the periods and (x0, y0)
 	// is a point of the 2D lattice.
@@ -65,7 +65,7 @@ double four_point_formula(double x, double y, const Matrix2D& f, double x_min, d
  * @return interpolated f(x, y).
  */
 double six_point_formula(double x, double y, const Matrix2D& f, double x_min, double x_max, double y_min, double y_max){
-	// The interpolatino formula is
+	// The interpolation formula is
 	// f(x0 + ph, y0 + qk) = ....
 	// where (h, k) are the periods and (x0, y0)
 	// is a point of the 2D lattice.
