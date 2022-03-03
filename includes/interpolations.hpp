@@ -70,13 +70,13 @@ double six_point_formula(double x, double y, const Matrix2D& f, double x_min, do
 	// where (h, k) are the periods and (x0, y0)
 	// is a point of the 2D lattice.
 
-	if (x < x_min || x > x_max || y < y_min || y > y_max){
-		std::cerr << "Error (" << x << ", " << y << ") out of interpolation boundaries [" << x_min << ", " << x_max << "]x[" << y_min << ", " << y_max << "]\n";
+	if (x <= x_min || x >= x_max || y <= y_min || y >= y_max){
+		std::cerr << "Error (" << x << ", " << y << ") out of interpolation boundaries (" << x_min << ", " << x_max << ")x(" << y_min << ", " << y_max << ")\n";
 		return nan("");
 	}
 
-	int Nx = f[0].size() - 1;
-	int Ny = f.size() - 1;
+	int Nx = f.size() - 1;
+	int Ny = f[0].size() - 1;
 
 	double h = (x_max - x_min) / Nx;
 	double k = (y_max - y_min) / Ny;

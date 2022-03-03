@@ -55,28 +55,35 @@ void Chebyshev_T(int n, double x, double T[]){
  * expansion for a two variables function from a 
  * matrix of its values.
  * @param M the matrix of values.
+ * @param n order of expansion.
  * @param idx first index of coefficient.
  * @param idy second index of coefficient.
- * @param Nx matrix dimension in first variable.
- * @param Ny matrix dimension in second variable.
  * @param x_min minimum value of x represented in the matrix.
  * @param x_max maximum value of x represented in the matrix.
  * @param y_min minimum value of y represented in the matrix.
  * @param y_max maximum value of y represented in the matrix.
  * @return the coefficient.
  */
-double Chebyshev_T_expansion_coefficient(const Matrix2D& M, int idx, int idy, int Nx, int Ny, double x_min, double x_max, double y_min, double y_max){
+double Chebyshev_T_expansion_coefficient(const Matrix2D& M, int n, int idx, int idy, double x_min, double x_max, double y_min, double y_max){
+	int Nx = M.size();
+	int Ny = M[0].size();
+	
 	double a = 0;
 	for (int i = 0; i < Nx; i++){
 		double xi = cos((i + 0.5) * PI / Nx);
-		double x = x_min + 0.5 * xi * (x_max - x_min);
+		double x = 0.5 * (x_min + x_max) + 0.5 * xi * (x_max - x_min);
 		for (int j = 0; j < Ny; j++){
 			double yj = cos((j + 0.5) * PI / Ny);
-			double y = y_min + 0.5 * yj * (y_max - y_min);
-			
+			double y = 0.5 * (y_min + y_max) + 0.5 * yj * (y_max - y_min);
+
 			a += six_point_formula(x, y, M, x_min, x_max, y_min, y_max) * Chebyshev_T(idx, xi) * Chebyshev_T(idy, yj);
 		}
 	}
+
+	// Normalization
+	a *= (2.0 - (idx == 0 ? 1 : 0)) / Nx;
+	a *= (2.0 - (idy == 0 ? 1 : 0)) / Ny;
+
 	return a;
 }
 
@@ -93,20 +100,45 @@ double Chebyshev_T_expansion_coefficient(const Matrix2D& M, int idx, int idy, in
  * @param n order of expansion.
  * @param a matrix to store the coefficients.
  * @param M the matrix of values.
- * @param Nx matrix dimension in first variable.
- * @param Ny matrix dimension in second variable.
  * @param x_min minimum value of x represented in the matrix.
  * @param x_max maximum value of x represented in the matrix.
  * @param y_min minimum value of y represented in the matrix.
  * @param y_max maximum value of y represented in the matrix.
- * @return the coefficient.
  */
-void Chebyshev_T_expansion(int n, Matrix2D& a, const Matrix2D& M, int Nx, int Ny, double x_min, double x_max, double y_min, double y_max){
-	for(int idx = 0; idx < Nx; idx++)
-		for(int idy = 0; idy < Ny; idy++)
-			a[idx][idy] = Chebyshev_T_expansion_coefficient(M, idx, idy, Nx, Ny, x_min, x_max, y_min, y_max);
+void Chebyshev_T_expansion(int n, Matrix2D& a, const Matrix2D& M, double x_min, double x_max, double y_min, double y_max){		
+	for(int idx = 0; idx <= n; idx++)
+		for(int idy = 0; idy <= n; idy++){
+			a[idx][idy] = Chebyshev_T_expansion_coefficient(M, n, idx, idy, x_min, x_max, y_min, y_max);
+		}
 }
 
 #endif // if !defined(COMPILE_CUDA)
+
+/**
+ * Evaluate a two variable function from its
+ * Chebyshev expansion coefficients
+ * @param a matrix of coefficients.
+ * @param x first variable value.
+ * @param y second variable value.
+ * @return the function evaluated at (x, y)
+ */
+double evaluate_Chebyshev_T_expansion(Matrix2D& a, double x, double y, double x_min, double x_max, double y_min, double y_max){
+	int n = a.size() - 1;
+	double v = 0;
+
+	// Normalized to range (-1, 1)
+	double xi = (2 * x - (x_min + x_max)) / (x_max - x_min); 
+	double yi = (2 * y - (y_min + y_max)) / (y_max - y_min); 
+
+	double Tx[n + 1], Ty[n + 1];
+	Chebyshev_T(n, xi, Tx);
+	Chebyshev_T(n, yi, Ty);
+
+	for(int idx = 0; idx <= n; idx++)
+		for(int idy = 0; idy <= n; idy++)
+			v += a[idx][idy] * Tx[idx] * Ty[idy];
+
+	return v;
+}
 
 #endif // FOCUS_CHEBYSHEV_HPP
