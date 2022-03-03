@@ -28,7 +28,7 @@ double Chebyshev_T(int n, double x){
 }
 
 /**
- * Calculate an array fo Chebyshev polynomials of first kind 
+ * Calculate an array of Chebyshev polynomials of first kind 
  * from order 0 to order n at x.
  * @param n order to which calculate the polynomials.
  * @param x value to evaluate the polynomials.
@@ -47,7 +47,23 @@ void Chebyshev_T(int n, double x, double T[]){
 	T[0] = 1; if(n > 0) T[1] = x;
 	// recurrence relation
 	for(int i = 2; i <= n; i++)
-		T[i] = 2 * x * T[i - 1] - T[i -2];
+		T[i] = 2 * x * T[i - 1] - T[i - 2];
+}
+
+/**
+ * Calculate an array of the derivatives of Chebyshev polynomials 
+ * of first kind from order 0 to order n at x.
+ * @param n order to which calculate the polynomials.
+ * @param x value to evaluate the polynomials.
+ * @param dT array with n spaces to be filled with the polynomials.
+ */
+void derivative_Chebyshev_T(int n, double x, double dT[]){
+	double T[n + 2];
+	Chebyshev_T(n + 1, x, T);
+
+	dT[0] = 0;
+	for(int i = 1; i <= n; i++)
+		dT[i] = 0.5 * i * (T[i - 1] - T[i + 1]) / (1 - x * x);
 }
 
 /**
