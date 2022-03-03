@@ -34,10 +34,23 @@ When committing code to the project provide a good message explaining the change
 * **Use English**, both for the comments and the code.
 * Prefer tabs over spaces for indentation purposes. It saves disk space.
 * In C/C++, provide closing braces with a comment when the block is large, for example: 
-```C++
-namespace focus {
-	// many many lines of code
-} // namespace focus
-```
+	```C++
+	namespace focus {
+		// many many lines of code
+	} // namespace focus
+	```
+* Document the functions with Doxygen compatible comments in the format of the following example:
+	```C++
+	/* Adds two doubles and returns the result.
+	 * @param x first number.
+	 * @param y second number.
+	 * @return the sum of the two numbers.
+	 */
+	double sum(double x, double y){
+		return x + y;
+	}
+	```
 
+	See more [here](http://www.edparrish.net/common/cppdoc.html). Some editors (like vscode, for instance) can show this documentation as tooltips while writing code.
+	
 Can't think of anything else right now, just keep your code clean and make useful comments. Maybe refer to the [Google C++ Style Guide](https://google.github.io/styleguide/cppguide.html).
