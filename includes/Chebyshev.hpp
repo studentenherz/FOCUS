@@ -136,9 +136,44 @@ void Chebyshev_T_expansion(int n, Matrix2D& a, const Matrix2D& M, double x_min, 
  * @param a matrix of coefficients.
  * @param x first variable value.
  * @param y second variable value.
+ * @param x_min minimum value of x represented in the matrix.
+ * @param x_max maximum value of x represented in the matrix.
+ * @param y_min minimum value of y represented in the matrix.
+ * @param y_max maximum value of y represented in the matrix.
  * @return the function evaluated at (x, y)
  */
 double evaluate_Chebyshev_T_expansion(Matrix2D& a, double x, double y, double x_min, double x_max, double y_min, double y_max){
+	int n = a.size() - 1;
+	double v = 0;
+
+	// Normalized to range (-1, 1)
+	double xi = (2 * x - (x_min + x_max)) / (x_max - x_min); 
+	double yi = (2 * y - (y_min + y_max)) / (y_max - y_min); 
+
+	double Tx[n + 1], Ty[n + 1];
+	Chebyshev_T(n, xi, Tx);
+	Chebyshev_T(n, yi, Ty);
+
+	for(int idx = 0; idx <= n; idx++)
+		for(int idy = 0; idy <= n; idy++)
+			v += a[idx][idy] * Tx[idx] * Ty[idy];
+
+	return v;
+}
+
+/**
+ * Evaluate a two variable function's derivative 
+ * from its Chebyshev expansion coefficients.
+ * @param a matrix of coefficients.
+ * @param x first variable value.
+ * @param y second variable value.
+ * @param x_min minimum value of x represented in the matrix.
+ * @param x_max maximum value of x represented in the matrix.
+ * @param y_min minimum value of y represented in the matrix.
+ * @param y_max maximum value of y represented in the matrix.
+ * @return the function evaluated at (x, y)
+ */
+double evaluate_derivative_Chebyshev_T_expansion(Matrix2D& a, double x, double y, double x_min, double x_max, double y_min, double y_max){
 	int n = a.size() - 1;
 	double v = 0;
 
