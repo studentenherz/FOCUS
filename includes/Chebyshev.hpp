@@ -142,7 +142,7 @@ void Chebyshev_T_expansion(int n, Matrix2D& a, const Matrix2D& M, double x_min, 
  * @param y_max maximum value of y represented in the matrix.
  * @return the function evaluated at (x, y)
  */
-double evaluate_Chebyshev_T_expansion(Matrix2D& a, double x, double y, double x_min, double x_max, double y_min, double y_max){
+double evaluate_Chebyshev_T_expansion(const Matrix2D& a, double x, double y, double x_min, double x_max, double y_min, double y_max){
 	int n = a.size() - 1;
 	double v = 0;
 
@@ -173,7 +173,7 @@ double evaluate_Chebyshev_T_expansion(Matrix2D& a, double x, double y, double x_
  * @param y_max maximum value of y represented in the matrix.
  * @return the function evaluated at (x, y)
  */
-double evaluate_derivative_Chebyshev_T_expansion(Matrix2D& a, double x, double y, double x_min, double x_max, double y_min, double y_max){
+double evaluate_derivative_Chebyshev_T_expansion(const Matrix2D& a, double x, double y, double x_min, double x_max, double y_min, double y_max){
 	int n = a.size() - 1;
 	double v = 0;
 
