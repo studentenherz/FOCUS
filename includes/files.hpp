@@ -6,78 +6,64 @@
 #include <sstream>
 #include <iostream>
 
-#include "types.hpp"
+#include "types/matrix2D.hpp"
 
 /**
- * Load a matrix from a file expected to have a row on each line.
- * @param filename The name of the file.
- * @param M the matrix to store the data.
- * @return true if the file was read successfully, false otherwise.
- */
-bool load(std::string filename, Matrix2D& M){
-	std::ifstream fi(filename);
-	if (!fi.is_open()){
-		std::cerr << "Couldn't open file " << filename << '\n';
-		return false;
-	}
-
-	std::string line;
-	// for each line
-	while(getline(fi, line)){
-		std::istringstream ss(line);
-		M.push_back({});
-		double value;
-		// for each value in line
-		while(ss >> value) M[M.size() - 1].push_back(value);
-	}
-	
-	if (M.empty()) std::cerr << "File " << filename << " is empty\n";
-	return !M.empty();
-}
-
-/**
- * Load a matrix of dimensions (Nx, Ny) from file.
- * @param filename The name of the file.
+ * Load a matrix of dimensions (Nx, Ny) from file. The file is 
+ * expected to have the dimensions of the matrix as the first 
+ * two integers.
+ * @param filename the name of the file.
  * @param M the matrix to store the data.
  * @param Nx dimension in x.
  * @param Ny dimension in y.
  * @return true if the file was read successfully, false otherwise.
  */
-bool load(std::string filename, Matrix2D& M, int Nx, int Ny){
+template <typename T>
+bool load(std::string filename, Matrix2D<T>& M){
 	std::ifstream fi(filename);
 	if (!fi.is_open()){
 		std::cerr << "Couldn't open file " << filename << '\n';
 		return false;
 	}
 
+	size_t Nx, Ny;
+	fi >> Nx >> Ny;
+
+	M.reshape(Nx, Ny);
+
 	double v;
-	for (int i = 0; i < Nx; i++){
-		M.push_back({});
-		for (int j = 0; j < Ny; j++){
-			fi >> v;
-			M[i].push_back(v);
+	for (size_t i = 0; i < Nx; i++){
+		for (size_t j = 0; j < Ny; j++){
+			if(!(fi >> v)) return false;
+			M(i, j) = v;
 		}
 	}
 	
-	if (M.empty()) std::cerr << "File " << filename << " is empty\n";
-	return !M.empty();
+	return true;
 }
 
 /**
- * Load a matrix from a file expected to have a row on each line.
- * @param filename The name of the file.
- * @return true if the file was read successfully, false otherwise.
+ * Dump the content of a matrix to a file.
+ * @param filename the name of the file.
+ * @param M the matrix.
+ * @param matrix_shape if true the shape of the matrix will be written too.
+ * @return true if the file was written successfully, false otherwise.
  */
-bool dump(std::string filename, Matrix2D& M){
+template<typename T>
+bool dump(std::string filename, Matrix2D<T>& M, bool matrix_shape = true){
 	std::ofstream fo(filename);
 	if (!fo.is_open()){
 		std::cerr << "Couldn't open file " << filename << '\n';
 		return false;
 	}
 
-	for(auto line : M){
-		for (auto v : line){
-			fo << v << ' ';
+	shape_t shape = M.shape();
+	if (matrix_shape)
+		fo << shape.first << ' ' << shape.second << '\n';
+
+	for(size_t i = 0; i < shape.first; i++){
+		for (size_t j = 0; j < shape.second; j++){
+			fo << M(i, j) << ' ';
 		}
 		fo << '\n';
 	}
