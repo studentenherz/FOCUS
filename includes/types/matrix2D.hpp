@@ -35,6 +35,11 @@ public:
 			return arr[_shape.first * _shape.second];
 		return arr[i * _shape.second + j];
 	}
+	const T &operator()(size_t i, size_t j) const {
+		if (i > _shape.first || j > _shape.second)
+			return arr[_shape.first * _shape.second];
+		return arr[i * _shape.second + j];
+	}
 };
 
 #endif // FOCUS_INCLUDES_TYPES_MATRIX_2D

@@ -5,17 +5,23 @@
 
 int main(int argc, char const *argv[]){
 	if (argc < 2) return 0;
-	Matrix2D psi;
-	if (load(argv[1], psi))
-		std::cout << psi.size() << " x " << psi[0].size() << " matrix read\n";
+	Matrix2D<double> psi;
+	if (!load(argv[1], psi))
+		return 1;
 	
 	// gives some value
-	double v = six_point_formula(0.5, 0.6, psi, 0, 1, 0, 1);
-	std::cout << "psi(0.5, 0.6) = " << v << '\n';
+	double v = six_point_formula(0.23, 0.8, psi, 0, 1, 0, 1);
+	if (std::abs(v - 0.242005) > 1e-6){
+		std::cerr << "Interpolation vale gave " << v << " but 0.242005 was expected (different by at least 1e-6)\n";
+		return 1;
+	}
 	
-	// should give nan and display error message
+	// should give nan
 	v = six_point_formula(1.5, 0.6, psi, 0, 1, 0, 1);
-	std::cout << "psi(1.5, 0.6) = " << v << '\n';
+	if (!std::isnan(v)){
+		std::cerr << "Interpolation vale gave " << v << " but nan was expected\n";
+		return 1;
+	}
 
 	return 0;
 }
