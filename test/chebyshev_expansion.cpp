@@ -8,15 +8,14 @@ int main(int argc, char const *argv[]){
 	if (argc < 3) return 0;
 
 	// Raw EFIT matrix
-	Matrix2D M;
+	Matrix2D<double> M;
 	if (!load(argv[1], M))
 		return 1;
 
 	// Chebyshev coefficients vector
-	int n = atoi(argv[2]);
-	Matrix2D a;
-	for(int i=0; i<=n; i++)
-		a.push_back(std::vector<double>(n + 1));
+	size_t n = atoi(argv[2]);
+	std::cout << n << '\n';
+	Matrix2D<double> a(n + 1, n + 1);
 
 	// Just to set some values,
 	// these are unimportant right now
@@ -29,22 +28,28 @@ int main(int argc, char const *argv[]){
 	Chebyshev_T_expansion(n, a, M, x_min, x_max, y_min, y_max);	
 
 	// Calculate same Matrix from expansion
-	Matrix2D new_M;
-	int Nx = M.size();
-	int Ny = M[0].size();
+	size_t Nx, Ny;
+	Nx = M.shape().first;
+	Ny = M.shape().second;
+	Matrix2D<double> new_M(Nx, Ny);
 
-	for(int i=0; i<Nx; i++)
-		new_M.push_back(std::vector<double>(Ny));
-
-	for (int i = 0; i < Nx; i++){
+	for (size_t i = 0; i < Nx; i++){
 		double x = x_min + i * (x_max - x_min) / Nx;
-		for (int j = 0; j < Ny; j++){
+		for (size_t j = 0; j < Ny; j++){
 			double y = y_min + j * (y_max - y_min) / Ny;
-			new_M[i][j] = evaluate_Chebyshev_T_expansion(a, x, y, x_min, x_max, y_min, y_max);
+			new_M(i, j) = evaluate_Chebyshev_T_expansion(a, x, y, x_min, x_max, y_min, y_max);
 		}
 	}
 
-	dump("from_Chebyshev.out", new_M);
+	// Compare
+	for (size_t i = 0; i < Nx; i++)
+		for (size_t j = 0; j < Ny; j++)
+			if (std::abs(M(i, j) - new_M(i, j) > 1e-6)){
+				std::cerr << "At position (" << i << ", " << j << ") got " << new_M(i, j) << " but expected " << M(i, j) << '\n';
+				return 1;
+			}
+
+
 
 	return 0;
 }

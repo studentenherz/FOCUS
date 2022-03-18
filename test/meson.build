@@ -1,6 +1,6 @@
 files = executable('files', 'files.cpp', include_directories : incdir)
 interpol = executable('interpolations', 'interpolations.cpp', include_directories : incdir)
-# executable('chebyshev_expansion', 'chebyshev_expansion.cpp', include_directories : incdir)
+executable('chebyshev_expansion', 'chebyshev_expansion.cpp', include_directories : incdir)
 # derivatives = executable('chebyshev_derivatives', 'chebyshev_derivatives.cpp', include_directories : incdir)
 
 copy = find_program('copy.py')

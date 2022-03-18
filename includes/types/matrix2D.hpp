@@ -18,6 +18,10 @@ public:
 		arr = new T[n * m + 1];
 		_shape = {n, m};
 	}
+	Matrix2D(shape_t other_shape) {
+		_shape = other_shape;
+		arr = new T[_shape.first * _shape.second + 1];
+	}
 	~Matrix2D(){
 		delete[] arr;
 		arr = NULL;

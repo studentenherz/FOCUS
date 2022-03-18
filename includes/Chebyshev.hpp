@@ -9,7 +9,7 @@
 #include <iostream>
 #include <cmath>
 
-#include "types.hpp"
+#include "types/matrix2D.hpp"
 #include "util.hpp"
 #include "interpolations.hpp"
 
@@ -80,16 +80,17 @@ void derivative_Chebyshev_T(int n, double x, double dT[]){
  * @param y_max maximum value of y represented in the matrix.
  * @return the coefficient.
  */
-double Chebyshev_T_expansion_coefficient(const Matrix2D& M, int n, int idx, int idy, double x_min, double x_max, double y_min, double y_max){
-	int Nx = M.size();
-	int Ny = M[0].size();
+double Chebyshev_T_expansion_coefficient(const Matrix2D<double>& M, int n, int idx, int idy, double x_min, double x_max, double y_min, double y_max){
+	int Nx, Ny;
+	Nx = M.shape().first;
+	Ny = M.shape().second;
 	
 	double a = 0;
 	for (int i = 0; i < Nx; i++){
-		double xi = cos((i + 0.5) * PI / Nx);
+		double xi = cos((i + 0.5) * pi / Nx);
 		double x = 0.5 * (x_min + x_max) + 0.5 * xi * (x_max - x_min);
 		for (int j = 0; j < Ny; j++){
-			double yj = cos((j + 0.5) * PI / Ny);
+			double yj = cos((j + 0.5) * pi / Ny);
 			double y = 0.5 * (y_min + y_max) + 0.5 * yj * (y_max - y_min);
 
 			a += six_point_formula(x, y, M, x_min, x_max, y_min, y_max) * Chebyshev_T(idx, xi) * Chebyshev_T(idy, yj);
@@ -121,10 +122,10 @@ double Chebyshev_T_expansion_coefficient(const Matrix2D& M, int n, int idx, int 
  * @param y_min minimum value of y represented in the matrix.
  * @param y_max maximum value of y represented in the matrix.
  */
-void Chebyshev_T_expansion(int n, Matrix2D& a, const Matrix2D& M, double x_min, double x_max, double y_min, double y_max){		
-	for(int idx = 0; idx <= n; idx++)
-		for(int idy = 0; idy <= n; idy++){
-			a[idx][idy] = Chebyshev_T_expansion_coefficient(M, n, idx, idy, x_min, x_max, y_min, y_max);
+void Chebyshev_T_expansion(size_t n, Matrix2D<double>& a, const Matrix2D<double>& M, double x_min, double x_max, double y_min, double y_max){		
+	for(size_t idx = 0; idx <= n; idx++)
+		for(size_t idy = 0; idy <= n; idy++){
+			a(idx, idy) = Chebyshev_T_expansion_coefficient(M, n, idx, idy, x_min, x_max, y_min, y_max);
 		}
 }
 
@@ -142,8 +143,8 @@ void Chebyshev_T_expansion(int n, Matrix2D& a, const Matrix2D& M, double x_min, 
  * @param y_max maximum value of y represented in the matrix.
  * @return the function evaluated at (x, y)
  */
-double evaluate_Chebyshev_T_expansion(const Matrix2D& a, double x, double y, double x_min, double x_max, double y_min, double y_max){
-	int n = a.size() - 1;
+double evaluate_Chebyshev_T_expansion(const Matrix2D<double>& a, double x, double y, double x_min, double x_max, double y_min, double y_max){
+	size_t n = a.shape().first;
 	double v = 0;
 
 	// Normalized to range (-1, 1)
@@ -154,9 +155,9 @@ double evaluate_Chebyshev_T_expansion(const Matrix2D& a, double x, double y, dou
 	Chebyshev_T(n, xi, Tx);
 	Chebyshev_T(n, yi, Ty);
 
-	for(int idx = 0; idx <= n; idx++)
-		for(int idy = 0; idy <= n; idy++)
-			v += a[idx][idy] * Tx[idx] * Ty[idy];
+	for(size_t idx = 0; idx <= n; idx++)
+		for(size_t idy = 0; idy <= n; idy++)
+			v += a(idx, idy) * Tx[idx] * Ty[idy];
 
 	return v;
 }
@@ -173,8 +174,8 @@ double evaluate_Chebyshev_T_expansion(const Matrix2D& a, double x, double y, dou
  * @param y_max maximum value of y represented in the matrix.
  * @return the function evaluated at (x, y)
  */
-double evaluate_derivative_Chebyshev_T_expansion(const Matrix2D& a, double x, double y, double x_min, double x_max, double y_min, double y_max){
-	int n = a.size() - 1;
+double evaluate_derivative_Chebyshev_T_expansion(const Matrix2D<double>& a, double x, double y, double x_min, double x_max, double y_min, double y_max){
+	size_t n = a.shape().first;
 	double v = 0;
 
 	// Normalized to range (-1, 1)
@@ -185,9 +186,9 @@ double evaluate_derivative_Chebyshev_T_expansion(const Matrix2D& a, double x, do
 	Chebyshev_T(n, xi, Tx);
 	Chebyshev_T(n, yi, Ty);
 
-	for(int idx = 0; idx <= n; idx++)
-		for(int idy = 0; idy <= n; idy++)
-			v += a[idx][idy] * Tx[idx] * Ty[idy];
+	for(size_t idx = 0; idx <= n; idx++)
+		for(size_t idy = 0; idy <= n; idy++)
+			v += a(idx,idy) * Tx[idx] * Ty[idy];
 
 	return v;
 }
