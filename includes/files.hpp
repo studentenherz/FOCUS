@@ -50,7 +50,7 @@ bool load(std::string filename, Matrix2D<T>& M){
  * @return true if the file was written successfully, false otherwise.
  */
 template<typename T>
-bool dump(std::string filename, Matrix2D<T>& M, bool matrix_shape = true){
+bool dump(std::string filename, const Matrix2D<T>& M, bool matrix_shape = true){
 	std::ofstream fo(filename);
 	if (!fo.is_open()){
 		std::cerr << "Couldn't open file " << filename << '\n';
