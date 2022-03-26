@@ -80,20 +80,17 @@ void derivative_Chebyshev_T(int n, double x, double dT[]){
  * @param y_max maximum value of y represented in the matrix.
  * @return the coefficient.
  */
-double Chebyshev_T_expansion_coefficient(const Matrix2D<double>& M, int n, int idx, int idy, double x_min, double x_max, double y_min, double y_max){
-	int Nx, Ny;
+double Chebyshev_T_expansion_coefficient(const Matrix2D<double>& M, size_t n, size_t idx, size_t idy, double x_min, double x_max, double y_min, double y_max){
+	size_t Nx, Ny;
 	Nx = M.shape().first;
 	Ny = M.shape().second;
 	
 	double a = 0;
-	for (int i = 0; i < Nx; i++){
+	for (size_t i = 0; i < Nx; i++){
 		double xi = cos((i + 0.5) * pi / Nx);
-		double x = 0.5 * (x_min + x_max) + 0.5 * xi * (x_max - x_min);
-		for (int j = 0; j < Ny; j++){
+		for (size_t j = 0; j < Ny; j++){
 			double yj = cos((j + 0.5) * pi / Ny);
-			double y = 0.5 * (y_min + y_max) + 0.5 * yj * (y_max - y_min);
-
-			a += six_point_formula(x, y, M, x_min, x_max, y_min, y_max) * Chebyshev_T(idx, xi) * Chebyshev_T(idy, yj);
+			a += six_point_formula(xi, yj, M, -1, 1, -1, 1) * Chebyshev_T(idx, xi) * Chebyshev_T(idy, yj);
 		}
 	}
 
@@ -134,6 +131,7 @@ void Chebyshev_T_expansion(size_t n, Matrix2D<double>& a, const Matrix2D<double>
 /**
  * Evaluate a two variable function from its
  * Chebyshev expansion coefficients
+ * @param n order of expansion
  * @param a matrix of coefficients.
  * @param x first variable value.
  * @param y second variable value.
@@ -143,8 +141,7 @@ void Chebyshev_T_expansion(size_t n, Matrix2D<double>& a, const Matrix2D<double>
  * @param y_max maximum value of y represented in the matrix.
  * @return the function evaluated at (x, y)
  */
-double evaluate_Chebyshev_T_expansion(const Matrix2D<double>& a, double x, double y, double x_min, double x_max, double y_min, double y_max){
-	size_t n = a.shape().first;
+double evaluate_Chebyshev_T_expansion(size_t n, const Matrix2D<double>& a, double x, double y, double x_min, double x_max, double y_min, double y_max){
 	double v = 0;
 
 	// Normalized to range (-1, 1)
@@ -158,37 +155,6 @@ double evaluate_Chebyshev_T_expansion(const Matrix2D<double>& a, double x, doubl
 	for(size_t idx = 0; idx <= n; idx++)
 		for(size_t idy = 0; idy <= n; idy++)
 			v += a(idx, idy) * Tx[idx] * Ty[idy];
-
-	return v;
-}
-
-/**
- * Evaluate a two variable function's derivative 
- * from its Chebyshev expansion coefficients.
- * @param a matrix of coefficients.
- * @param x first variable value.
- * @param y second variable value.
- * @param x_min minimum value of x represented in the matrix.
- * @param x_max maximum value of x represented in the matrix.
- * @param y_min minimum value of y represented in the matrix.
- * @param y_max maximum value of y represented in the matrix.
- * @return the function evaluated at (x, y)
- */
-double evaluate_derivative_Chebyshev_T_expansion(const Matrix2D<double>& a, double x, double y, double x_min, double x_max, double y_min, double y_max){
-	size_t n = a.shape().first;
-	double v = 0;
-
-	// Normalized to range (-1, 1)
-	double xi = (2 * x - (x_min + x_max)) / (x_max - x_min); 
-	double yi = (2 * y - (y_min + y_max)) / (y_max - y_min); 
-
-	double Tx[n + 1], Ty[n + 1];
-	Chebyshev_T(n, xi, Tx);
-	Chebyshev_T(n, yi, Ty);
-
-	for(size_t idx = 0; idx <= n; idx++)
-		for(size_t idy = 0; idy <= n; idy++)
-			v += a(idx,idy) * Tx[idx] * Ty[idy];
 
 	return v;
 }
