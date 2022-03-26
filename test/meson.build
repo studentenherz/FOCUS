@@ -1,6 +1,6 @@
 files = executable('files', 'files.cpp', include_directories : incdir)
 interpol = executable('interpolations', 'interpolations.cpp', include_directories : incdir)
-executable('chebyshev_expansion', 'chebyshev_expansion.cpp', include_directories : incdir)
+cheby_exp = executable('chebyshev_expansion', 'chebyshev_expansion.cpp', include_directories : incdir)
 # derivatives = executable('chebyshev_derivatives', 'chebyshev_derivatives.cpp', include_directories : incdir)
 
 copy = find_program('copy.py')
@@ -24,6 +24,13 @@ test('Compare read and dumped', cmp,
 
 test('Intarpolations', interpol, 
 	args : [
-		join_paths(meson.build_root(), meson.current_build_dir(), 'matrix_from_efit.dat')], 
-	is_parallel: false)
+		join_paths(meson.build_root(), meson.current_build_dir(), 'matrix_from_efit.dat')]
+	)
+
+test('Chebyshev Expansion', cheby_exp, 
+	args : [
+		join_paths(meson.build_root(), meson.current_build_dir(), 'matrix_from_efit.dat'),
+		'23',
+		'2']
+	)
 # test('Derivatives of Chebyshev', derivatives)
