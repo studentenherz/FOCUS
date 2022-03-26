@@ -28,7 +28,7 @@ double four_point_formula(double x, double y, const Matrix2D<double>& f, double 
 	// where (h, k) are the periods and (x0, y0)
 	// is a point of the 2D lattice.
 
-	if (x < x_min || x > x_max || y < y_min || y > y_max){
+	if (x < x_min || x >= x_max || y < y_min || y >= y_max){
 		// HERE THERE MUST BE A WARNING LOG
 		return nan("");
 	}
@@ -37,8 +37,8 @@ double four_point_formula(double x, double y, const Matrix2D<double>& f, double 
 	Nx = f.shape().first;
 	Ny = f.shape().second;
 
-	double h = (x_max - x_min) / Nx;
-	double k = (y_max - y_min) / Ny;
+	double h = (x_max - x_min) / (Nx - 1);
+	double k = (y_max - y_min) / (Ny - 1);
 
 	size_t i = std::floor((x - x_min) / h);
 	size_t j = std::floor((y - y_min) / k);
@@ -71,7 +71,7 @@ double six_point_formula(double x, double y, const Matrix2D<double>& f, double x
 	// where (h, k) are the periods and (x0, y0)
 	// is a point of the 2D lattice.
 
-	if (x <= x_min || x >= x_max || y <= y_min || y >= y_max){
+	if (x < x_min || x >= x_max || y < y_min || y >= y_max){
 		// HERE THERE MUST BE A WARNING LOG
 		return nan("");
 	}
@@ -80,8 +80,8 @@ double six_point_formula(double x, double y, const Matrix2D<double>& f, double x
 	Nx = f.shape().first;
 	Ny = f.shape().second;
 
-	double h = (x_max - x_min) / Nx;
-	double k = (y_max - y_min) / Ny;
+	double h = (x_max - x_min) / (Nx - 1);
+	double k = (y_max - y_min) / (Ny - 1);
 
 	size_t i = std::floor((x - x_min) / h);
 	size_t j = std::floor((y - y_min) / k);
