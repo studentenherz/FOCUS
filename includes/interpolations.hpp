@@ -33,7 +33,7 @@ double four_point_formula(double x, double y, const Matrix2D<double>& f, double 
 		return nan("");
 	}
 
-	int Nx, Ny;
+	size_t Nx, Ny;
 	Nx = f.shape().first;
 	Ny = f.shape().second;
 
@@ -42,6 +42,11 @@ double four_point_formula(double x, double y, const Matrix2D<double>& f, double 
 
 	size_t i = std::floor((x - x_min) / h);
 	size_t j = std::floor((y - y_min) / k);
+
+	if (i >= Nx - 1 || j >= Ny - 1){
+		// HERE THERE MUST BE A WARNING LOG
+		return nan("");
+	}
 
 	double p = x - (x_min + i * h);
 	double q = y - (y_min + j * k);
@@ -76,7 +81,7 @@ double six_point_formula(double x, double y, const Matrix2D<double>& f, double x
 		return nan("");
 	}
 
-	int Nx, Ny;
+	size_t Nx, Ny;
 	Nx = f.shape().first;
 	Ny = f.shape().second;
 
@@ -85,6 +90,11 @@ double six_point_formula(double x, double y, const Matrix2D<double>& f, double x
 
 	size_t i = std::floor((x - x_min) / h);
 	size_t j = std::floor((y - y_min) / k);
+
+	if (i >= Nx - 1 || j >= Ny - 1){
+		// HERE THERE MUST BE A WARNING LOG
+		return nan("");
+	}
 
 	if (i == 0 || j == 0) 
 		return four_point_formula(x, y, f, x_min, x_max, y_min, y_max);
