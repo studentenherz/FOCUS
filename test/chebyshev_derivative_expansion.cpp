@@ -32,24 +32,26 @@ int main(int argc, char const *argv[]){
 	load(argv[1], M);
 
 
-	size_t n = 25;
-	Matrix2D<double> a(n, n);
+	size_t n = 26;
+	Matrix2D<double> a(n + 1, n + 1);
+
+	Chebyshev_T_expansion(n, a, M, x_min, x_max, y_min, y_max);
 
 	// Calculate the coefficients of the expansion
-	Chebyshev_T_expansion(n, a, M, x_min, x_max, y_min, y_max);
 	size_t Nn = 400;
 	Matrix2D<double> Br(Nn, Nn);
 
 
 	// double epsilon = 0.1;
 
-
+	const double B_0 = 1.77048;
+	const double a_m = 1.00000;
 
 	for(size_t i = 0; i<Nn; i++){
 		double x = x_min + (x_max - x_min) * i / (Nn - 1);
 		for(size_t j = 0; j<Nn; j++){
 			double y = y_min + (y_max - y_min) * j / (Nn - 1);
-			Br(i, j) =  - evaluate_derivative_Chebyshev_T_expansion(n, Variable::y, a, x, y, x_min, x_max, y_min, y_max) / x;
+			Br(i, j) =  - evaluate_derivative_Chebyshev_T_expansion(n, Variable::y, a, x, y, x_min, x_max, y_min, y_max) / x / B_0 /a_m / a_m;
 		}
 	}
 
