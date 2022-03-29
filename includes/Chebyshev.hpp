@@ -19,9 +19,9 @@
  * @param n order to which calculate the polynomials.
  * @param x value to evaluate the polynomials.
  */
-double Chebyshev_T(int n, double x){
+double Chebyshev_T(size_t n, double x){
 	if (x > 1 || x < -1) {
-		std::cerr << "Attempted evaluating T_n(x) out of the domain [-1, 1]\n";
+		std::cerr << "Attempted evaluating T_n(" << x << ") out of the domain [-1, 1]\n";
 		return nan("");
 	}
 	return cos(n * acos(x));
@@ -33,21 +33,22 @@ double Chebyshev_T(int n, double x){
  * @param n order to which calculate the polynomials.
  * @param x value to evaluate the polynomials.
  * @param T array with n spaces to be filled with the polynomials.
+ * @return true if no error occurred.
  */
-void Chebyshev_T(int n, double x, double T[]){
-	if (x > 1 || x < -1) {
-		std::cerr << "Attempted evaluating T_n(x) out of the domain [-1, 1]\n";
-		return;
-	}
-	if (n < 0) {
-		std::cerr << "Attempted to find Chebyshev polynomials in range but a negative value of n was given.\n";
-		return;
+bool Chebyshev_T(size_t n, double x, double T[]){
+	if(x > 1 || x < -1){
+		std::cerr << "Attempted evaluating T_n(" << x << ") out of the domain [-1, 1]\n";		
+		for (size_t i = 0; i <= n; i++)
+			T[i] = nan("");
+		return false;
 	}
 	// base cases
 	T[0] = 1; if(n > 0) T[1] = x;
 	// recurrence relation
-	for(int i = 2; i <= n; i++)
+	for(size_t i = 2; i <= n; i++)
 		T[i] = 2 * x * T[i - 1] - T[i - 2];
+	
+	return true;
 }
 
 /**
@@ -56,14 +57,22 @@ void Chebyshev_T(int n, double x, double T[]){
  * @param n order to which calculate the polynomials.
  * @param x value to evaluate the polynomials.
  * @param dT array with n spaces to be filled with the polynomials.
+ * @return true if no errors occurred.
  */
-void derivative_Chebyshev_T(int n, double x, double dT[]){
+bool derivative_Chebyshev_T(size_t n, double x, double dT[]){
 	double T[n + 2];
-	Chebyshev_T(n + 1, x, T);
+	if (!Chebyshev_T(n + 1, x, T)){
+		for(size_t i = 0; i <= n; i++)
+			dT[i] = nan("");
+
+		return false;
+	}
 
 	dT[0] = 0;
-	for(int i = 1; i <= n; i++)
+	for(size_t i = 1; i <= n; i++)
 		dT[i] = 0.5 * i * (T[i - 1] - T[i + 1]) / (1 - x * x);
+
+	return true;
 }
 
 /**
@@ -155,6 +164,51 @@ double evaluate_Chebyshev_T_expansion(size_t n, const Matrix2D<double>& a, doubl
 	for(size_t idx = 0; idx <= n; idx++)
 		for(size_t idy = 0; idy <= n; idy++)
 			v += a(idx, idy) * Tx[idx] * Ty[idy];
+
+	return v;
+}
+
+/** Enumeration of possible variables
+ */
+enum Variable {x, y};
+
+/**
+ * Evaluate a two variable function's derivative 
+ * from its Chebyshev expansion coefficients.
+ * @param n order of expansion
+ * @param var variable with respect to which calculate the derivative
+ * @param a matrix of coefficients.
+ * @param x first variable value.
+ * @param y second variable value.
+ * @param x_min minimum value of x represented in the matrix.
+ * @param x_max maximum value of x represented in the matrix.
+ * @param y_min minimum value of y represented in the matrix.
+ * @param y_max maximum value of y represented in the matrix.
+ * @return the function evaluated at (x, y)
+ */
+double evaluate_derivative_Chebyshev_T_expansion(size_t n, Variable var, const Matrix2D<double>& a, double x, double y, double x_min, double x_max, double y_min, double y_max){
+	double v = 0;
+
+	// Normalized to range (-1, 1)
+	double xi = (2 * x - (x_min + x_max)) / (x_max - x_min); 
+	double yi = (2 * y - (y_min + y_max)) / (y_max - y_min); 
+
+	double T[n + 1], dT[n + 1];
+	if(var == Variable::x){
+		derivative_Chebyshev_T(n, xi, dT);
+		Chebyshev_T(n, yi, T);
+	}
+	else{
+		Chebyshev_T(n, xi, T);
+		derivative_Chebyshev_T(n, yi, dT);
+	}
+
+	for(size_t idx = 0; idx <= n; idx++)
+		for(size_t idy = 0; idy <= n; idy++)
+			v += a(idx, idy) * (var == Variable::x ? dT[idx] * T[idy] : T[idx] * dT[idy]);
+
+	// Normalization
+	v *= 2 / (var == Variable::x ? (x_max - x_min) : (y_max - y_min));
 
 	return v;
 }
