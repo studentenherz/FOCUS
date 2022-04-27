@@ -5,6 +5,7 @@
 #include <cmath>
 
 #include "types/matrix2D.hpp"
+#include "types/scalarField.hpp"
 
 /**
  * Interpolate 2D using the 4 points formula.
@@ -15,41 +16,37 @@
  * 
  * @param x from (x, y) desidered interpolation point.
  * @param y from (x, y) desidered interpolation point.
- * @param f matrix with values of f at equispaced points.
- * @param x_min minimum value of x represented in the matrix.
- * @param x_max maximum value of x represented in the matrix.
- * @param y_min minimum value of y represented in the matrix.
- * @param y_max maximum value of y represented in the matrix.
+ * @param f scalar field given by a matrix and the (x, y) limits of the space it represents
  * @return interpolated f(x, y).
  */
-double four_point_formula(double x, double y, const Matrix2D<double>& f, double x_min, double x_max, double y_min, double y_max){
+double four_point_formula(double x, double y, ScalarField f){
 	// The interpolation formula is
 	// f(x0 + ph, y0 + qk) = ....
 	// where (h, k) are the periods and (x0, y0)
 	// is a point of the 2D lattice.
 
-	if (x < x_min || x >= x_max || y < y_min || y >= y_max){
+	if (x < f.x_min || x >= f.x_max || y < f.y_min || y >= f.y_max){
 		// HERE THERE MUST BE A WARNING LOG
 		return nan("");
 	}
 
 	size_t Nx, Ny;
-	Nx = f.shape().first;
-	Ny = f.shape().second;
+	Nx = f.M->shape().first;
+	Ny = f.M->shape().second;
 
-	double h = (x_max - x_min) / (Nx - 1);
-	double k = (y_max - y_min) / (Ny - 1);
+	double h = (f.x_max - f.x_min) / (Nx - 1);
+	double k = (f.y_max - f.y_min) / (Ny - 1);
 
-	size_t i = std::floor((x - x_min) / h);
-	size_t j = std::floor((y - y_min) / k);
+	size_t i = std::floor((x - f.x_min) / h);
+	size_t j = std::floor((y - f.y_min) / k);
 
 	if (i >= Nx - 1 || j >= Ny - 1){
 		// HERE THERE MUST BE A WARNING LOG
 		return nan("");
 	}
 
-	double p = x - (x_min + i * h);
-	double q = y - (y_min + j * k);
+	double p = x - (f.x_min + i * h);
+	double q = y - (f.y_min + j * k);
 
 	return (1 - p) * (1 - q) * f(i, j) + p * (1 - q) * f(i + 1, j) + q * (1 - p) * f(i, j + 1) + p * q * f(i + 1, j + 1);
 }
@@ -63,33 +60,29 @@ double four_point_formula(double x, double y, const Matrix2D<double>& f, double 
  * 
  * @param x from (x, y) desidered interpolation point.
  * @param y from (x, y) desidered interpolation point.
- * @param f matrix with values of f at equispaced points.
- * @param x_min minimum value of x represented in the matrix.
- * @param x_max maximum value of x represented in the matrix.
- * @param y_min minimum value of y represented in the matrix.
- * @param y_max maximum value of y represented in the matrix.
+ * @param f scalar field given by a matrix and the (x, y) limits of the space it represents
  * @return interpolated f(x, y).
  */
-double six_point_formula(double x, double y, const Matrix2D<double>& f, double x_min, double x_max, double y_min, double y_max){
+double six_point_formula(double x, double y, ScalarField f){
 	// The interpolation formula is
 	// f(x0 + ph, y0 + qk) = ....
 	// where (h, k) are the periods and (x0, y0)
 	// is a point of the 2D lattice.
 
-	if (x < x_min || x >= x_max || y < y_min || y >= y_max){
+	if (x < f.x_min || x >= f.x_max || y < f.y_min || y >= f.y_max){
 		// HERE THERE MUST BE A WARNING LOG
 		return nan("");
 	}
 
 	size_t Nx, Ny;
-	Nx = f.shape().first;
-	Ny = f.shape().second;
+	Nx = f.M->shape().first;
+	Ny = f.M->shape().second;
 
-	double h = (x_max - x_min) / (Nx - 1);
-	double k = (y_max - y_min) / (Ny - 1);
+	double h = (f.x_max - f.x_min) / (Nx - 1);
+	double k = (f.y_max - f.y_min) / (Ny - 1);
 
-	size_t i = std::floor((x - x_min) / h);
-	size_t j = std::floor((y - y_min) / k);
+	size_t i = std::floor((x - f.x_min) / h);
+	size_t j = std::floor((y - f.y_min) / k);
 
 	if (i >= Nx - 1 || j >= Ny - 1){
 		// HERE THERE MUST BE A WARNING LOG
@@ -97,10 +90,10 @@ double six_point_formula(double x, double y, const Matrix2D<double>& f, double x
 	}
 
 	if (i == 0 || j == 0) 
-		return four_point_formula(x, y, f, x_min, x_max, y_min, y_max);
+		return four_point_formula(x, y, f);
 
-	double p = x - (x_min + i * h);
-	double q = y - (y_min + j * k);
+	double p = x - (f.x_min + i * h);
+	double q = y - (f.y_min + j * k);
 
 	return 0.5 * q * (q - 1) * f(i, j - 1) + 0.5 * p * (p - 1) * f(i - 1, j) + (1 + p * q - p * p - q * q) * f(i, j) + 0.5 * p * (p - 2 * q + 1) * f(i + 1, j) + 0.5 * q * (q - 2 * p + 1) * f(i, j + 1) + p * q * f(i + 1, j + 1);
 }

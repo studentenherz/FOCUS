@@ -3,6 +3,7 @@
 
 #include "Chebyshev.hpp"
 #include "types/matrix2D.hpp"
+#include "types/scalarField.hpp"
 #include "files.hpp"
 
 double f(double x, double y){
@@ -28,17 +29,22 @@ int main(int argc, char const *argv[]){
 	double y_min = -1.442599200000;
 	double y_max = 1.442599200000;
 
+	double rlow = 0.945960;
+	double rhigh = 2.4458;
+	double zlow = -1.47204;
+	double zhigh = 1.47204;
+
 	Matrix2D<double> M;
 	load(argv[1], M);
+	ScalarField f(&M, rlow, rhigh, zlow, zhigh);
 
-
-	size_t n = 26;
+	size_t n = 25;
 	Matrix2D<double> a(n + 1, n + 1);
 
-	Chebyshev_T_expansion(n, a, M, x_min, x_max, y_min, y_max);
+	Chebyshev_T_expansion(n, a, f, x_min, x_max, y_min, y_max);
 
 	// Calculate the coefficients of the expansion
-	size_t Nn = 400;
+	size_t Nn = 600;
 	Matrix2D<double> Br(Nn, Nn);
 
 
@@ -51,7 +57,7 @@ int main(int argc, char const *argv[]){
 		double x = x_min + (x_max - x_min) * i / (Nn - 1);
 		for(size_t j = 0; j<Nn; j++){
 			double y = y_min + (y_max - y_min) * j / (Nn - 1);
-			Br(i, j) =  - evaluate_derivative_Chebyshev_T_expansion(n, Variable::y, a, x, y, x_min, x_max, y_min, y_max) / x / B_0 /a_m / a_m;
+			Br(i, j) =  evaluate_derivative_Chebyshev_T_expansion(n, Variable::y, a, x, y, x_min, x_max, y_min, y_max) / x / B_0 /a_m / a_m;
 		}
 	}
 

@@ -10,6 +10,7 @@
 #include <cmath>
 
 #include "types/matrix2D.hpp"
+#include "types/scalarField.hpp"
 #include "util.hpp"
 #include "interpolations.hpp"
 
@@ -128,17 +129,24 @@ bool derivative_Chebyshev_T(size_t n, double x, double dT[]){
  * @param y_max maximum value of y represented in the matrix.
  * @return the coefficient.
  */
-double Chebyshev_T_expansion_coefficient(const Matrix2D<double>& M, size_t n, size_t idx, size_t idy, double x_min, double x_max, double y_min, double y_max){
+double Chebyshev_T_expansion_coefficient(size_t n, size_t idx, size_t idy, ScalarField f, double x_min, double x_max, double y_min, double y_max){
 	size_t Nx, Ny;
-	Nx = M.shape().first;
-	Ny = M.shape().second;
+	Nx = f.M->shape().first;
+	Ny = f.M->shape().second;
 	
+	double x_m = 0.5 * (x_min + x_max);
+	double y_m = 0.5 * (y_min + y_max);
+	double Dx = 0.5 * (x_max - x_min);
+	double Dy = 0.5 * (y_max - y_min);
+
 	double a = 0;
 	for (size_t i = 0; i < Nx; i++){
 		double xi = cos((i + 0.5) * pi / Nx);
+		double x = x_m + xi * Dx;
 		for (size_t j = 0; j < Ny; j++){
 			double yj = cos((j + 0.5) * pi / Ny);
-			a += six_point_formula(xi, yj, M, -1, 1, -1, 1) * Chebyshev_T(idx, xi) * Chebyshev_T(idy, yj);
+			double y = y_m + yj * Dy;
+			a += six_point_formula(x, y, f) * Chebyshev_T(idx, xi) * Chebyshev_T(idy, yj);
 		}
 	}
 
@@ -167,10 +175,10 @@ double Chebyshev_T_expansion_coefficient(const Matrix2D<double>& M, size_t n, si
  * @param y_min minimum value of y represented in the matrix.
  * @param y_max maximum value of y represented in the matrix.
  */
-void Chebyshev_T_expansion(size_t n, Matrix2D<double>& a, const Matrix2D<double>& M, double x_min, double x_max, double y_min, double y_max){		
+void Chebyshev_T_expansion(size_t n, Matrix2D<double>& a, ScalarField f, double x_min, double x_max, double y_min, double y_max){		
 	for(size_t idx = 0; idx <= n; idx++)
 		for(size_t idy = 0; idy <= n; idy++){
-			a(idx, idy) = Chebyshev_T_expansion_coefficient(M, n, idx, idy, x_min, x_max, y_min, y_max);
+			a(idx, idy) = Chebyshev_T_expansion_coefficient(n, idx, idy, f, x_min, x_max, y_min, y_max);
 		}
 }
 

@@ -25,9 +25,10 @@ int main(int argc, char const *argv[]){
 	const double x_max = 1;
 	const double y_min = 0;
 	const double y_max = 1;
+	ScalarField f(&M, x_min, x_max, y_min, y_max);
 
 	// Get expansion coefficients
-	Chebyshev_T_expansion(n, a, M, x_min, x_max, y_min, y_max);	
+	Chebyshev_T_expansion(n, a, f, x_min, x_max, y_min, y_max);	
 
 	// Calculate same Matrix from expansion
 	size_t Nx, Ny;
