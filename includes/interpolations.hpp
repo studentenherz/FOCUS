@@ -45,8 +45,8 @@ double four_point_formula(double x, double y, ScalarField f){
 		return nan("");
 	}
 
-	double p = x - (f.x_min + i * h);
-	double q = y - (f.y_min + j * k);
+	double p = (x - (f.x_min + i * h)) / h;
+	double q = (y - (f.y_min + j * k)) / k;
 
 	return (1 - p) * (1 - q) * f(i, j) + p * (1 - q) * f(i + 1, j) + q * (1 - p) * f(i, j + 1) + p * q * f(i + 1, j + 1);
 }
@@ -92,8 +92,8 @@ double six_point_formula(double x, double y, ScalarField f){
 	if (i == 0 || j == 0) 
 		return four_point_formula(x, y, f);
 
-	double p = x - (f.x_min + i * h);
-	double q = y - (f.y_min + j * k);
+	double p = (x - (f.x_min + i * h)) / h;
+	double q = (y - (f.y_min + j * k)) / k;
 
 	return 0.5 * q * (q - 1) * f(i, j - 1) + 0.5 * p * (p - 1) * f(i - 1, j) + (1 + p * q - p * p - q * q) * f(i, j) + 0.5 * p * (p - 2 * q + 1) * f(i + 1, j) + 0.5 * q * (q - 2 * p + 1) * f(i, j + 1) + p * q * f(i + 1, j + 1);
 }
