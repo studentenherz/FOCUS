@@ -32,8 +32,8 @@ bool load(std::string filename, Matrix2D<T>& M){
 	M.reshape(Nx, Ny);
 
 	double v;
-	for (size_t i = 0; i < Nx; i++){
-		for (size_t j = 0; j < Ny; j++){
+	for (size_t j = 0; j < Ny; j++){
+		for (size_t i = 0; i < Nx; i++){
 			if(!(fi >> v)) return false;
 			M(i, j) = v;
 		}
@@ -61,8 +61,8 @@ bool dump(std::string filename, const Matrix2D<T>& M, bool matrix_shape = true){
 	if (matrix_shape)
 		fo << shape.first << ' ' << shape.second << '\n';
 
-	for(size_t i = 0; i < shape.first; i++){
-		for (size_t j = 0; j < shape.second; j++){
+	for (size_t j = 0; j < shape.second; j++){
+		for(size_t i = 0; i < shape.first; i++){
 			fo << M(i, j) << ' ';
 		}
 		fo << '\n';

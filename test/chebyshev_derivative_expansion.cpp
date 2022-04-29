@@ -19,8 +19,8 @@ double df_dy(double x, double y){
 }
 
 int main(int argc, char const *argv[]){
-	if (argc < 3){
-		std::cout << "Usage:\nchebyshev... <input_file> <output_file>\n";
+	if (argc < 2){
+		std::cout << "Usage:\nchebyshev... <input_file>\n";
 		return 0;
 	}
 
@@ -38,7 +38,7 @@ int main(int argc, char const *argv[]){
 	load(argv[1], M);
 	ScalarField f(&M, rlow, rhigh, zlow, zhigh);
 
-	size_t n = 25;
+	size_t n = 26;
 	Matrix2D<double> a(n + 1, n + 1);
 
 	Chebyshev_T_expansion(n, a, f, x_min, x_max, y_min, y_max);
@@ -46,6 +46,7 @@ int main(int argc, char const *argv[]){
 	// Calculate the coefficients of the expansion
 	size_t Nn = 600;
 	Matrix2D<double> Br(Nn, Nn);
+	Matrix2D<double> Bz(Nn, Nn);
 
 
 	// double epsilon = 0.1;
@@ -57,11 +58,17 @@ int main(int argc, char const *argv[]){
 		double x = x_min + (x_max - x_min) * i / (Nn - 1);
 		for(size_t j = 0; j<Nn; j++){
 			double y = y_min + (y_max - y_min) * j / (Nn - 1);
-			Br(i, j) =  evaluate_derivative_Chebyshev_T_expansion(n, Variable::y, a, x, y, x_min, x_max, y_min, y_max) / x / B_0 /a_m / a_m;
+			Br(i, j) =  - evaluate_derivative_Chebyshev_T_expansion(n, Variable::y, a, x, y, x_min, x_max, y_min, y_max) / x / B_0 /a_m / a_m;
+			if(std::isnan(Br(i, j)))
+				Br(i, j) = 0;
+			Bz(i, j) =  evaluate_derivative_Chebyshev_T_expansion(n, Variable::x, a, x, y, x_min, x_max, y_min, y_max) / x / B_0 /a_m / a_m;
+			if(std::isnan(Bz(i, j)))
+				Bz(i, j) = 0;
 		}
 	}
 
-	dump(argv[2], Br, false);
+	dump("Br.dat", Br, false);
+	dump("Bz.dat", Bz, false);
 
 	// // Compare x derivative
 	// for(size_t i = 0; i<N; i++){
