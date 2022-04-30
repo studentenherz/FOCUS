@@ -47,6 +47,7 @@ int main(int argc, char const *argv[]){
 	size_t Nn = 600;
 	Matrix2D<double> Br(Nn, Nn);
 	Matrix2D<double> Bz(Nn, Nn);
+	Matrix2D<double> Psi(Nn, Nn);
 
 
 	// double epsilon = 0.1;
@@ -64,39 +65,13 @@ int main(int argc, char const *argv[]){
 			Bz(i, j) =  evaluate_derivative_Chebyshev_T_expansion(n, Variable::x, a, x, y, x_min, x_max, y_min, y_max) / x / B_0 /a_m / a_m;
 			if(std::isnan(Bz(i, j)))
 				Bz(i, j) = 0;
+			Psi(i, j) = evaluate_Chebyshev_T_expansion(n, a, x, y, x_min, x_max, y_min, y_max);
 		}
 	}
 
 	dump("Br.dat", Br, false);
 	dump("Bz.dat", Bz, false);
-
-	// // Compare x derivative
-	// for(size_t i = 0; i<N; i++){
-	// 	double x = x_min + (x_max - x_min) * i / (N - 1);
-	// 	for(size_t j = 0; j<N; j++){
-	// 		double y = y_min + (y_max - y_min) * j / (N - 1);
-	// 		double exact = df_dx(x, y);
-	// 		double cheby = evaluate_derivative_Chebyshev_T_expansion(n, Variable::x, a, x, y, x_min, x_max, y_min, y_max);
-	// 		if(std::abs(exact - cheby) > epsilon){
-	// 			std::cerr << "d(3 * sin(x) * cos(2 * y + 1))/dx via Chebyshev expansion at (" << x << ", " << y << ") gave " << cheby << " but " << exact << " was expected.\n";
-	// 			return 1;
-	// 		}
-	// 	}
-	// }
-
-	// // Compare y derivative
-	// for(size_t i = 0; i<N; i++){
-	// 	double x = x_min + (x_max - x_min) * i / (N - 1);
-	// 	for(size_t j = 0; j<N; j++){
-	// 		double y = y_min + (y_max - y_min) * j / (N - 1);
-	// 		double exact = df_dy(x, y);
-	// 		double cheby = evaluate_derivative_Chebyshev_T_expansion(n, Variable::y, a, x, y, x_min, x_max, y_min, y_max);
-	// 		if(std::abs(exact - cheby) > epsilon){
-	// 			std::cerr << "d(3 * sin(x) * cos(2 * y + 1))/dy via Chebyshev expansion at (" << x << ", " << y << ") gave " << cheby << " but " << exact << " was expected.\n";
-	// 			return 1;
-	// 		}
-	// 	}
-	// }
+	dump("Psi.dat", Psi, false);
 
 	return 0;
 }
