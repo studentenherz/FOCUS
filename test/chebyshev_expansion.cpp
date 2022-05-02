@@ -17,7 +17,6 @@ int main(int argc, char const *argv[]){
 
 	// Chebyshev coefficients vector
 	size_t n = atoi(argv[2]);
-	Matrix2D<double> a(n + 1, n + 1);
 
 	// Just to set some values,
 	// these are unimportant right now
@@ -28,7 +27,7 @@ int main(int argc, char const *argv[]){
 	ScalarField f(&M, x_min, x_max, y_min, y_max);
 
 	// Get expansion coefficients
-	Chebyshev_T_expansion(n, a, f, x_min, x_max, y_min, y_max);	
+	ChebyshevExpansion ch(n, f, x_min, x_max, y_min, y_max);	
 
 	// Calculate same Matrix from expansion
 	size_t Nx, Ny;
@@ -40,7 +39,7 @@ int main(int argc, char const *argv[]){
 		double x = x_min + i * (x_max - x_min) / Nx;
 		for (size_t j = 0; j < Ny; j++){
 			double y = y_min + j * (y_max - y_min) / Ny;
-			new_M(i, j) = evaluate_Chebyshev_T_expansion(n, a, x, y, x_min, x_max, y_min, y_max);
+			new_M(i, j) = ch(x, y);
 		}
 	}
 

@@ -260,4 +260,76 @@ double evaluate_derivative_Chebyshev_T_expansion(size_t n, Variable var, const M
 	return v;
 }
 
+/**
+ * A class to encapsulate all Chebyshev expansion related functions
+ */ 
+class ChebyshevExpansion{
+	size_t n;	// order of expansion
+	Matrix2D<double> a; // matrix of coefficients
+	double x_min, x_max, y_min, y_max; // limits
+public:
+
+	/**
+	 * Calculates the Chebyshev expansion of the scalar field
+	 * up to order n in the given x, y region
+	 * @param n order of the expansion
+	 * @param f scalar field to be expanded
+	 * @param x_min minimum value of x of the expansion
+	 * @param x_max maximum value of x of the expansion
+	 * @param y_min minimum value of y of the expansion
+ 	 * @param y_max maximum value of y of the expansion
+	 */
+	ChebyshevExpansion(size_t n, ScalarField f, double xmin, double xmax, double ymin, double ymax): n(n){
+		/* Adding extra room for x and y so that Chebyshev is not
+			evaluated in 1 or -1; depending on the numbers, the floating
+			representation might give something like 1.00000000005 that 
+			still breaks the function.
+		*/
+
+		double ex = 0.01 * (xmax - xmin);
+		double ey = 0.01 * (ymax - ymin);
+
+		x_min = std::max(f.x_min, xmin - ex);
+		x_max = std::min(f.x_max, xmax + ex);
+		y_min = std::max(f.y_min, ymin - ey);
+		y_max = std::min(f.y_max, ymax + ey);
+
+		a.reshape(n + 1, n + 1);
+		// Calculate the matrix of coefficients
+		Chebyshev_T_expansion(n, a, f, x_min, x_max, y_min, y_max);
+	}
+
+	/**
+	 * Evaluate the scalar field f from the expansion coefficients
+	 * @param x x
+	 * @param y y
+	 * @return f(x, y)
+	 */
+	double operator()(double x, double y){
+		return evaluate_Chebyshev_T_expansion(n, a, x, y, x_min, x_max, y_min, y_max);
+	}
+
+	/**
+	 * Evaluate the derivative with respect to x of the 
+	 * scalar field f from the expansion coefficients
+	 * @param x x
+	 * @param y y
+	 * @return df_dx(x, y)
+	 */
+	double dx(double x, double y){
+		return evaluate_derivative_Chebyshev_T_expansion(n, Variable::x, a, x, y, x_min, x_max, y_min, y_max);
+	}
+
+	/**
+	 * Evaluate the derivative with respect to y of the 
+	 * scalar field f from the expansion coefficients
+	 * @param x x
+	 * @param y y
+	 * @return df_dy(x, y)
+	 */
+	double dy(double x, double y){
+		return evaluate_derivative_Chebyshev_T_expansion(n, Variable::y, a, x, y, x_min, x_max, y_min, y_max);
+	}
+};
+
 #endif // FOCUS_CHEBYSHEV_HPP

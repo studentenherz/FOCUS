@@ -39,9 +39,8 @@ int main(int argc, char const *argv[]){
 	ScalarField f(&M, rlow, rhigh, zlow, zhigh);
 
 	size_t n = 26;
-	Matrix2D<double> a(n + 1, n + 1);
 
-	Chebyshev_T_expansion(n, a, f, x_min, x_max, y_min, y_max);
+	ChebyshevExpansion ch(n, f, x_min, x_max, y_min, y_max);
 
 	// Calculate the coefficients of the expansion
 	size_t Nn = 600;
@@ -59,13 +58,13 @@ int main(int argc, char const *argv[]){
 		double x = x_min + (x_max - x_min) * i / (Nn - 1);
 		for(size_t j = 0; j<Nn; j++){
 			double y = y_min + (y_max - y_min) * j / (Nn - 1);
-			Br(i, j) =  - evaluate_derivative_Chebyshev_T_expansion(n, Variable::y, a, x, y, x_min, x_max, y_min, y_max) / x / B_0 /a_m / a_m;
+			Br(i, j) =  - ch.dy(x, y) / x / B_0 /a_m / a_m;
 			if(std::isnan(Br(i, j)))
 				Br(i, j) = 0;
-			Bz(i, j) =  evaluate_derivative_Chebyshev_T_expansion(n, Variable::x, a, x, y, x_min, x_max, y_min, y_max) / x / B_0 /a_m / a_m;
+			Bz(i, j) =  ch.dx(x, y) / x / B_0 /a_m / a_m;
 			if(std::isnan(Bz(i, j)))
 				Bz(i, j) = 0;
-			Psi(i, j) = evaluate_Chebyshev_T_expansion(n, a, x, y, x_min, x_max, y_min, y_max);
+			Psi(i, j) = ch(x, y);
 		}
 	}
 
