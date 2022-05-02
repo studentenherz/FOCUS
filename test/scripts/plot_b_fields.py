@@ -1,8 +1,6 @@
 import numpy as np
 from matplotlib import pyplot as plt
 
-data = np.loadtxt('xys.dat')
-
 x = np.linspace(0.968251, 2.40975, 600)
 y = np.linspace(-1.4425992, 1.4425992, 600)
 
