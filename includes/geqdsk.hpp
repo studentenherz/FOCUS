@@ -13,6 +13,7 @@
 #include <fstream>
 #include <string>
 #include <iostream>
+#include <sstream>
 
 #include "types/array.hpp"
 #include "types/matrix2D.hpp"
@@ -43,17 +44,39 @@ struct Equilibrium{
 	Equilibrium(int id, size_t nx, size_t ny): idnum(id), nx(nx), ny(nx), fpol(nx), pres(nx), qpsi(nx), psi(nx, ny) {}
 };
 
+template <typename stream_type>
+class Tokenizer{
+	std::regex e;
+	std::string line;
+	std::smatch m;
+public:
+	Tokenizer(const char rexp[]): e(rexp) {}
+
+	bool next(stream_type& is, std::string& s){
+		if (!std::regex_search (line,m,e)){
+			if (!std::getline(is, line))
+				return false;
+			if (!std::regex_search (line,m,e))
+				return false;
+		}
+    s = m[0];
+		line = m.suffix().str();
+		return true;
+	}
+};
+
 void read_eqdsk(const char *filename){
 
-	std::string s = "TRXPL 27Aug2021 D3D D3D.13 153072G64 t~   3.4000   0 109 109  0.148607998E+01 0.294408007E+01";
-	std::regex rexp("[+-]?\\d*[\\.]?\\d+(?:[Ee][+-]?\\d+)?");
-	std::smatch m;
 
-	 while (std::regex_search (s,m,rexp)) {
-    std::cout << m[0] << "\n";
-    s = m.suffix().str();
-  }
+	std::ifstream fi(filename);
+	std::string s;
+	std::getline(fi, s);
+	std::cout << s << '\n';
 
+
+	std::cout << "\nNow from Tokenizer\n";
+	Tokenizer<std::ifstream> tk("[+-]?\\d*[\\.]?\\d+(?:[Ee][+-]?\\d+)?"); // captures any number;
+	while(tk.next(fi, s)) std::cout << s << '\n';
 }
 
 #endif // FOCUS_INCLUDES_GEQDSK_HPP
