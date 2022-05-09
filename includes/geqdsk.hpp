@@ -44,22 +44,34 @@ struct Equilibrium{
 	Equilibrium(int id, size_t nx, size_t ny): idnum(id), nx(nx), ny(nx), fpol(nx), pres(nx), qpsi(nx), psi(nx, ny) {}
 };
 
+/**
+ * Class to tokenize a stream based on a regex pattern
+ */
 template <typename stream_type>
 class Tokenizer{
 	std::regex e;
 	std::string line;
 	std::smatch m;
 public:
+	/**
+	 * @param rexp Regular expresion
+	 */
 	Tokenizer(const char rexp[]): e(rexp) {}
 
-	bool next(stream_type& is, std::string& s){
+	/**
+	 * Get next token from stream
+	 * @param is stream to tokenize
+	 * @param[out] token string to put the token in
+	 * @return true if new token, false otherwise
+	 */
+	bool next(stream_type& is, std::string& token){
 		if (!std::regex_search (line,m,e)){
 			if (!std::getline(is, line))
 				return false;
 			if (!std::regex_search (line,m,e))
 				return false;
 		}
-    s = m[0];
+    token = m[0];
 		line = m.suffix().str();
 		return true;
 	}
@@ -69,14 +81,14 @@ void read_eqdsk(const char *filename){
 
 
 	std::ifstream fi(filename);
-	std::string s;
-	std::getline(fi, s);
-	std::cout << s << '\n';
+	std::string token;
+	std::getline(fi, token);
+	std::cout << token << '\n';
 
 
 	std::cout << "\nNow from Tokenizer\n";
 	Tokenizer<std::ifstream> tk("[+-]?\\d*[\\.]?\\d+(?:[Ee][+-]?\\d+)?"); // captures any number;
-	while(tk.next(fi, s)) std::cout << s << '\n';
+	while(tk.next(fi, token)) std::cout << token << '\n';
 }
 
 #endif // FOCUS_INCLUDES_GEQDSK_HPP
