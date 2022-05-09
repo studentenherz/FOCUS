@@ -2,7 +2,9 @@ files = executable('files', 'files.cpp', include_directories : incdir)
 interpol = executable('interpolations', 'interpolations.cpp', include_directories : incdir)
 cheby_exp = executable('chebyshev_expansion', 'chebyshev_expansion.cpp', include_directories : incdir)
 cheby_der = executable('chebyshev_derivatives', 'chebyshev_derivatives.cpp', include_directories : incdir)
-cheby_der_exp = executable('chebyshev_derivative_expansion', 'chebyshev_derivative_expansion.cpp', include_directories: incdir, cpp_args : ['-g', '-O0'])
+cheby_der_exp = executable('chebyshev_derivative_expansion', 'chebyshev_derivative_expansion.cpp', include_directories: incdir)
+
+geqdsk = executable('geqdsk', 'geqdsk.cpp', include_directories: incdir)
 
 copy = find_program('scripts/copy.py')
 cmp = find_program('cmp')
