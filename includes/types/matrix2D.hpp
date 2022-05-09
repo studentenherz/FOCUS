@@ -10,7 +10,7 @@ class Matrix2D{
 	T *arr;
 	shape_t _shape;
 public:
-	Matrix2D() {
+	Matrix2D(){
 		_shape = {0, 0};
 		arr = new T[1];
 	}
