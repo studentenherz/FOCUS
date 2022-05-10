@@ -3,6 +3,6 @@ project('com..focus', 'cpp',
 	default_options : 'warning_level=3', 
 )
 
-incdir = include_directories('includes')
+incdir = include_directories('include')
 
 subdir('test')
