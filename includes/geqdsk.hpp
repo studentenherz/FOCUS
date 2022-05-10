@@ -41,7 +41,13 @@ struct Equilibrium{
 
 	Matrix2D<double> psi;	///< 2D array (nx,ny) of poloidal flux
 
-	Equilibrium(int id, size_t nx, size_t ny): idnum(id), nx(nx), ny(nx), fpol(nx), pres(nx), qpsi(nx), psi(nx, ny) {}
+	/**
+	 * Default constructor 
+	 * @param id idnum
+	 * @param nx Number of points in R
+	 * @param ny Number of points in z
+	 */
+	Equilibrium(int id = 0, size_t nx = 0, size_t ny = 0): idnum(id), nx(nx), ny(ny), fpol(nx), pres(nx), qpsi(nx), psi(nx, ny) {}
 };
 
 /**
@@ -77,18 +83,44 @@ public:
 	}
 };
 
-void read_eqdsk(const char *filename){
-
-
+/**
+ * Read equilibrium G-EQDSK file
+ * @param filename name of file
+ * @return Equilibrium with the read data
+ */
+Equilibrium read_eqdsk(const char *filename){
 	std::ifstream fi(filename);
-	std::string token;
-	std::getline(fi, token);
-	std::cout << token << '\n';
+	if(!fi.is_open()){
+		std::cerr << "Couldn't open file " << filename << '\n';
+		return Equilibrium(-1, 0, 0);
+	}
 
+	// First line contains a description and the last three tokens are
+	// ... idnum nx ny
+	std::string fline;
+	std::getline(fi, fline);
+	
+	size_t i = 0;
+	std::string tokens[3];
+	std::istringstream iss(fline);
+	while(iss >> tokens[i % 3]) i++;
 
-	std::cout << "\nNow from Tokenizer\n";
-	Tokenizer<std::ifstream> tk("[+-]?\\d*[\\.]?\\d+(?:[Ee][+-]?\\d+)?"); // captures any number;
-	while(tk.next(fi, token)) std::cout << token << '\n';
+	if (i < 3){
+		std::cerr << "Error in" << filename << ". Expected at least 3 values in the first line.\n";
+		return Equilibrium(-1, 0, 0);
+	}
+
+	int idnum = std::stoi(tokens[i % 3]);
+	size_t nx = std::stoul(tokens[(i + 1) % 3]);
+	size_t ny = std::stoul(tokens[(i + 2) % 3]);
+
+	Equilibrium eq(idnum, nx, ny);
+
+	eq.bcentr = 1.123;
+	eq.fpol[12] = 23;
+	eq.psi(45, 67) = 312.098;
+
+	return eq;
 }
 
 #endif // FOCUS_INCLUDES_GEQDSK_HPP
