@@ -168,8 +168,8 @@ Equilibrium read_eqdsk(const char *filename){
 	for (size_t i = 0; i < eq.nx; i++) if(tk.next(fi, token)) eq.qpsi[i] = std::stod(token);
 
 	// Boundary and limits
-	if (tk.next(fi, token)) eq.nbdry = std::stod(token);
-	if (tk.next(fi, token)) eq.nlim = std::stod(token);
+	if (tk.next(fi, token)) eq.nbdry = std::stoul(token);
+	if (tk.next(fi, token)) eq.nlim = std::stoul(token);
 
 	if (eq.nbdry > 0) {
 		eq.rbdry.resize(eq.nbdry);
