@@ -39,6 +39,8 @@ public:
 	 * @return reference to i-th element
 	 */
 	T &operator[](size_t i){
+		if (i > _size)
+			return arr[_size];
 		return arr[i];
 	}
 	
@@ -48,6 +50,8 @@ public:
 	 * @return reference to i-th element
 	 */
 	const T &operator[](size_t i) const {
+		if (i > _size)
+			return arr[_size];
 		return arr[i];
 	}
 
@@ -57,6 +61,15 @@ public:
 	 */
 	size_t size(){
 		return _size;
+	}
+
+	/** 
+	 * Resize array droping stored values
+	 */
+	void resize(size_t n){
+		delete[] arr;
+		_size = n;
+		arr = new T[_size + 1];
 	}
 };
 

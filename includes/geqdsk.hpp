@@ -35,11 +35,18 @@ struct Equilibrium{
   double sibdry;        ///< Poloidal flux psi at plasma boundary
   double cpasma;        ///< Plasma current [Amperes]
 
+
 	Array<double> fpol;		///< 1D array of f(psi)=R*Bt  [meter-Tesla]
 	Array<double> pres;		///< 1D array of p(psi) [Pascals]
 	Array<double> qpsi;		///< 1D array of q(psi)
 
 	Matrix2D<double> psi;	///< 2D array (nx,ny) of poloidal flux
+
+	// Boundaries description, optional
+	size_t nbdry, nlim;					///< Number of points of plasma and wall boundaries
+	Array<double> rbdry, zbdry;	///< 1D array of q(psi)
+	Array<double> rlim, zlim;		///< 1D array of q(psi)
+
 
 	/**
 	 * Default constructor 
@@ -47,7 +54,7 @@ struct Equilibrium{
 	 * @param nx Number of points in R
 	 * @param ny Number of points in z
 	 */
-	Equilibrium(int id = 0, size_t nx = 0, size_t ny = 0): idnum(id), nx(nx), ny(ny), fpol(nx), pres(nx), qpsi(nx), psi(nx, ny) {}
+	Equilibrium(int id = 0, size_t nx = 0, size_t ny = 0): idnum(id), nx(nx), ny(ny), fpol(nx), pres(nx), qpsi(nx), psi(nx, ny), nbdry(0), nlim(0) {}
 };
 
 /**
@@ -146,6 +153,43 @@ Equilibrium read_eqdsk(const char *filename){
 	if (tk.next(fi, token)); // here lies a dumb value
 	if (tk.next(fi, token)); // here lies a dumb value
 
+	// Read arrays
+	for (size_t i = 0; i < eq.nx; i++) if(tk.next(fi, token)) eq.fpol[i] = std::stod(token);
+	for (size_t i = 0; i < eq.nx; i++) if(tk.next(fi, token)) eq.pres[i] = std::stod(token);
+	for (size_t i = 0; i < eq.nx; i++) if(tk.next(fi, token)); // no idea what are this values
+	for (size_t i = 0; i < eq.nx; i++) if(tk.next(fi, token)); // no idea what are this values
+
+	// Read matrix in "the natural" order
+	for (size_t j = 0; j < eq.ny; j++)
+		for (size_t i = 0; i < eq.nx; i++)
+			if(tk.next(fi, token)) eq.psi(i, j) = std::stod(token);
+
+
+	for (size_t i = 0; i < eq.nx; i++) if(tk.next(fi, token)) eq.qpsi[i] = std::stod(token);
+
+	// Boundary and limits
+	if (tk.next(fi, token)) eq.nbdry = std::stod(token);
+	if (tk.next(fi, token)) eq.nlim = std::stod(token);
+
+	if (eq.nbdry > 0) {
+		eq.rbdry.resize(eq.nbdry);
+		eq.zbdry.resize(eq.nbdry);
+	
+		for (size_t i = 0; i < eq.nbdry; i++){
+			if (tk.next(fi, token)) eq.rbdry[i] = std::stod(token);
+			if (tk.next(fi, token)) eq.zbdry[i] = std::stod(token);
+		}
+	}
+
+	if (eq.nlim > 0) {
+		eq.rlim.resize(eq.nlim);
+		eq.zlim.resize(eq.nlim);
+	
+		for (size_t i = 0; i < eq.nlim; i++){
+			if (tk.next(fi, token)) eq.rlim[i] = std::stod(token);
+			if (tk.next(fi, token)) eq.zlim[i] = std::stod(token);
+		}
+	}
 
 	return eq;
 }
