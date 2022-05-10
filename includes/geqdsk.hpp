@@ -95,7 +95,7 @@ Equilibrium read_eqdsk(const char *filename){
 		return Equilibrium(-1, 0, 0);
 	}
 
-	// First line contains a description and the last three tokens are
+	// First line of the file contains a description and the last three tokens are
 	// ... idnum nx ny
 	std::string fline;
 	std::getline(fi, fline);
@@ -114,11 +114,38 @@ Equilibrium read_eqdsk(const char *filename){
 	size_t nx = std::stoul(tokens[(i + 1) % 3]);
 	size_t ny = std::stoul(tokens[(i + 2) % 3]);
 
+	// Equilibrium variable to hold the data
 	Equilibrium eq(idnum, nx, ny);
 
-	eq.bcentr = 1.123;
-	eq.fpol[12] = 23;
-	eq.psi(45, 67) = 312.098;
+	// Give the 
+	Tokenizer<std::ifstream> tk("[+-]?\\d*[\\.]?\\d+(?:[Ee][+-]?\\d+)?"); // captures any number;
+	std::string token;
+
+	// Next four lines of the file contain the experiment and tokamak characteristics
+	if (tk.next(fi, token)) eq.rdim = std::stod(token);
+	if (tk.next(fi, token)) eq.zdim = std::stod(token);
+	if (tk.next(fi, token)) eq.rcentr = std::stod(token);
+	if (tk.next(fi, token)) eq.rleft = std::stod(token);
+	if (tk.next(fi, token)) eq.zmid = std::stod(token);
+
+	if (tk.next(fi, token)) eq.rmagx = std::stod(token);
+	if (tk.next(fi, token)) eq.zmagx = std::stod(token);
+	if (tk.next(fi, token)) eq.simagx = std::stod(token);
+	if (tk.next(fi, token)) eq.sibdry = std::stod(token);
+	if (tk.next(fi, token)) eq.bcentr = std::stod(token);
+
+	if (tk.next(fi, token)) eq.cpasma = std::stod(token);
+	if (tk.next(fi, token)) eq.simagx = std::stod(token);
+	if (tk.next(fi, token)); // here lies a dumb value
+	if (tk.next(fi, token)) eq.rmagx = std::stod(token);
+	if (tk.next(fi, token)) // here lies a dumb value
+
+	if (tk.next(fi, token)) eq.zmagx = std::stod(token);
+	if (tk.next(fi, token)); // here lies a dumb value
+	if (tk.next(fi, token)) eq.sibdry = std::stod(token);
+	if (tk.next(fi, token)); // here lies a dumb value
+	if (tk.next(fi, token)); // here lies a dumb value
+
 
 	return eq;
 }
