@@ -1,6 +1,6 @@
 #include <iostream>
 
-#include "Chebyshev.hpp"
+#include "chebyshev.hpp"
 
 int main(int argc, char const *argv[]){
 	int n = 10;

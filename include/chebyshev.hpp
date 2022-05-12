@@ -9,8 +9,8 @@
 #include <iostream>
 #include <cmath>
 
-#include "types/matrix2D.hpp"
-#include "types/scalarField.hpp"
+#include "types/matrix_2d.hpp"
+#include "types/scalar_field.hpp"
 #include "util.hpp"
 #include "interpolations.hpp"
 

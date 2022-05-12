@@ -1,9 +1,9 @@
 #include <iostream>
 #include <cmath>
 
-#include "Chebyshev.hpp"
-#include "types/matrix2D.hpp"
-#include "types/scalarField.hpp"
+#include "chebyshev.hpp"
+#include "types/matrix_2d.hpp"
+#include "types/scalar_field.hpp"
 #include "files.hpp"
 
 double f(double x, double y){

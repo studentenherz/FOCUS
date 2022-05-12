@@ -16,7 +16,7 @@
 #include <sstream>
 
 #include "types/array.hpp"
-#include "types/matrix2D.hpp"
+#include "types/matrix_2d.hpp"
 
 /** 
  * Struct to store the equilibrium data from

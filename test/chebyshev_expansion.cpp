@@ -1,7 +1,7 @@
 #include <iostream>
 #include <iomanip>
 
-#include "Chebyshev.hpp"
+#include "chebyshev.hpp"
 #include "files.hpp"
 
 int main(int argc, char const *argv[]){

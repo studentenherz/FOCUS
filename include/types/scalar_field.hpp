@@ -1,7 +1,7 @@
 #if !defined(FOCUS_INCLUDES_TYPES_SCALAR_FIELD_HPP)
 #define FOCUS_INCLUDES_TYPES_SCALAR_FIELD_HPP
 
-#include "types/matrix2D.hpp"
+#include "types/matrix_2d.hpp"
 
 struct ScalarField{
 	Matrix2D<double>* M;

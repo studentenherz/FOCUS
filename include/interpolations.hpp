@@ -4,8 +4,8 @@
 #include <iostream>
 #include <cmath>
 
-#include "types/matrix2D.hpp"
-#include "types/scalarField.hpp"
+#include "types/matrix_2d.hpp"
+#include "types/scalar_field.hpp"
 
 /**
  * Interpolate 2D using the 4 points formula.

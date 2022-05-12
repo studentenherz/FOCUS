@@ -1,7 +1,7 @@
 #include <iostream>
 
 #include "files.hpp"
-#include "types/matrix2D.hpp"
+#include "types/matrix_2d.hpp"
 
 int main(int argc, char const *argv[]){
 	if (argc < 2) return 0;

@@ -6,7 +6,7 @@
 #include <sstream>
 #include <iostream>
 
-#include "types/matrix2D.hpp"
+#include "types/matrix_2d.hpp"
 
 /**
  * Load a matrix of dimensions (Nx, Ny) from file. The file is 
