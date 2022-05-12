@@ -3,8 +3,8 @@
  * in the range [-1, 1]
  * (https://en.wikipedia.org/wiki/Chebyshev_polynomials).
  */
-#if !defined(FOCUS_CHEBYSHEV_HPP)
-#define FOCUS_CHEBYSHEV_HPP
+#if !defined(FOCUS_INCLUDE_CHEBYSHEV_HPP)
+#define FOCUS_INCLUDE_CHEBYSHEV_HPP
 
 #include <iostream>
 #include <cmath>
@@ -332,4 +332,4 @@ public:
 	}
 };
 
-#endif // FOCUS_CHEBYSHEV_HPP
+#endif // FOCUS_INCLUDE_CHEBYSHEV_HPP

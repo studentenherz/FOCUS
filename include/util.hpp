@@ -1,7 +1,7 @@
-#if !defined(FOCUS_UTIL_HPP)
-#define FOCUS_UTIL_HPP
+#if !defined(FOCUS_INCLUDE_UTIL_HPP)
+#define FOCUS_INCLUDE_UTIL_HPP
 
 const double pi(3.14159265358979323846);
 
 
-#endif // FOCUS_UTIL_HPP
+#endif // FOCUS_INCLUDE_UTIL_HPP

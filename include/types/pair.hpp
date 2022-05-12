@@ -1,5 +1,5 @@
-#if !defined(FOCUS_INCLUDES_TYPES_PAIR_HPP)
-#define FOCUS_INCLUDES_TYPES_PAIR_HPP
+#if !defined(FOCUS_INCLUDE_TYPES_PAIR_HPP)
+#define FOCUS_INCLUDE_TYPES_PAIR_HPP
 
 template <typename T>
 struct pair{
@@ -7,4 +7,4 @@ struct pair{
 	T second;
 };
 
-#endif // FOCUS_INCLUDES_TYPES_PAIR_HPP
+#endif // FOCUS_INCLUDE_TYPES_PAIR_HPP

@@ -1,5 +1,5 @@
-#if !defined(FOCUS_INTERPOLATIONS_HPP)
-#define FOCUS_INTERPOLATIONS_HPP
+#if !defined(FOCUS_INCLUDE_INTERPOLATIONS_HPP)
+#define FOCUS_INCLUDE_INTERPOLATIONS_HPP
 
 #include <iostream>
 #include <cmath>
@@ -98,4 +98,4 @@ double six_point_formula(double x, double y, ScalarField f){
 	return 0.5 * q * (q - 1) * f(i, j - 1) + 0.5 * p * (p - 1) * f(i - 1, j) + (1 + p * q - p * p - q * q) * f(i, j) + 0.5 * p * (p - 2 * q + 1) * f(i + 1, j) + 0.5 * q * (q - 2 * p + 1) * f(i, j + 1) + p * q * f(i + 1, j + 1);
 }
 
-#endif // FOCUS_INTERPOLATIONS_HPP
+#endif // FOCUS_INCLUDE_INTERPOLATIONS_HPP
