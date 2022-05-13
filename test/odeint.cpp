@@ -1,7 +1,7 @@
 #include <iostream>
 
 #include "odeint/integrator.hpp"
-#include "odeint/stepper/euler_stepper.hpp"
+#include "odeint/stepper/euler.hpp"
 #include "types/vector.hpp"
 
 double gam = 0.15;
