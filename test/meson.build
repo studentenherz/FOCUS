@@ -5,6 +5,7 @@ cheby_der = executable('chebyshev_derivatives', 'chebyshev_derivatives.cpp', inc
 cheby_der_exp = executable('chebyshev_derivative_expansion', 'chebyshev_derivative_expansion.cpp', include_directories: incdir)
 geqdsk = executable('geqdsk', 'geqdsk.cpp', include_directories: incdir)
 vector = executable('vector', 'vector.cpp', include_directories: incdir)
+odeint = executable('odeint', 'odeint.cpp', include_directories: incdir)
 
 
 copy = find_program('scripts/copy.py')
