@@ -22,7 +22,7 @@ void observer(Vector v, double t){
 
 int main(){
 	System sys;
-	EulerStepper<System, Vector, Vector, double> euler;
+	EulerStepper<System, Vector, double> euler;
 
 	Vector x(0, 1, 0);
 
