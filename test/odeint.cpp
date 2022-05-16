@@ -11,7 +11,7 @@ double gam = 0.0;
 struct System
 {
 	System() {}
-	void operator()(const Vector& x, Vector& dxdt, double t){
+	void operator()(const Vector3& x, Vector3& dxdt, double t){
 		dxdt[0] = x[1];
 		dxdt[1] = -x[0] - gam*x[1];
 	}
@@ -22,7 +22,7 @@ class FileObserver{
 public:
 	FileObserver(std::ofstream& fo): _fo(fo) {}
 	
-	void operator()(Vector v, double t){
+	void operator()(Vector3 v, double t){
 		_fo << t << '\t' << v << '\n';
 	}
 };
@@ -31,11 +31,11 @@ public:
 int main(){
 	System sys;
 
-	EulerStepper<System, Vector, double> euler;
-	RK46NL<System, Vector, double> rk46nl;
+	EulerStepper<System, Vector3, double> euler;
+	RK46NL<System, Vector3, double> rk46nl;
 
-	Vector x1(0, 1, 0);
-	Vector x2 = x1;
+	Vector3 x1(0.0, 1.0, 0.0);
+	Vector3 x2 = x1;
 
 	std::ofstream euler_fo("xy_euler.dat");
 	std::ofstream rk46nl_fo("xy_rk46.dat");

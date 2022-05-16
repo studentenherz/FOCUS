@@ -5,8 +5,8 @@
 int main(){
 	using namespace std;
 	
-	Vector zero;
-	Vector a(1.2, 4, -9), b(0, 1, 3);
+	Vector3 zero;
+	Vector3 a(1.2, 4.0, -9.), b(0., 1., 3.);
 
 	cout << "zero = " << zero << '\n';
 	cout << "a = " << a << '\n';

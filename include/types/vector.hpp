@@ -3,28 +3,41 @@
 
 #include <iostream>
 #include <cmath>
+#include <cstdarg>
 
 /**
- * 3-Vector class with standard mathematical operaions
+ * n-Vector class
+ * Fixed size array
  */
+template<size_t n>
 class Vector{
-	double v[4];
+	double v[n + 1];
 public:
 	/**
 	 * Default constructor creates the zero vector
 	 */
-	Vector(): v{0, 0, 0} {}
+	Vector() {
+		for (size_t i = 0; i < n; i++)
+			v[i] = 0;
+	}
 
 	/**
-	 * Create a vector (x, y, z)
+	 * Create a vector from x array
 	 */
-	Vector(double x, double y, double z): v{x, y, z} {}
+	Vector(double x, ...){
+		std::va_list args;
+		va_start(args, x);
+		v[0] = x;
+		for (size_t i = 1; i < n; i++)
+			v[i] = va_arg(args, double);
+		va_end(args);
+	}
 
 	/**
 	 * Access to vector component
 	 */
-	double &operator[](size_t i) {return v[(i < 3 ? i : 3)];}
-	const double &operator[](size_t i) const {return v[(i < 3 ? i : 3)];}
+	double &operator[](size_t i) {return v[(i < n ? i : n)];}
+	const double &operator[](size_t i) const {return v[(i < n ? i : n)];}
 };
 
 // Vector Algebra
@@ -35,9 +48,10 @@ public:
  * @param b other vector
  * @return vectorial sum a + b
  */
-Vector operator+(Vector a, Vector b){
-	Vector c;
-	for(size_t i = 0; i < 3; i++)
+template<size_t n>
+Vector<n> operator+(Vector<n> a, Vector<n> b){
+	Vector<n> c;
+	for(size_t i = 0; i < n; i++)
 		c[i] = a[i] + b[i];
 	return c;
 }
@@ -48,9 +62,10 @@ Vector operator+(Vector a, Vector b){
  * @param b another vector
  * @return vectorial sum a + (-b)
  */
-Vector operator-(Vector a, Vector b){
-	Vector c;
-	for(size_t i = 0; i < 3; i++)
+template<size_t n>
+Vector<n> operator-(Vector<n> a, Vector<n> b){
+	Vector<n> c;
+	for(size_t i = 0; i < n; i++)
 		c[i] = a[i] - b[i];
 	return c;
 }
@@ -61,9 +76,10 @@ Vector operator-(Vector a, Vector b){
  * @param t a scalar
  * @return scaled vector t * a
  */
-Vector operator*(Vector a, double t){
-	Vector c;
-	for(size_t i = 0; i < 3; i++)
+template<size_t n>
+Vector<n> operator*(Vector<n> a, double t){
+	Vector<n> c;
+	for(size_t i = 0; i < n; i++)
 		c[i] = a[i] * t;
 	return c;
 }
@@ -74,9 +90,10 @@ Vector operator*(Vector a, double t){
  * @param a a vector
  * @return scaled vector t * a
  */
-Vector operator*(double t, Vector a){
-	Vector c;
-	for(size_t i = 0; i < 3; i++)
+template<size_t n>
+Vector<n> operator*(double t, Vector<n> a){
+	Vector<n> c;
+	for(size_t i = 0; i < n; i++)
 		c[i] = a[i] * t;
 	return c;
 }
@@ -87,9 +104,10 @@ Vector operator*(double t, Vector a){
  * @param t a scalar
  * @return scaled vector a / t
  */
-Vector operator/(Vector a, double t){
-	Vector c;
-	for(size_t i = 0; i < 3; i++)
+template<size_t n>
+Vector<n> operator/(Vector<n> a, double t){
+	Vector<n> c;
+	for(size_t i = 0; i < n; i++)
 		c[i] = a[i] / t;
 	return c;
 }
@@ -100,9 +118,10 @@ Vector operator/(Vector a, double t){
  * @param b another vector
  * @return dot product a . b
  */
-double dot(Vector a, Vector b){
+template<size_t n>
+double dot(Vector<n> a, Vector<n> b){
 	double s = 0;
-	for (size_t i = 0; i < 3; i++)
+	for (size_t i = 0; i < n; i++)
 		s += a[i] * b[i];
 	return s;
 }
@@ -113,10 +132,11 @@ double dot(Vector a, Vector b){
  * @param b another vector
  * @return dot product a x b
  */
-Vector cross(Vector a, Vector b){
-	Vector c;
-	for (size_t i = 0; i < 3; i++)
-		c[i] = a[(i + 1) % 3] * b[(i + 2) % 3] - a[(i + 2) % 3] * b[(i + 1) % 3];
+template<size_t n>
+Vector<n> cross(Vector<n> a, Vector<n> b){
+	Vector<n> c;
+	for (size_t i = 0; i < n; i++)
+		c[i] = a[(i + 1) % n] * b[(i + 2) % n] - a[(i + 2) % n] * b[(i + 1) % n];
 	return c;
 }
 
@@ -125,7 +145,8 @@ Vector cross(Vector a, Vector b){
  * @param v a vector
  * @return |v|
  */
-double mod(Vector v){
+template<size_t n>
+double mod(Vector<n> v){
 	return sqrt(dot(v, v));
 }
 
@@ -134,8 +155,9 @@ double mod(Vector v){
 /**
  * Out stream operator
  */
-std::ostream& operator<<(std::ostream& out, const Vector& v){
-	for(size_t i = 0; i < 3; i++)
+template<size_t n>
+std::ostream& operator<<(std::ostream& out, const Vector<n>& v){
+	for(size_t i = 0; i < n; i++)
 		out << v[i] << ' ';
 	return out; 
 }
@@ -143,11 +165,18 @@ std::ostream& operator<<(std::ostream& out, const Vector& v){
 /**
  * In stream operator
  */
-std::istream& operator>>(std::istream& in, Vector& v){
-	for(size_t i = 0; i < 3; i++)
+template<size_t n>
+std::istream& operator>>(std::istream& in, Vector<n>& v){
+	for(size_t i = 0; i < n; i++)
 		in >> v[i];
 	return in; 
 }
 
+
+// 3-Vector
+typedef Vector<3> Vector3;
+
+// State: space + velocity 3-Vectors
+typedef Vector<6> State;
 
 #endif // FOCUS_INCLUDE_TYPES_VECTOR_HPP
