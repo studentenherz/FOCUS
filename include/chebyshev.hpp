@@ -100,7 +100,7 @@ bool Chebyshev_U(size_t n, double x, double U[]){
  */
 bool derivative_Chebyshev_T(size_t n, double x, double dT[]){
 	// https://en.wikipedia.org/wiki/Chebyshev_polynomials#Differentiation_and_integration
-	double U[n];
+	double *U = new double[n];
 	if (!Chebyshev_U(n - 1, x, U)){
 		for(size_t i = 0; i <= n; i++)
 			dT[i] = nan("");
@@ -120,7 +120,6 @@ bool derivative_Chebyshev_T(size_t n, double x, double dT[]){
  * expansion for a two variables function from a 
  * matrix of its values.
  * @param M the matrix of values.
- * @param n order of expansion.
  * @param idx first index of coefficient.
  * @param idy second index of coefficient.
  * @param x_min minimum value of x represented in the matrix.
@@ -129,7 +128,7 @@ bool derivative_Chebyshev_T(size_t n, double x, double dT[]){
  * @param y_max maximum value of y represented in the matrix.
  * @return the coefficient.
  */
-double Chebyshev_T_expansion_coefficient(size_t n, size_t idx, size_t idy, ScalarField f, double x_min, double x_max, double y_min, double y_max){
+double Chebyshev_T_expansion_coefficient(size_t idx, size_t idy, ScalarField f, double x_min, double x_max, double y_min, double y_max){
 	size_t Nx, Ny;
 	Nx = f.M->shape().first;
 	Ny = f.M->shape().second;
@@ -178,7 +177,7 @@ double Chebyshev_T_expansion_coefficient(size_t n, size_t idx, size_t idy, Scala
 void Chebyshev_T_expansion(size_t n, Matrix2D<double>& a, ScalarField f, double x_min, double x_max, double y_min, double y_max){		
 	for(size_t idx = 0; idx <= n; idx++)
 		for(size_t idy = 0; idy <= n; idy++){
-			a(idx, idy) = Chebyshev_T_expansion_coefficient(n, idx, idy, f, x_min, x_max, y_min, y_max);
+			a(idx, idy) = Chebyshev_T_expansion_coefficient(idx, idy, f, x_min, x_max, y_min, y_max);
 		}
 }
 
@@ -204,7 +203,8 @@ double evaluate_Chebyshev_T_expansion(size_t n, const Matrix2D<double>& a, doubl
 	double xi = (2 * x - (x_min + x_max)) / (x_max - x_min); 
 	double yi = (2 * y - (y_min + y_max)) / (y_max - y_min); 
 
-	double Tx[n + 1], Ty[n + 1];
+	double *Tx = new double[n + 1];
+	double *Ty = new double[n + 1];
 	Chebyshev_T(n, xi, Tx);
 	Chebyshev_T(n, yi, Ty);
 
@@ -240,7 +240,8 @@ double evaluate_derivative_Chebyshev_T_expansion(size_t n, Variable var, const M
 	double xi = (2 * x - (x_min + x_max)) / (x_max - x_min); 
 	double yi = (2 * y - (y_min + y_max)) / (y_max - y_min); 
 
-	double T[n + 1], dT[n + 1];
+	double *T = new double[n + 1];
+	double *dT = new double[n + 1];
 	if(var == Variable::x){
 		derivative_Chebyshev_T(n, xi, dT);
 		Chebyshev_T(n, yi, T);
