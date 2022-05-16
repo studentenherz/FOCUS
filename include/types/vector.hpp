@@ -126,19 +126,6 @@ double dot(Vector<n> a, Vector<n> b){
 	return s;
 }
 
-/**
- * Cross product between two vector
- * @param a one vector
- * @param b another vector
- * @return dot product a x b
- */
-template<size_t n>
-Vector<n> cross(Vector<n> a, Vector<n> b){
-	Vector<n> c;
-	for (size_t i = 0; i < n; i++)
-		c[i] = a[(i + 1) % n] * b[(i + 2) % n] - a[(i + 2) % n] * b[(i + 1) % n];
-	return c;
-}
 
 /**
  * Modulus of vector (2-norm)
@@ -175,6 +162,19 @@ std::istream& operator>>(std::istream& in, Vector<n>& v){
 
 // 3-Vector
 typedef Vector<3> Vector3;
+
+/**
+ * Cross product between two 3-Vectors
+ * @param a one vector
+ * @param b another vector
+ * @return dot product a x b
+ */
+Vector3 cross(Vector3 a, Vector3 b){
+	Vector3 c;
+	for (size_t i = 0; i < 3; i++)
+		c[i] = a[(i + 1) % 3] * b[(i + 2) % 3] - a[(i + 2) % 3] * b[(i + 1) % 3];
+	return c;
+}
 
 // State: space + velocity 3-Vectors
 typedef Vector<6> State;
