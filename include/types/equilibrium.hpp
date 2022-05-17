@@ -9,29 +9,29 @@
  * EFIT in the G-EQDSK files
  */
 struct Equilibrium{
-	int idnum;						///< Id of file?
-	size_t nx, ny; 				///< Number of points in the R-z grid
-	double rdim, zdim;		///< Dimesions represented by the grid [meters]
-	double rcentr;				///< Reference value for R
-	double bcentr;				///< Vacuum toroidal magnetic field at rcentr
-	double rleft;					///< R at left (inner) boundary
-  double zmid;					///< z at middle of domain
-  double rmagx, zmagx;	///< R,z at magnetic axis (O-point)
-  double simagx;        ///< Poloidal flux psi at magnetic axis
-  double sibdry;        ///< Poloidal flux psi at plasma boundary
-  double cpasma;        ///< Plasma current [Amperes]
+	int idnum;						// Id of file?
+	size_t nx, ny; 				// Number of points in the R-z grid
+	double rdim, zdim;		// Dimesions represented by the grid [meters]
+	double rcentr;				// Reference value for R
+	double bcentr;				// Vacuum toroidal magnetic field at rcentr
+	double rleft;					// R at left (inner) boundary
+  double zmid;					// z at middle of domain
+  double rmagx, zmagx;	// R,z at magnetic axis (O-point)
+  double simagx;        // Poloidal flux psi at magnetic axis
+  double sibdry;        // Poloidal flux psi at plasma boundary
+  double cpasma;        // Plasma current [Amperes]
 
 
-	Array<double> fpol;		///< 1D array of f(psi)=R*Bt  [meter-Tesla]
-	Array<double> pres;		///< 1D array of p(psi) [Pascals]
-	Array<double> qpsi;		///< 1D array of q(psi)
+	Array<double> fpol;		// 1D array of f(psi)=R*Bt  [meter-Tesla]
+	Array<double> pres;		// 1D array of p(psi) [Pascals]
+	Array<double> qpsi;		// 1D array of q(psi)
 
-	Matrix2D<double> psi;	///< 2D array (nx,ny) of poloidal flux
+	Matrix2D<double> psi;	// 2D array (nx,ny) of poloidal flux
 
 	// Boundaries description, optional
-	size_t nbdry, nlim;					///< Number of points of plasma and wall boundaries
-	Array<double> rbdry, zbdry;	///< 1D array of q(psi)
-	Array<double> rlim, zlim;		///< 1D array of q(psi)
+	size_t nbdry, nlim;					// Number of points of plasma and wall boundaries
+	Array<double> rbdry, zbdry;	// 1D array of q(psi)
+	Array<double> rlim, zlim;		// 1D array of q(psi)
 
 
 	/**
