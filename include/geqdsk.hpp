@@ -116,8 +116,8 @@ Equilibrium read_eqdsk(const char *filename){
 	// Read arrays
 	for (size_t i = 0; i < eq.nx; i++) if(tk.next(fi, token)) eq.fpol[i] = std::stod(token);
 	for (size_t i = 0; i < eq.nx; i++) if(tk.next(fi, token)) eq.pres[i] = std::stod(token);
-	for (size_t i = 0; i < eq.nx; i++) if(tk.next(fi, token)); // no idea what are this values
-	for (size_t i = 0; i < eq.nx; i++) if(tk.next(fi, token)); // no idea what are this values
+	for (size_t i = 0; i < eq.nx; i++) if(tk.next(fi, token)) {} // no idea what are this values
+	for (size_t i = 0; i < eq.nx; i++) if(tk.next(fi, token)) {} // no idea what are this values
 
 	// Read matrix in "the natural" order
 	for (size_t j = 0; j < eq.ny; j++)
