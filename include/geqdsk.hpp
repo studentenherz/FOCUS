@@ -103,15 +103,15 @@ Equilibrium read_eqdsk(const char *filename){
 
 	if (tk.next(fi, token)) eq.cpasma = std::stod(token);
 	if (tk.next(fi, token)) eq.simagx = std::stod(token);
-	if (tk.next(fi, token)); // here lies a dumb value
+	if (tk.next(fi, token)) {} // here lies a dumb value
 	if (tk.next(fi, token)) eq.rmagx = std::stod(token);
 	if (tk.next(fi, token)) // here lies a dumb value
 
 	if (tk.next(fi, token)) eq.zmagx = std::stod(token);
-	if (tk.next(fi, token)); // here lies a dumb value
+	if (tk.next(fi, token)) {} // here lies a dumb value
 	if (tk.next(fi, token)) eq.sibdry = std::stod(token);
-	if (tk.next(fi, token)); // here lies a dumb value
-	if (tk.next(fi, token)); // here lies a dumb value
+	if (tk.next(fi, token)) {} // here lies a dumb value
+	if (tk.next(fi, token)) {} // here lies a dumb value
 
 	// Read arrays
 	for (size_t i = 0; i < eq.nx; i++) if(tk.next(fi, token)) eq.fpol[i] = std::stod(token);
