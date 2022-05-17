@@ -25,11 +25,11 @@ public:
 /**
  * Motion equations with Lorentz force applied
  */
-template<typename vector_field_type, typename force_type>
+template<typename force_type, typename magnetic_field_type, typename electric_field_type = magnetic_field_type>
 class MotionEquation{
 	const double gam;			// dimensionless factor
-	vector_field_type B;	// magnetic induction field
-	vector_field_type E;	// electric field
+	magnetic_field_type B;	// magnetic induction field
+	electric_field_type E;	// electric field
 	force_type F;					// other forces
 public:
 	/**
@@ -39,7 +39,7 @@ public:
 	 * @param _E electric field, callable E(Vector3 r, double t)
 	 * @param _F additional force, callable F(State x, double t)
 	 */
-	MotionEquation(const double _gam, vector_field_type _B = null_vector_field, vector_field_type _E = null_vector_field, force_type _F = null_force): gam(_gam), B(_B), E(_E), F(_F) {}
+	MotionEquation(double _gam, magnetic_field_type _B = null_vector_field, electric_field_type _E = null_vector_field, force_type _F = null_force): gam(_gam), B(_B), E(_E), F(_F) {}
 	
 	/**
 	 * Equation system for integration using the Lorentz force
