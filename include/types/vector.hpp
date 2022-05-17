@@ -179,4 +179,28 @@ Vector3 cross(Vector3 a, Vector3 b){
 // State: space + velocity 3-Vectors
 typedef Vector<6> State;
 
+/**
+ * Get position form a state
+ * @param x state
+ * @return position
+ */
+Vector3 get_position(State x){
+	Vector3 r;
+	for(size_t i = 0; i < 3; i++)
+		r[i] = x[i];
+	return r;
+}
+
+/**
+ * Get velocity form a state
+ * @param x state
+ * @return velocity
+ */
+Vector3 get_velocity(State x){
+	Vector3 r;
+	for(size_t i = 3; i < 6; i++)
+		r[i] = x[i];
+	return r;
+}
+
 #endif // FOCUS_INCLUDE_TYPES_VECTOR_HPP

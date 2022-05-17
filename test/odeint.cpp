@@ -5,37 +5,54 @@
 #include "odeint/stepper/euler.hpp"
 #include "odeint/stepper/rk46_nl.hpp"
 #include "types/vector.hpp"
+#include "lorentz.hpp"
 
 double gam = 0.0;
 
-struct System
-{
-	System() {}
-	void operator()(const Vector3& x, Vector3& dxdt, double t){
-		dxdt[0] = x[1];
-		dxdt[1] = -x[0] - gam*x[1];
-	}
-};
+// struct System
+// {
+// 	System() {}
+// 	void operator()(const Vector3& x, Vector3& dxdt, double t){
+// 		dxdt[0] = x[1];
+// 		dxdt[1] = -x[0] - gam*x[1];
+// 	}
+// };
 
 class FileObserver{
 	std::ofstream &_fo;
 public:
 	FileObserver(std::ofstream& fo): _fo(fo) {}
 	
-	void operator()(Vector3 v, double t){
+	void operator()(State v, double t){
 		_fo << t << '\t' << v << '\n';
 	}
 };
 
+class SpringForce{
+	double _k;
+public:
+	/**
+	 * Create isotropic elastic force attachment
+	 * @param k elastic constant
+	 */
+	SpringForce(double k): _k(k) {}
+
+	Vector3 operator()(State x, double /* t */ ){
+		Vector3 f;
+		f[0] = (-1 * _k) * x[0];
+		return f;
+	}
+} force(1);
 
 int main(){
-	System sys;
+	typedef MotionEquation<NullVectorField, SpringForce> System;
+	System sys(1, null_vector_field, null_vector_field, force);
 
-	EulerStepper<System, Vector3, double> euler;
-	RK46NL<System, Vector3, double> rk46nl;
+	EulerStepper<System, State, double> euler;
+	RK46NL<System, State, double> rk46nl;
 
-	Vector3 x1(0.0, 1.0, 0.0);
-	Vector3 x2 = x1;
+	State x1(1.0, 0.0, 0.0, 0.0, 2.0, 0.0);
+	State x2 = x1;
 
 	std::ofstream euler_fo("xy_euler.dat");
 	std::ofstream rk46nl_fo("xy_rk46.dat");
@@ -45,8 +62,8 @@ int main(){
 	integrate(euler, sys, x1, 0.0, 0.01, 10000, obs_euler);
 	integrate(rk46nl, sys, x2, 0.0, 0.01, 10000, obs_rk46);
 
-	std::cout << "Energy from Euler: " << x1[0] * x1[0] + x1[1] * x1[1] << '\n';
-	std::cout << "Energy from Runge-Kutta: " << x2[0] * x2[0] + x2[1] * x2[1] << '\n';
+	std::cout << "Energy from Euler: " << mod(x1) << '\n';
+	std::cout << "Energy from Runge-Kutta: " << mod(x2) << '\n';
 
 	return 0;
 }
