@@ -48,7 +48,7 @@ public:
 struct MagneticField{
 	double B0;
 	MagneticField(double B): B0(B) {}
-	Vector3 operator()(Vector3 r, double /* t */ ){
+	Vector3 operator()(Vector3 /* r */, double /* t */ ){
 		Vector3 f;
 		f[2] = B0;
 		return f;
@@ -67,7 +67,7 @@ struct ElectricField{
 } E(10);
 
 int main(){
-	typedef MotionEquation<NullForce, MagneticField, ElectricField> System;
+	typedef Lorentz<NullForce, MagneticField, ElectricField> System;
 	System sys(1, B, E, null_force);
 
 	EulerStepper<System, State, double> euler;

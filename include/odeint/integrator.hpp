@@ -18,14 +18,14 @@
  * @param obs_skip_steps Amount of steps to skip between observations (default = 0)
  */
 template<typename stepper_type, typename system_type, typename state_type, typename scalar_type, typename observer_type>
-size_t integrate(stepper_type stepper, system_type sys, state_type& x, scalar_type t0, scalar_type dt, size_t Nsteps, observer_type obs, size_t obs_skip_steps = 0){
+size_t integrate(stepper_type& stepper, system_type& sys, state_type& x, scalar_type t0, scalar_type dt, size_t Nsteps, observer_type& obs, size_t obs_skip_steps = 0){
 	scalar_type t = t0;
 	size_t step = 0;
 	while(step < Nsteps){
-		stepper.do_step(sys, x, t, dt);
 		if (step % (obs_skip_steps + 1) == 0)
 			obs(x, t);
 
+		stepper.do_step(sys, x, t, dt);
 		t += dt;
 		step++;
 	}
@@ -48,7 +48,7 @@ size_t integrate(stepper_type stepper, system_type sys, state_type& x, scalar_ty
  * @param Nsteps Amount of steps of integration
  */
 template<typename stepper_type, typename system_type, typename state_type, typename scalar_type>
-size_t integrate(stepper_type stepper, system_type sys, state_type& x, scalar_type t0, scalar_type dt, size_t Nsteps){
+size_t integrate(stepper_type& stepper, system_type& sys, state_type& x, scalar_type t0, scalar_type dt, size_t Nsteps){
 	return integrate(stepper, sys, x, t0, dt, Nsteps, [] (state_type x, scalar_type t) {return;});
 }
 
