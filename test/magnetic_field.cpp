@@ -33,7 +33,7 @@ int main(int argc, char* argv[]){
 	MagneticFieldMatrix B_matrix(eq, 26, 600);
 	MagneticField B(B_matrix, eq.bcentr);
 
-	double q_over_m =  -1.75882001076e10; // C/kg electron
+	double q_over_m =  9.58e7; // C/kg proton
 	double Omega = q_over_m * eq.bcentr; // cyclotron frequency
 	double v0 = 1.84142e7; // m/s (3.54 MeV of a proton)
 	double a = eq.rdim; // m
@@ -43,7 +43,7 @@ int main(int argc, char* argv[]){
 
 	typedef Lorentz<NullForce, MagneticField, NullVectorField> System;
 	System sys(gam, B, null_vector_field, null_force);
-	State x(2.0 / a, 0.0, 0.0, 0.0, 1.6, 0.0);
+	State x(2.0 / a, 0.0, 0.0, 0.0, 0.6, 0.0);
 	RK46NL<System, State, double> rk46nl;
 
 	std::ofstream fo(argv[2]);
@@ -54,7 +54,7 @@ int main(int argc, char* argv[]){
 	// dump("Bz.dat", B_matrix.Bz, false);
 	// dump("ch_psi.dat", B_matrix.ch_psi, false);
 
-	integrate(rk46nl, sys, x, 0.0, 0.001, 1000000, obs, 9);
+	integrate(rk46nl, sys, x, 0.0, 0.001, 1000000, obs, 999);
 
 	return 0;
 }

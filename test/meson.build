@@ -6,7 +6,7 @@ cheby_der_exp = executable('chebyshev_derivative_expansion', 'chebyshev_derivati
 geqdsk = executable('geqdsk', 'geqdsk.cpp', include_directories: incdir)
 # vector = executable('vector', 'vector.cpp', include_directories: incdir)
 odeint = executable('odeint', 'odeint.cpp', include_directories: incdir)
-magnetic_field = executable('magnetic_field', 'magnetic_field.cpp', include_directories: incdir)
+magnetic_field = executable('magnetic_field', 'magnetic_field.cpp', include_directories: incdir, cpp_args: ['-g', '-O0'])
 
 
 copy = find_program('scripts/copy.py')
