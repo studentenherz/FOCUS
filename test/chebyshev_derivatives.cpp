@@ -17,5 +17,6 @@ int main(){
 			return 1;
 		}
 
+	delete[] dT;
 	return 0;
 }

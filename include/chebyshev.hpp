@@ -112,6 +112,7 @@ bool derivative_Chebyshev_T(size_t n, double x, double dT[]){
 	for(size_t i = 1; i <= n; i++)
 		dT[i] = i * U[i - 1];
 
+	delete[] U;
 	return true;
 }
 
@@ -212,6 +213,8 @@ double evaluate_Chebyshev_T_expansion(size_t n, const Matrix2D<double>& a, doubl
 		for(size_t idy = 0; idy <= n; idy++)
 			v += a(idx, idy) * Tx[idx] * Ty[idy];
 
+	delete[] Tx;
+	delete[] Ty;
 	return v;
 }
 
@@ -258,6 +261,8 @@ double evaluate_derivative_Chebyshev_T_expansion(size_t n, Variable var, const M
 	// Normalization
 	v *= 2 / (var == Variable::x ? (x_max - x_min) : (y_max - y_min));
 
+	delete[] T;
+	delete[] dT;
 	return v;
 }
 
