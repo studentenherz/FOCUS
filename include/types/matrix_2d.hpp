@@ -20,14 +20,18 @@ public:
 		arr = new T[n * m + 1];
 	}
 
+	Matrix2D(const Matrix2D&) = delete;
+	Matrix2D& operator=(const Matrix2D&) = delete;
+	Matrix2D& operator=(const Matrix2D&&) = delete;
+
 	/**
 	 * Move constructor; this allows the matrix to be passed
 	 * as a return value from a function sapping the pointers
 	 * and keeping the allocated data on the heap.
 	 */
-	Matrix2D(Matrix2D&& other): _shape(other._shape){
-		arr = other.arr;
-		other.arr = new T[1];
+	Matrix2D(Matrix2D&& other): Matrix2D() {
+		std::swap(_shape, other._shape);
+		std::swap(arr, other.arr);
 	}
 
 	/**

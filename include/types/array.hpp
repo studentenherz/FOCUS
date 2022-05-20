@@ -15,14 +15,18 @@ public:
 		arr = new T[_size + 1];
 	}
 
+	Array(const Array&) = delete;
+	Array& operator=(const Array&) = delete;
+	Array& operator=(const Array&&) = delete;
+
 	/**
 	 * Move constructor; this allows the array to be passed
 	 * as a return value from a function sapping the pointers
 	 * and keeping the allocated data on the heap.
 	 */
-	Array(Array&& other): _size(other._size){
-		arr = other.arr;
-		other.arr = new T[1];
+	Array(Array&& other): Array() {
+		std::swap(_size, other._size);
+		std::swap(arr, other.arr);
 	}
 
 	/**
