@@ -54,7 +54,7 @@ int main(int argc, char* argv[]){
 	// dump("Bz.dat", B_matrix.Bz, false);
 	// dump("ch_psi.dat", B_matrix.ch_psi, false);
 
-	integrate(rk46nl, sys, x, 0.0, 0.001, 1000000, obs, 999);
+	integrate(rk46nl, sys, x, 0.0, 0.001, 10, obs);
 
 	return 0;
 }
