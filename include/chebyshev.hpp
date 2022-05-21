@@ -105,6 +105,7 @@ bool derivative_Chebyshev_T(size_t n, double x, double dT[]){
 		for(size_t i = 0; i <= n; i++)
 			dT[i] = nan("");
 
+		delete[] U;
 		return false;
 	}
 
