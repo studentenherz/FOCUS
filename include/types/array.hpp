@@ -24,9 +24,9 @@ public:
 	 * as a return value from a function sapping the pointers
 	 * and keeping the allocated data on the heap.
 	 */
-	Array(Array&& other): Array() {
-		std::swap(_size, other._size);
-		std::swap(arr, other.arr);
+	Array(Array&& other): _size(other._size) {
+		arr = other.arr;
+		other.arr = NULL;
 	}
 
 	/**

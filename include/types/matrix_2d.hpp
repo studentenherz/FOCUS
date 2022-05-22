@@ -29,9 +29,9 @@ public:
 	 * as a return value from a function sapping the pointers
 	 * and keeping the allocated data on the heap.
 	 */
-	Matrix2D(Matrix2D&& other): Matrix2D() {
-		std::swap(_shape, other._shape);
-		std::swap(arr, other.arr);
+	Matrix2D(Matrix2D&& other): _shape(other._shape) {
+		arr = other.arr;
+		other.arr = NULL;
 	}
 
 	/**
