@@ -9,6 +9,7 @@
 #include <iostream>
 #include <cmath>
 
+#include "types/array.hpp"
 #include "types/matrix_2d.hpp"
 #include "types/scalar_field.hpp"
 #include "util.hpp"
@@ -50,7 +51,7 @@ double Chebyshev_U(size_t n, double x){
  * @param T array with n spaces to be filled with the polynomials.
  * @return true if no error occurred.
  */
-bool Chebyshev_T(size_t n, double x, double T[]){
+bool Chebyshev_T(size_t n, double x, Array<double>& T){
 	if(x > 1 || x < -1){
 		std::cerr << "Attempted evaluating T_n(" << x << ") out of the domain [-1, 1]\n";		
 		for (size_t i = 0; i <= n; i++)
@@ -74,7 +75,7 @@ bool Chebyshev_T(size_t n, double x, double T[]){
  * @param U array with n spaces to be filled with the polynomials.
  * @return true if no error occurred.
  */
-bool Chebyshev_U(size_t n, double x, double U[]){
+bool Chebyshev_U(size_t n, double x, Array<double>& U){
 	if(x > 1 || x < -1){
 		std::cerr << "Attempted evaluating T_n(" << x << ") out of the domain [-1, 1]\n";		
 		for (size_t i = 0; i <= n; i++)
@@ -98,14 +99,13 @@ bool Chebyshev_U(size_t n, double x, double U[]){
  * @param dT array with n spaces to be filled with the polynomials.
  * @return true if no errors occurred.
  */
-bool derivative_Chebyshev_T(size_t n, double x, double dT[]){
+bool derivative_Chebyshev_T(size_t n, double x, Array<double>& dT){
 	// https://en.wikipedia.org/wiki/Chebyshev_polynomials#Differentiation_and_integration
-	double *U = new double[n];
+	Array<double> U(n);
 	if (!Chebyshev_U(n - 1, x, U)){
 		for(size_t i = 0; i <= n; i++)
 			dT[i] = nan("");
 
-		delete[] U;
 		return false;
 	}
 
@@ -113,7 +113,6 @@ bool derivative_Chebyshev_T(size_t n, double x, double dT[]){
 	for(size_t i = 1; i <= n; i++)
 		dT[i] = i * U[i - 1];
 
-	delete[] U;
 	return true;
 }
 
@@ -205,8 +204,7 @@ double evaluate_Chebyshev_T_expansion(size_t n, const Matrix2D<double>& a, doubl
 	double xi = (2 * x - (x_min + x_max)) / (x_max - x_min); 
 	double yi = (2 * y - (y_min + y_max)) / (y_max - y_min); 
 
-	double *Tx = new double[n + 1];
-	double *Ty = new double[n + 1];
+	Array<double> Tx(n + 1), Ty(n + 1);
 	Chebyshev_T(n, xi, Tx);
 	Chebyshev_T(n, yi, Ty);
 
@@ -214,8 +212,6 @@ double evaluate_Chebyshev_T_expansion(size_t n, const Matrix2D<double>& a, doubl
 		for(size_t idy = 0; idy <= n; idy++)
 			v += a(idx, idy) * Tx[idx] * Ty[idy];
 
-	delete[] Tx;
-	delete[] Ty;
 	return v;
 }
 
@@ -244,8 +240,8 @@ double evaluate_derivative_Chebyshev_T_expansion(size_t n, Variable var, const M
 	double xi = (2 * x - (x_min + x_max)) / (x_max - x_min); 
 	double yi = (2 * y - (y_min + y_max)) / (y_max - y_min); 
 
-	double *T = new double[n + 1];
-	double *dT = new double[n + 1];
+	Array<double> T(n + 1), dT(n + 1);
+
 	if(var == Variable::x){
 		derivative_Chebyshev_T(n, xi, dT);
 		Chebyshev_T(n, yi, T);
@@ -262,8 +258,6 @@ double evaluate_derivative_Chebyshev_T_expansion(size_t n, Variable var, const M
 	// Normalization
 	v *= 2 / (var == Variable::x ? (x_max - x_min) : (y_max - y_min));
 
-	delete[] T;
-	delete[] dT;
 	return v;
 }
 
