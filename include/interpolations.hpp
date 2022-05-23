@@ -31,8 +31,8 @@ double four_point_formula(double x, double y, ScalarField f){
 	}
 
 	size_t Nx, Ny;
-	Nx = f.M->shape().first;
-	Ny = f.M->shape().second;
+	Nx = f.M.shape().first;
+	Ny = f.M.shape().second;
 
 	double h = (f.x_max - f.x_min) / (Nx - 1);
 	double k = (f.y_max - f.y_min) / (Ny - 1);
@@ -75,8 +75,8 @@ double six_point_formula(double x, double y, ScalarField f){
 	}
 
 	size_t Nx, Ny;
-	Nx = f.M->shape().first;
-	Ny = f.M->shape().second;
+	Nx = f.M.shape().first;
+	Ny = f.M.shape().second;
 
 	double h = (f.x_max - f.x_min) / (Nx - 1);
 	double k = (f.y_max - f.y_min) / (Ny - 1);

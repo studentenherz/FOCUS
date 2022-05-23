@@ -36,7 +36,7 @@ int main(int argc, char const *argv[]){
 
 	Matrix2D<double> M;
 	load(argv[1], M);
-	ScalarField f(&M, rlow, rhigh, zlow, zhigh);
+	ScalarField f(M, rlow, rhigh, zlow, zhigh);
 
 	size_t n = 26;
 

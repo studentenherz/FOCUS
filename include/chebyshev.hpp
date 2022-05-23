@@ -131,8 +131,8 @@ bool derivative_Chebyshev_T(size_t n, double x, Array<double>& dT){
  */
 double Chebyshev_T_expansion_coefficient(size_t idx, size_t idy, ScalarField f, double x_min, double x_max, double y_min, double y_max){
 	size_t Nx, Ny;
-	Nx = f.M->shape().first;
-	Ny = f.M->shape().second;
+	Nx = f.M.shape().first;
+	Ny = f.M.shape().second;
 	
 	double x_m = 0.5 * (x_min + x_max);
 	double y_m = 0.5 * (y_min + y_max);

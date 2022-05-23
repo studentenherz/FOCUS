@@ -9,7 +9,7 @@ int main(int argc, char const *argv[]){
 	if (!load(argv[1], psi))
 		return 1;	
 	
-	ScalarField f(&psi, 0, 1, 0, 1);
+	ScalarField f(psi, 0, 1, 0, 1);
 
 	// gives some value
 	double v = six_point_formula(0.23, 0.8, f);

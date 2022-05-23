@@ -24,7 +24,7 @@ int main(int argc, char const *argv[]){
 	const double x_max = 1;
 	const double y_min = 0;
 	const double y_max = 1;
-	ScalarField f(&M, x_min, x_max, y_min, y_max);
+	ScalarField f(M, x_min, x_max, y_min, y_max);
 
 	// Get expansion coefficients
 	ChebyshevExpansion ch(n, f, x_min, x_max, y_min, y_max);	

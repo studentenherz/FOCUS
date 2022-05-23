@@ -33,7 +33,7 @@ struct MagneticFieldMatrix{
 		z_min = (eq.zmid - 0.5 * eq.zdim) / eq.rdim;
 		z_max = (eq.zmid + 0.5 * eq.zdim) / eq.rdim;
 
-		ScalarField psi(&eq.psi, r_min, r_max, z_min, z_max);
+		ScalarField psi(eq.psi, r_min, r_max, z_min, z_max);
 		ChebyshevExpansion ch(n, psi, r_min, r_max, z_min, z_max);
 
 		double d_psi = (eq.sibdry - eq.simagx) / (eq.nx - 1);
@@ -84,9 +84,9 @@ public:
 	MagneticField(MagneticFieldMatrix& B, double B_0) : M(B), B0(B_0) {}
 
 	Vector3 operator()(Vector3 r, double /* t */ ){
-		ScalarField MBr(&M.Br, M.r_min, M.r_max, M.z_min, M.z_max);
-		ScalarField MBt(&M.Bt, M.r_min, M.r_max, M.z_min, M.z_max);
-		ScalarField MBz(&M.Bz, M.r_min, M.r_max, M.z_min, M.z_max);
+		ScalarField MBr(M.Br, M.r_min, M.r_max, M.z_min, M.z_max);
+		ScalarField MBt(M.Bt, M.r_min, M.r_max, M.z_min, M.z_max);
+		ScalarField MBz(M.Bz, M.r_min, M.r_max, M.z_min, M.z_max);
 
 		double x = r[0], y = r[2];
 		double Br = six_point_formula(x, y, MBr) / B0;
