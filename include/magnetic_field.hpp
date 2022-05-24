@@ -27,31 +27,38 @@ struct MagneticFieldMatrix{
 	 */
 	MagneticFieldMatrix(Equilibrium &eq, size_t n, size_t N, bool sign = true): Br(N, N), Bt(N, N), Bz(N, N) {
 
-		// Limits de-dimensionalized by the minor radius
-		r_min = eq.rleft / eq.rdim;
-		r_max = eq.rleft / eq.rdim + 1;
-		z_min = (eq.zmid - 0.5 * eq.zdim) / eq.rdim;
-		z_max = (eq.zmid + 0.5 * eq.zdim) / eq.rdim;
+		// Dimensionless limits of the matrixes 
+		double mr_min = eq.rleft / eq.rdim;
+		double mr_max = eq.rleft / eq.rdim + 1;
+		double mz_min = (eq.zmid - 0.5 * eq.zdim) / eq.rdim;
+		double mz_max = (eq.zmid + 0.5 * eq.zdim) / eq.rdim;
 
-		ScalarField psi(eq.psi, r_min, r_max, z_min, z_max);
+		ScalarField psi(eq.psi, mr_min, mr_max, mz_min, mz_max);
+		
+		// Dimensionless limits of plasma boundaries
+		r_min = min(eq.rbdry) / eq.rdim;
+		r_max = max(eq.rbdry) / eq.rdim;
+		z_min = min(eq.zbdry) / eq.rdim;
+		z_max = max(eq.zbdry) / eq.rdim;
+
 		ChebyshevExpansion ch(n, psi, r_min, r_max, z_min, z_max);
 
 		double d_psi = (eq.sibdry - eq.simagx) / (eq.nx - 1);
 
 		for(size_t i = 0; i<N; i++){
-			double r = r_min + i / (N - 1); // dimensionless
+			double r = r_min + (r_max - r_min) * i / (N - 1); // dimensionless
 			for(size_t j = 0; j<N; j++){
-				double z = z_min + (eq.zdim / eq.rdim) * j / (N - 1); // dimensionless
+				double z = z_min + (z_max - z_min) * j / (N - 1); // dimensionless
 
 				// From \Psi definition
-				Br(i, j) =  (sign ? -1 : 1) * ch.dy(r, z) / r;
-				Bz(i, j) =  (sign ? 1 : -1) * ch.dx(r, z) / r;
+				Br(i, j) =  (sign ? -1.0 : 1.0) * ch.dy(r, z) / r;
+				Bz(i, j) =  (sign ? 1.0 : -1.0) * ch.dx(r, z) / r;
 
 				double psi_here = ch(r, z);
 				size_t index = std::floor((psi_here - eq.simagx) / d_psi);
 				// Keep index inside boundaries
 				if (index <= 0) index = 1;
-				if (index >= eq.nx - 1) index = eq.nx - 1;
+				if (index >= eq.nx - 1) index = eq.nx - 2;
 
 				// Lagrange interpolation with the 3 closest points
 				// https://en.wikipedia.org/wiki/Lagrange_polynomial

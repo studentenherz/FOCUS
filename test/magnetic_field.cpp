@@ -1,5 +1,6 @@
 #include <iostream>
 #include <fstream>
+#include <stdlib.h>
 
 #include "files.hpp"
 #include "geqdsk.hpp"
@@ -14,11 +15,15 @@
 class FileObserver{
 	std::ofstream &_fo;
 	double _a, _v0, _Omega;
+	bool cart;
 public:
-	FileObserver(std::ofstream& fo, double a, double v0, double Omega): _fo(fo), _a(a), _v0(v0), _Omega(Omega) {}
+	FileObserver(std::ofstream& fo, double a, double v0, double Omega,bool cart_coord = false): _fo(fo), _a(a), _v0(v0), _Omega(Omega), cart(cart_coord) {}
 	
 	void operator()(State v, double t){
-		_fo << t / _Omega << '\t' << v[0] * cos(v[1]) * _a << ' ' << v[0] * sin(v[1]) * _a << ' ' << v[2] * _a << ' ' << (v[3] * cos(v[1]) - v[4] * sin(v[1])) * _v0 << ' ' << (v[3] * sin(v[1]) + v[3] * cos(v[1])) * _v0 << ' ' << v[5] * _v0<< '\n';
+		if (cart)
+			_fo << t / _Omega << '\t' << v[0] * cos(v[1]) * _a << ' ' << v[0] * sin(v[1]) * _a << ' ' << v[2] * _a << ' ' << (v[3] * cos(v[1]) - v[4] * sin(v[1])) * _v0 << ' ' << (v[3] * sin(v[1]) + v[3] * cos(v[1])) * _v0 << ' ' << v[5] * _v0<< '\n';
+		else
+			_fo << t/ _Omega << '\t' << v[0]  * _a << ' ' << v[1]  << ' ' << v[2] * _a << ' ' << v[3] * _v0 << ' ' << v[4] * _v0 << ' ' << v[5] * _v0 << '\n';
 	}
 };
 
@@ -31,6 +36,11 @@ int main(int argc, char* argv[]){
 	
 	Equilibrium eq = read_eqdsk(argv[1]);
 	MagneticFieldMatrix B_matrix(eq, 26, 600);
+	
+	// dump("Br.dat", B_matrix.Br, false);
+	// dump("Bt.dat", B_matrix.Bt, false);
+	// dump("Bz.dat", B_matrix.Bz, false);
+
 	MagneticField B(B_matrix, eq.bcentr);
 
 	double q_over_m =  9.58e7; // C/kg proton
@@ -47,14 +57,10 @@ int main(int argc, char* argv[]){
 	RK46NL<System, State, double> rk46nl;
 
 	std::ofstream fo(argv[2]);
-	FileObserver obs(fo, a, v0, Omega);
 
-	// dump("Br.dat", B_matrix.Br, false);
-	// dump("Bt.dat", B_matrix.Bt, false);
-	// dump("Bz.dat", B_matrix.Bz, false);
-	// dump("ch_psi.dat", B_matrix.ch_psi, false);
 
-	integrate(rk46nl, sys, x, 0.0, 0.001, 10, obs);
+	FileObserver obs(fo, a, v0, Omega, true);
+	integrate(rk46nl, sys, x, 0.0, 0.001, 10000000, obs, 99);
 
 	return 0;
 }
