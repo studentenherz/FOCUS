@@ -63,7 +63,7 @@ public:
 	 * Get array size
 	 * @return array size
 	 */
-	size_t size(){
+	size_t size() const {
 		return _size;
 	}
 
@@ -76,5 +76,22 @@ public:
 		arr = new T[_size + 1];
 	}
 };
+
+
+template<typename T>
+T min(const Array<T>& a){
+	T m = a[0];
+	for(size_t i = 1; i < a.size(); i++)
+		m = std::min(m, a[i]);
+	return m;
+}
+
+template<typename T>
+T max(const Array<T>& a){
+	T m = a[0];
+	for(size_t i = 1; i < a.size(); i++)
+		m = std::max(m, a[i]);
+	return m;
+}
 
 #endif // FOCUS_INCLUDE_TYPES_ARRAY_HPP
