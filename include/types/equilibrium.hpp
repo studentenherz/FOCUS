@@ -11,7 +11,7 @@
 struct Equilibrium{
 	int idnum;						// Id of file?
 	size_t nx, ny; 				// Number of points in the R-z grid
-	double rdim, zdim;		// Dimesions represented by the grid [meters]
+	double rdim, zdim;		// Dimensions represented by the grid [meters]
 	double rcentr;				// Reference value for R
 	double bcentr;				// Vacuum toroidal magnetic field at rcentr
 	double rleft;					// R at left (inner) boundary
@@ -30,8 +30,8 @@ struct Equilibrium{
 
 	// Boundaries description, optional
 	size_t nbdry, nlim;					// Number of points of plasma and wall boundaries
-	Array<double> rbdry, zbdry;	// 1D array of q(psi)
-	Array<double> rlim, zlim;		// 1D array of q(psi)
+	Array<double> rbdry, zbdry;	// Plasma boundary
+	Array<double> rlim, zlim;		// Wall boundary
 
 
 	/**
