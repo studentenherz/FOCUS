@@ -280,7 +280,7 @@ public:
 	 * @param y_min minimum value of y of the expansion
  	 * @param y_max maximum value of y of the expansion
 	 */
-	ChebyshevExpansion(size_t n, ScalarField f, double xmin, double xmax, double ymin, double ymax): n(n){
+	ChebyshevExpansion(size_t order, ScalarField f, double xmin, double xmax, double ymin, double ymax): n(order), a(n + 1, n + 1) {
 		/* Adding extra room for x and y so that Chebyshev is not
 			evaluated in 1 or -1; depending on the numbers, the floating
 			representation might give something like 1.00000000005 that 
@@ -295,7 +295,6 @@ public:
 		y_min = std::max(f.y_min, ymin - ey);
 		y_max = std::min(f.y_max, ymax + ey);
 
-		a.reshape(n + 1, n + 1);
 		// Calculate the matrix of coefficients
 		Chebyshev_T_expansion(n, a, f, x_min, x_max, y_min, y_max);
 	}
