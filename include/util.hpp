@@ -2,6 +2,7 @@
 #define FOCUS_INCLUDE_UTIL_HPP
 
 const double pi(3.14159265358979323846);
+const double two_pi(6.283185307179586477);
 
 
 #endif // FOCUS_INCLUDE_UTIL_HPP
