@@ -15,8 +15,6 @@ public:
 		arr = new T[_size + 1];
 	}
 
-	Array(const Array&) = delete;
-	Array& operator=(const Array&) = delete;
 	Array& operator=(const Array&&) = delete;
 
 	/**

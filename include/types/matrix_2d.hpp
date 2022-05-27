@@ -20,8 +20,6 @@ public:
 		arr = new T[n * m + 1];
 	}
 
-	Matrix2D(const Matrix2D&) = delete;
-	Matrix2D& operator=(const Matrix2D&) = delete;
 	Matrix2D& operator=(const Matrix2D&&) = delete;
 
 	/**
