@@ -14,9 +14,7 @@ public:
 		_size = n;
 		arr = new T[_size + 1];
 	}
-
-	Array& operator=(const Array&&) = delete;
-
+	
 	/**
 	 * Move constructor; this allows the array to be passed
 	 * as a return value from a function sapping the pointers
@@ -25,6 +23,15 @@ public:
 	Array(Array&& other): _size(other._size) {
 		arr = other.arr;
 		other.arr = NULL;
+	}
+
+	/**
+	 * Copy constructor; declaring the move constructor makes
+	 * compiler implicitly declare the copy constructor deleted
+	 */
+	Array(Array& other): Array(other._size) {
+		for(size_t i = 0; i < _size; i++)
+			arr[i] = other.arr[i];
 	}
 
 	/**
