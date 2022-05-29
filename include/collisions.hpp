@@ -35,7 +35,7 @@ class FockerPlank{
 	double _eta;				// Dimensionless constant
 	NormalRand gauss;	// Gaussian random generator
 public:
-	FockerPlank(unsigned long long seed, Array<ParticleSpecies> plasma_particles, ParticleSpecies test_particle, double eta): gauss(seed), beta(plasma_particles), alpha(test_particle), _eta(eta) {}
+	FockerPlank(unsigned long long seed, Array<ParticleSpecies> plasma_particles, ParticleSpecies test_particle, double eta): beta(plasma_particles), alpha(test_particle), _eta(eta), gauss(seed) {}
 
 	/**
 	 * Slowing down from elastic collisions
