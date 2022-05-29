@@ -1,5 +1,6 @@
 #include <fstream>
 #include <iostream>
+#include <string>
 
 #include "collisions.hpp"
 #include "lorentz.hpp"
@@ -62,16 +63,11 @@ public:
 	}
 };
 
-int main(int argc, char* argv[]){
-	if (argc < 2){
-		std::cout << "usage:\ncollisions <output_file>\n";
-		return -1;
-	}
-
+int main(){
 	double Omega = 0.00085; // cyclotron frequency
-	double v0 = 1.84142e7; // m/s (3.54 MeV of a proton)
+	double v0 = 1.29477e7; // m/s (3.54 MeV of a proton)
 	double a = 0.5; // m
-	double gam = v0 / (a * Omega);
+	double gam = 2.408e6;
 	double q_e = 1.0;
 	double m_e = 1.0;
 	double logl_e = 17.5;
@@ -85,19 +81,31 @@ int main(int argc, char* argv[]){
 	Array<ParticleSpecies> plasma(1);
 	plasma[0] = electron;
 
-	FockerPlank collisions(1, plasma, alpha, eta);
-
+	// System with Lorentz force
 	typedef Lorentz<NullForce, MagneticField, NullVectorField> System;
 	System sys(gam, B, null_vector_field, null_force);
 
-	CollisionStepper<System, State, double> stepper(200, collisions);
+	for (unsigned long long seed = 1; seed < 50; seed++){
 
-	State x(1.0, 0.0, 0.0, 0.0, 0.0, 0.23057);
+		// Collisions operator
+		FockerPlank collisions(seed, plasma, alpha, eta);
 
-	std::ofstream fo(argv[1]);
-	FileObserver obs(fo, a, v0, Omega, true);
+		// Stepper
+		CollisionStepper<System, State, double> stepper(200, collisions);
 
-	integrate(stepper, sys, x, 0.0, 0.00001, 30000, obs);
+		// Initial step
+		State x(1.0, 0.0, 0.0, 0.0, 0.0, 0.23057);
+
+		std::string fname = "coll/" + std::to_string(seed) + ".dat";
+		// Observer
+		std::ofstream fo(fname);
+		FileObserver obs(fo, a, v0, Omega, true);
+
+		std::cout << "Calculating " << fname << '\n';
+		integrate(stepper, sys, x, 0.0, 0.00001, 300000, obs, 999);
+
+		fo.close();
+	}
 
 	return EXIT_SUCCESS;
 }
