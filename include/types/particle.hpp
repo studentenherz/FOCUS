@@ -10,6 +10,10 @@ struct ParticleSpecies{
 
 	double (*T)(Vector3, double); // temperature profile
 	double (*n)(Vector3, double); // density profile
+
+	ParticleSpecies() {}
+
+	ParticleSpecies(double charge, double mass, double lorentz_logarithm, double (*Temperature)(Vector3, double), double (*density)(Vector3, double)): q(charge), m(mass), logl(lorentz_logarithm), T(Temperature), n(density) {}
 };
 
 
