@@ -199,7 +199,7 @@ Vector3 get_position(State x){
 Vector3 get_velocity(State x){
 	Vector3 r;
 	for(size_t i = 3; i < 6; i++)
-		r[i] = x[i];
+		r[i - 3] = x[i];
 	return r;
 }
 
