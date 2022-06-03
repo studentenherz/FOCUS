@@ -6,7 +6,7 @@
 int main(int argc, char* argv[]){
 	if (argc < 2) return 0;
 
-	Equilibrium eq = read_eqdsk(argv[1]);
+	Equilibrium eq = read_geqdsk(argv[1]);
 	std::cout << eq.idnum << '\n';
 	std::cout << eq.nx << '\n';
 	std::cout << eq.ny << '\n';

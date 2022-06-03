@@ -55,7 +55,7 @@ public:
  * @param filename name of file
  * @return Equilibrium with the read data
  */
-Equilibrium read_eqdsk(const char *filename){
+Equilibrium read_geqdsk(const char *filename){
 	std::ifstream fi(filename);
 	if(!fi.is_open()){
 		std::cerr << "Couldn't open file " << filename << '\n';

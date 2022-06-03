@@ -34,7 +34,7 @@ int main(int argc, char* argv[]){
 	}
 
 	
-	Equilibrium eq = read_eqdsk(argv[1]);
+	Equilibrium eq = read_geqdsk(argv[1]);
 	MagneticFieldMatrix B_matrix(eq, 26, 600);
 	
 	// dump("Br.dat", B_matrix.Br, false);
@@ -59,8 +59,8 @@ int main(int argc, char* argv[]){
 	std::ofstream fo(argv[2]);
 
 
-	FileObserver obs(fo, a, v0, Omega, true);
-	integrate(rk46nl, sys, x, 0.0, 0.001, 10000000, obs, 99);
+	FileObserver obs(fo, a, v0, Omega, false);
+	integrate(rk46nl, sys, x, 0.0, 0.001, 300000, obs, 99);
 
 	return 0;
 }
