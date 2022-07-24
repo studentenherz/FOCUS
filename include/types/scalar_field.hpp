@@ -3,16 +3,33 @@
 
 #include "types/matrix_2d.hpp"
 
+/**
+ * Wrapper that encapsulates a matrix description of
+ * a scalar field together with the limits of the space
+ * it represents
+ */
 struct ScalarField{
-	Matrix2D<double>& M;
-	double x_min;
-	double x_max;
-	double y_min;
-	double y_max;
+	Matrix2D<double>& M;	///< Matrix description of the field
+
+	/**
+	 * @name Space limits
+	 */
+	///@{
+	double x_min;		///< minimum x
+	double x_max;		///< maximum x
+	double y_min;		///< minimum y
+	double y_max;		///< maximum y
+	///@}
 
 	ScalarField(Matrix2D<double>& _M, double _x_min, double _x_max, double _y_min, double _y_max): M(_M), x_min(_x_min), x_max(_x_max), y_min(_y_min), y_max(_y_max) {}
 
-	double operator()(int i, int j) const{
+	/**
+	 * Propagate the matrix access operator
+	 * @param i first index
+	 * @param j second index
+	 * @return `M(i, j)`
+	 */
+	double operator()(int i, int j) const {
 		return M(i, j);
 	}
 };
