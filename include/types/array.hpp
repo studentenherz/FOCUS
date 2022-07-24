@@ -80,9 +80,13 @@ public:
 		_size = n;
 		arr = new T[_size + 1];
 	}
-};
+}; // class Array
 
-
+/**
+ * Returns the smallest element from an array
+ * @param a Array
+ * @return smallest element of `a`
+ */
 template<typename T>
 T min(const Array<T>& a){
 	T m = a[0];
@@ -91,6 +95,11 @@ T min(const Array<T>& a){
 	return m;
 }
 
+/**
+ * Returns the larges element from an array
+ * @param a Array
+ * @return larges element of `a`
+ */
 template<typename T>
 T max(const Array<T>& a){
 	T m = a[0];
