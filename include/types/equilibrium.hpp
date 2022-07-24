@@ -9,29 +9,54 @@
  * EFIT in the G-EQDSK files
  */
 struct Equilibrium{
-	int idnum;						// Id of file?
-	size_t nx, ny; 				// Number of points in the R-z grid
-	double rdim, zdim;		// Dimensions represented by the grid [meters]
-	double rcentr;				// Reference value for R
-	double bcentr;				// Vacuum toroidal magnetic field at rcentr
-	double rleft;					// R at left (inner) boundary
-  double zmid;					// z at middle of domain
-  double rmagx, zmagx;	// R,z at magnetic axis (O-point)
-  double simagx;        // Poloidal flux psi at magnetic axis
-  double sibdry;        // Poloidal flux psi at plasma boundary
-  double cpasma;        // Plasma current [Amperes]
+	/**
+	 * @name Single parameters
+	 */
+	///@{
+	int idnum;						///< Id of file
+	size_t nx;						///< Number of points in the R direction
+	size_t ny; 						///< Number of points in the z direction
+	double rdim;					///< Dimensions of the represented grid in R (meters)
+	double zdim;					///< Dimensions of the represented grid in z (meters)
+	double rcentr;				///< Reference value for R (meters)
+	double bcentr;				///< Vacuum toroidal magnetic field at `rcentr` (Tesla)
+	double rleft;					///< R at left (inner) boundary (meters)
+  double zmid;					///< z at middle of domain (meters)
+  double rmagx;					///< R at magnetic axis (O-point) (meters)
+	double zmagx;					///< z at magnetic axis (O-point) (meters)
+  double simagx;        ///< Poloidal flux `psi` at magnetic axis
+  double sibdry;        ///< Poloidal flux `psi` at plasma boundary
+  double cpasma;        ///< Plasma current (Amperes)
+	///@}
 
+	/**
+	 * @name Profiles
+	 * One dimensional profiles as function of `psi` where the first value corresponds to `simagx` and the last to `sibdry`.
+	 */
+	///@{
+	Array<double> fpol;		///< `F(psi) = R Bt` (meter-Tesla).
+	Array<double> pres;		///< p(psi) (Pascal)
+	Array<double> qpsi;		///< q(psi)
+	///@}
 
-	Array<double> fpol;		// 1D array of f(psi)=R*Bt  [meter-Tesla]
-	Array<double> pres;		// 1D array of p(psi) [Pascals]
-	Array<double> qpsi;		// 1D array of q(psi)
+	/**
+	 * @name Poloidal flux
+	 */
+	///@{
+	Matrix2D<double> psi;	///< 2D array (nx,ny) of poloidal flux
+	///@}
 
-	Matrix2D<double> psi;	// 2D array (nx,ny) of poloidal flux
-
-	// Boundaries description, optional
-	size_t nbdry, nlim;					// Number of points of plasma and wall boundaries
-	Array<double> rbdry, zbdry;	// Plasma boundary
-	Array<double> rlim, zlim;		// Wall boundary
+	/**
+	 * @name Boundaries description (optional)
+	 */
+	///@{
+	size_t nbdry;								///< Number of points of plasma boundaries
+	size_t nlim;								///< Number of points of wall limits
+	Array<double> rbdry;				///< Plasma boundary R (meters)
+	Array<double> zbdry;				///< Plasma boundary z (meters)
+	Array<double> rlim;				///< Wall limits R (meters)
+	Array<double> zlim;				///< Wall limits z (meters)
+	///@}
 
 
 	/**
