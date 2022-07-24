@@ -1,6 +1,6 @@
-==============================
-Welcome FOCUS's documentation!
-==============================
+=================================
+Welcome to FOCUS's documentation!
+=================================
 
 FOCUS stands for Full Orbit CUda Solver and is a code to simulate the behavior of particles inside nuclear fusion reactors.
 
