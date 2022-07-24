@@ -5,11 +5,11 @@
  * Integrate a system with fixed size steps and 
  * method given by the stepper.
  * 
- * @param stepper Stepper that implements the method. Has has a do_step method that takes 
- * the arguments do_step(system, state, current_time, delta_time); calculates the state at
+ * @param stepper Stepper that implements the method. Has a do_step method that takes 
+ * the arguments `do_step(system, state, current_time, delta_time)`; calculates the state at
  * current_time + delta_time and sets state to it.
- * @param sys Equation system. It's called with arguments (x, dxdy, t), x is the current
- * state and t the time; sets dxdy to the derivative of x with respect to t at current state.
+ * @param sys Equation system. It's called with arguments `(x, dxdy, t)`, `x` is the current
+ * state and `t` the time; sets `dxdy` to the derivative of x with respect to t at current state.
  * @param x State that will be updated during integration.
  * @param t0 Initial time
  * @param dt Time delta
@@ -37,11 +37,11 @@ size_t integrate(stepper_type& stepper, system_type& sys, state_type& x, scalar_
  * Integrate a system with fixed size steps and 
  * method given by the stepper.
  * 
- * @param stepper Stepper that implements the method. Has has a do_step method that takes 
- * the arguments do_step(system, state, current_time, delta_time); calculates the state at
+ * @param stepper Stepper that implements the method. Has a do_step method that takes 
+ * the arguments `do_step(system, state, current_time, delta_time)`; calculates the state at
  * current_time + delta_time and sets state to it.
- * @param sys Equation system. It's called with arguments (x, dxdy, t), x is the current
- * state and t the time; sets dxdy to the derivative of x with respect to t at current state.
+ * @param sys Equation system. It's called with arguments `(x, dxdy, t)`, `x` is the current
+ * state and `t` the time; sets `dxdy` to the derivative of x with respect to t at current state.
  * @param x State that will be updated during integration.
  * @param t0 Initial time
  * @param dt Time delta
