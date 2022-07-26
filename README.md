@@ -1,6 +1,3 @@
-
-
-
 <h1 align="center">FOCUS</h1>
 
 <p align="center"><img src="docs/source/_static/logo.svg" alt="SPeek"/></p>
@@ -9,7 +6,7 @@
 	<a href='LICENSE'>
 			<img src='https://img.shields.io/github/license/studentenherz/FOCUS?color=informational&style=flat' alt='License GPL-3.0' />
 	</a>
-	<a href='https://focus.readthedocs.io/en/latest/?badge=latest' target="_blank">
+	<a href='https://focus.readthedocs.io/en/latest/?badge=latest'>
 			<img src='https://readthedocs.org/projects/focus/badge/?version=latest' alt='Documentation Status' />
 	</a>
 </div>
