@@ -1,7 +1,36 @@
 /**
- * Chebyshev polynomials are used to express functions
- * in the range [-1, 1]
- * (https://en.wikipedia.org/wiki/Chebyshev_polynomials).
+ * @file chebyshev.hpp
+ * @brief [Chebyshev polynomials](https://en.wikipedia.org/wiki/Chebyshev_polynomials)
+ * are used in this program in order to express functions in the range [-1, 1].
+ * 
+ * This part of the code deals with part of calculating the magnetic field from the 
+ * poloidal flux \f$\psi(r, z)\f$ and current \f$ I(r, z)\f$
+ * \f[
+ * 	\vec{B} = \frac{1}{r}\left(\frac{\partial \psi}{\partial r} \hat{z} -\frac{\partial \psi}{\partial z} \hat{r} \right) + \frac{I}{r} \hat{\theta}
+ * \f]
+ * 
+ * The magnetic field needs to have divergence zero \f$\nabla \cdot \vec{B} = 0 \f$ 
+ * in order to be compliant with Maxwell's equations, but the numerical nature of the data attempts 
+ * against it. In that regard, an expansion of the poloidal flux in the form \f$\psi(r, z) = R(r)Z(z)\f$
+ * will ensure the null divergence by construction (keeping in mind that \f$ d/d\theta \equiv 0 \f$ because 
+ * of the ax-symmetry). 
+ * 
+ * @ref ChebyshevExpansion implements such an expansion using first kind Chebyshev polynomials 
+ * \f[
+ * 	\psi(r, z) = \sum_{i, j}^{n}a_{i, j}T_i(x(r))T_j(y(z))
+ * \f]
+ * where
+ * \f[
+ * 	a_{i, j} = \left(\frac{2 - \delta_{0k}}{N_x}\right) \left(\frac{2 - \delta_{0l}}{N_y} \right) \sum_{i}^{N_x}\sum_{j}^{N_y}a_{i, j} \Psi(r_k, z_l)T_i(x_k)T_j(y_l)
+ * \f]
+ * and
+ * \f[
+ * 	\begin{align}
+ *  	x_k &= \cos\left((k + 1/2)\pi/N_x\right)\\
+ *  	y_l &= \cos\left((l + 1/2)\pi/N_y\right) 
+ *	\end{align}
+ * \f]
+ * where \f$ N_x\f$ and \f$ N_y\f$ are the dimensions of the matrix of experimental data.
  */
 #if !defined(FOCUS_INCLUDE_CHEBYSHEV_HPP)
 #define FOCUS_INCLUDE_CHEBYSHEV_HPP
