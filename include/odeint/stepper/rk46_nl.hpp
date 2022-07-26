@@ -2,8 +2,7 @@
 #define FOCUS_INCLUDE_ODEINT_STEPPER_RK46_NL_HPP
 
 /**
- * Low-dissipation and low-dispersion fourth-order Runge–Kutta algorithm
- * (https://acoustique.ec-lyon.fr/publi/berland_cfluids06.pdf)
+ * [Low-dissipation and low-dispersion fourth-order Runge–Kutta](https://acoustique.ec-lyon.fr/publi/berland_cfluids06.pdf)
  */
 template<typename system_type, typename state_type, typename scalar_type>
 class RK46NL{
