@@ -9,17 +9,20 @@
 #include "types/array.hpp"
 #include "types/particle.hpp"
 #include "types/vector.hpp"
+#include "types/equilibrium.hpp"
+#include "magnetic_field.hpp"
+#include "geqdsk.hpp"
 
-// Homogeneous Magnetic Field in z direction
-struct MagneticField{
-	double B0;
-	MagneticField(double B): B0(B) {}
-	Vector3 operator()(Vector3 /* r */, double /* t */ ){
-		Vector3 f;
-		f[2] = B0;
-		return f;
-	}
-} B(1);
+// // Homogeneous Magnetic Field in z direction
+// struct MagneticField{
+// 	double B0;
+// 	MagneticField(double B): B0(B) {}
+// 	Vector3 operator()(Vector3 /* r */, double /* t */ ){
+// 		Vector3 f;
+// 		f[2] = B0;
+// 		return f;
+// 	}
+// } B(1);
 
 // Constant temperature profile
 double Tf(Vector3 /* r */, double /* t */){
@@ -63,15 +66,31 @@ public:
 	}
 };
 
-int main(){
-	double Omega = 0.00085; // cyclotron frequency
-	double v0 = 1.29477e7; // m/s (3.54 MeV of a proton)
-	double a = 0.5; // m
-	double gam = 2.408e6;
+int main(int argc, char* argv[]){
+	if (argc < 2){
+		std::cout << "usage:\ncollisions <g-eqdsk file>\n";
+		return -1;
+	}
+
+	Equilibrium eq = read_geqdsk(argv[1]);
+	MagneticFieldMatrix B_matrix(eq, 26, 600);
+	
+	// dump("Br.dat", B_matrix.Br, false);
+	// dump("Bt.dat", B_matrix.Bt, false);
+	// dump("Bz.dat", B_matrix.Bz, false);
+
+	MagneticField B(B_matrix, eq.bcentr);
+
 	double q_e = 1.0;
 	double m_e = 1.0;
 	double logl_e = 17.5;
 	double eta = 3453.5;
+	
+	double q_over_m =  9.58e7; // C/kg proton
+	double Omega = q_over_m * eq.bcentr; // cyclotron frequency
+	double v0 = 1.84142e7; // m/s (3.54 MeV of a proton)
+	double a = eq.rdim; // m
+	double gam = v0 / (a * Omega); // dimensionless factor
 
 	// Particles
 	ParticleSpecies electron(q_e, m_e, logl_e, Tf, nf);
@@ -85,7 +104,7 @@ int main(){
 	typedef Lorentz<NullForce, MagneticField, NullVectorField> System;
 	System sys(gam, B, null_vector_field, null_force);
 
-	for (unsigned long long seed = 1; seed < 50; seed++){
+	for (unsigned long long seed = 1; seed < 5; seed++){
 
 		// Collisions operator
 		FockerPlank collisions(seed, plasma, alpha, eta);
@@ -94,7 +113,7 @@ int main(){
 		CollisionStepper<System, State, double> stepper(200, collisions);
 
 		// Initial step
-		State x(1.0, 0.0, 0.0, 0.0, 0.0, 0.23057);
+		State x = {2.0 / a, 0.0, 0.0, 0.0, 0.6, 0.0};
 
 		std::string fname = "coll/" + std::to_string(seed) + ".dat";
 		// Observer
@@ -102,7 +121,7 @@ int main(){
 		FileObserver obs(fo, a, v0, Omega, true);
 
 		std::cout << "Calculating " << fname << '\n';
-		integrate(stepper, sys, x, 0.0, 0.00001, 300000, obs, 999);
+		integrate(stepper, sys, x, 0.0, 0.001, 300000, obs, 99);
 
 		fo.close();
 	}

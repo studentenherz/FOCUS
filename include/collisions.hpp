@@ -127,10 +127,10 @@ public:
 		Vector3 e_ll = v / v_mod;
 
 		// First perpendicular (T) unit vector
-		Vector3 e_x(1.0, 0.0, 0.0);
+		Vector3 e_x = {1, 0, 0};
 		Vector3 e_T_1 = cross(e_ll, e_x);
 		if (mod(e_T_1) == 0){
-			Vector3 e_y(0.0, 1.0, 0.0);
+			Vector3 e_y = {0, 1, 0};
 			e_T_1 = cross(e_ll, e_y);
 		}
 		e_T_1 = e_T_1 / mod(e_T_1);

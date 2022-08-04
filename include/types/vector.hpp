@@ -21,16 +21,22 @@ public:
 			v[i] = 0;
 	}
 
-	/**
-	 * Create a vector from x array
-	 */
-	Vector(double x, ...){
-		std::va_list args;
-		va_start(args, x);
-		v[0] = x;
-		for (size_t i = 1; i < n; i++)
-			v[i] = va_arg(args, double);
-		va_end(args);
+	// /**
+	//  * Create a vector from x array
+	//  */
+	// Vector(double x, ...){
+	// 	std::va_list args;
+	// 	va_start(args, x);
+	// 	v[0] = x;
+	// 	for (size_t i = 1; i < n; i++)
+	// 		v[i] = va_arg(args, double);
+	// 	va_end(args);
+	// }
+
+	Vector(std::initializer_list<double> l){
+		size_t index = 0;
+		for(const double* it = l.begin(); it != l.end(); it++)
+			v[index++] = *it;
 	}
 
 	/**

@@ -73,7 +73,7 @@ int main(){
 	EulerStepper<System, State, double> euler;
 	RK46NL<System, State, double> rk46nl;
 
-	State x1(1.0, 0.0, 0.0, 0.0, 2.0, 1.0);
+	State x1 = {1, 0, 0, 0, 2, 1};
 	State x2 = x1;
 
 	std::ofstream euler_fo("xy_euler.dat");

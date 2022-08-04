@@ -53,7 +53,7 @@ int main(int argc, char* argv[]){
 
 	typedef Lorentz<NullForce, MagneticField, NullVectorField> System;
 	System sys(gam, B, null_vector_field, null_force);
-	State x(2.0 / a, 0.0, 0.0, 0.0, 0.6, 0.0);
+	State x = {2 / a, 0, 0, 0, 0.6, 0};
 	RK46NL<System, State, double> rk46nl;
 
 	std::ofstream fo(argv[2]);

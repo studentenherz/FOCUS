@@ -100,7 +100,7 @@ public:
 		double Bt = six_point_formula(x, y, MBt) / B0;
 		double Bz = six_point_formula(x, y, MBz) / B0;
 
-		return Vector3(Br, Bt, Bz);
+		return Vector3 {Br, Bt, Bz};
 	}
 };
 
