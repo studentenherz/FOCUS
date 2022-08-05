@@ -43,8 +43,6 @@ struct MagneticFieldMatrix{
 
 		ChebyshevExpansion ch(n, psi, r_min, r_max, z_min, z_max);
 
-		double d_psi = (eq.sibdry - eq.simagx) / (eq.nx - 1);
-
 		for(size_t i = 0; i<N; i++){
 			double r = r_min + (r_max - r_min) * i / (N - 1); // dimensionless
 			for(size_t j = 0; j<N; j++){
@@ -55,27 +53,7 @@ struct MagneticFieldMatrix{
 				Bz(i, j) =  (sign ? 1.0 : -1.0) * ch.dx(r, z) / r;
 
 				double psi_here = ch(r, z);
-				size_t index = std::floor((psi_here - eq.simagx) / d_psi);
-				// Keep index inside boundaries
-				if (index <= 0) index = 1;
-				if (index >= eq.nx - 1) index = eq.nx - 2;
-
-				// Lagrange interpolation with the 3 closest points
-				// https://en.wikipedia.org/wiki/Lagrange_polynomial
-				Vector3 x, y, l;
-
-				// Get the points
-				for(size_t k = 0; k < 3; k++){
-					x[k] = eq.simagx + (index + k - 1) * d_psi;
-					y[k] = eq.fpol[index + k  - 1];
-				}
-
-				// Basis polynomials evaluated at psi_here
-				for(size_t k = 0; k < 3; k++)
-					l[k] = (psi_here - x[(k + 2) % 3])/(x[k] - x[(k + 2) % 3]) * (psi_here - x[(k + 1) % 3])/(x[k] - x[(k + 1) % 3]);
-				
-				// Linear combination
-				double F = dot(y, l);
+				double F = lagrange_interpolation_3(psi_here, eq.fpol, eq.simagx, eq.sibdry);
 
 				// From F definition
 				Bt(i, j) = F / r;
