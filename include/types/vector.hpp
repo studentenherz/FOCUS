@@ -16,7 +16,7 @@ public:
 	/**
 	 * Default constructor creates the zero vector
 	 */
-	Vector() {
+	__host__ __device__ Vector() {
 		for (size_t i = 0; i < n; i++)
 			v[i] = 0;
 	}
@@ -33,7 +33,7 @@ public:
 	// 	va_end(args);
 	// }
 
-	Vector(std::initializer_list<double> l){
+	__host__ __device__ Vector(std::initializer_list<double> l){
 		size_t index = 0;
 		for(const double* it = l.begin(); it != l.end(); it++)
 			v[index++] = *it;
@@ -42,8 +42,8 @@ public:
 	/**
 	 * Access to vector component
 	 */
-	double &operator[](size_t i) {return v[(i < n ? i : n)];}
-	const double &operator[](size_t i) const {return v[(i < n ? i : n)];}
+	__host__ __device__ double &operator[](size_t i) {return v[(i < n ? i : n)];}
+	__host__ __device__ const double &operator[](size_t i) const {return v[(i < n ? i : n)];}
 };
 
 // Vector Algebra
@@ -55,7 +55,7 @@ public:
  * @return vectorial sum a + b
  */
 template<size_t n>
-Vector<n> operator+(Vector<n> a, Vector<n> b){
+__host__ __device__ Vector<n> operator+(Vector<n> a, Vector<n> b){
 	Vector<n> c;
 	for(size_t i = 0; i < n; i++)
 		c[i] = a[i] + b[i];
@@ -69,7 +69,7 @@ Vector<n> operator+(Vector<n> a, Vector<n> b){
  * @return vectorial sum a + (-b)
  */
 template<size_t n>
-Vector<n> operator-(Vector<n> a, Vector<n> b){
+__host__ __device__ Vector<n> operator-(Vector<n> a, Vector<n> b){
 	Vector<n> c;
 	for(size_t i = 0; i < n; i++)
 		c[i] = a[i] - b[i];
@@ -83,7 +83,7 @@ Vector<n> operator-(Vector<n> a, Vector<n> b){
  * @return scaled vector t * a
  */
 template<size_t n>
-Vector<n> operator*(Vector<n> a, double t){
+__host__ __device__ Vector<n> operator*(Vector<n> a, double t){
 	Vector<n> c;
 	for(size_t i = 0; i < n; i++)
 		c[i] = a[i] * t;
@@ -97,7 +97,7 @@ Vector<n> operator*(Vector<n> a, double t){
  * @return scaled vector t * a
  */
 template<size_t n>
-Vector<n> operator*(double t, Vector<n> a){
+__host__ __device__ Vector<n> operator*(double t, Vector<n> a){
 	Vector<n> c;
 	for(size_t i = 0; i < n; i++)
 		c[i] = a[i] * t;
@@ -111,7 +111,7 @@ Vector<n> operator*(double t, Vector<n> a){
  * @return scaled vector a / t
  */
 template<size_t n>
-Vector<n> operator/(Vector<n> a, double t){
+__host__ __device__ Vector<n> operator/(Vector<n> a, double t){
 	Vector<n> c;
 	for(size_t i = 0; i < n; i++)
 		c[i] = a[i] / t;
@@ -125,7 +125,7 @@ Vector<n> operator/(Vector<n> a, double t){
  * @return dot product a . b
  */
 template<size_t n>
-double dot(Vector<n> a, Vector<n> b){
+__host__ __device__ double dot(Vector<n> a, Vector<n> b){
 	double s = 0;
 	for (size_t i = 0; i < n; i++)
 		s += a[i] * b[i];
@@ -139,7 +139,7 @@ double dot(Vector<n> a, Vector<n> b){
  * @return |v|
  */
 template<size_t n>
-double mod(Vector<n> v){
+__host__ __device__ double mod(Vector<n> v){
 	return sqrt(dot(v, v));
 }
 
@@ -149,7 +149,7 @@ double mod(Vector<n> v){
  * Out stream operator
  */
 template<size_t n>
-std::ostream& operator<<(std::ostream& out, const Vector<n>& v){
+__host__ std::ostream& operator<<(std::ostream& out, const Vector<n>& v){
 	for(size_t i = 0; i < n; i++)
 		out << v[i] << ' ';
 	return out; 
@@ -159,7 +159,7 @@ std::ostream& operator<<(std::ostream& out, const Vector<n>& v){
  * In stream operator
  */
 template<size_t n>
-std::istream& operator>>(std::istream& in, Vector<n>& v){
+__host__ std::istream& operator>>(std::istream& in, Vector<n>& v){
 	for(size_t i = 0; i < n; i++)
 		in >> v[i];
 	return in; 
@@ -175,7 +175,7 @@ typedef Vector<3> Vector3;
  * @param b another vector
  * @return dot product a x b
  */
-Vector3 cross(Vector3 a, Vector3 b){
+__host__ __device__ Vector3 cross(Vector3 a, Vector3 b){
 	Vector3 c;
 	for (size_t i = 0; i < 3; i++)
 		c[i] = a[(i + 1) % 3] * b[(i + 2) % 3] - a[(i + 2) % 3] * b[(i + 1) % 3];
@@ -190,7 +190,7 @@ typedef Vector<6> State;
  * @param x state
  * @return position
  */
-Vector3 get_position(State x){
+__host__ __device__ Vector3 get_position(State x){
 	Vector3 r;
 	for(size_t i = 0; i < 3; i++)
 		r[i] = x[i];
@@ -202,7 +202,7 @@ Vector3 get_position(State x){
  * @param x state
  * @return velocity
  */
-Vector3 get_velocity(State x){
+__host__ __device__ Vector3 get_velocity(State x){
 	Vector3 r;
 	for(size_t i = 3; i < 6; i++)
 		r[i - 3] = x[i];
