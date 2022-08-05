@@ -105,7 +105,7 @@ Equilibrium read_geqdsk(const char *filename){
 	if (tk.next(fi, token)) eq.simagx = std::stod(token);
 	if (tk.next(fi, token)) {} // here lies a dumb value
 	if (tk.next(fi, token)) eq.rmagx = std::stod(token);
-	if (tk.next(fi, token)) // here lies a dumb value
+	if (tk.next(fi, token)) {} // here lies a dumb value
 
 	if (tk.next(fi, token)) eq.zmagx = std::stod(token);
 	if (tk.next(fi, token)) {} // here lies a dumb value
