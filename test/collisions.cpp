@@ -13,27 +13,6 @@
 #include "magnetic_field.hpp"
 #include "geqdsk.hpp"
 
-// // Homogeneous Magnetic Field in z direction
-// struct MagneticField{
-// 	double B0;
-// 	MagneticField(double B): B0(B) {}
-// 	Vector3 operator()(Vector3 /* r */, double /* t */ ){
-// 		Vector3 f;
-// 		f[2] = B0;
-// 		return f;
-// 	}
-// } B(1);
-
-// Constant temperature profile
-double Tf(Vector3 /* r */, double /* t */){
-	return 1.61029;
-}
-
-// Constant density profile
-double nf(Vector3 /* r */, double /* t */){
-	return 1.0;
-}
-
 
 template<typename system_type, typename state_type, typename scalar_type>
 class CollisionStepper{
@@ -92,13 +71,16 @@ int main(int argc, char* argv[]){
 	double a = eq.rdim; // m
 	double gam = v0 / (a * Omega); // dimensionless factor
 
+	double Tf = 1.61029;
+	double nf = 1.0;
+
 	// Particles
-	ParticleSpecies electron(q_e, m_e, logl_e, Tf, nf);
-	ParticleSpecies alpha(1.0, 2.0 * 1836, logl_e, Tf, nf);
+	ConstProfileParticle electron(q_e, m_e, logl_e, Tf, nf);
+	ConstProfileParticle alpha(1.0, 2.0 * 1836, logl_e, Tf, nf);
 
 	// Particles in plasma
-	Array<ParticleSpecies> plasma(1);
-	plasma[0] = electron;
+	Array<ParticleSpecies*> plasma(1);
+	plasma[0] = &electron;
 
 	// System with Lorentz force
 	typedef Lorentz<NullForce, MagneticField, NullVectorField> System;

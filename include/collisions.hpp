@@ -29,13 +29,13 @@ double G(double x){
  * Langevin equation using Îto's method.
  */
 class FockerPlank{
-	Array<ParticleSpecies> beta;	// Particle species involved
-	ParticleSpecies alpha;				// Test particle species
+	Array<ParticleSpecies*> beta;	// Particle species involved
+	ParticleSpecies& alpha;				// Test particle species
 
 	double _eta;				// Dimensionless constant
 	NormalRand gauss;	// Gaussian random generator
 public:
-	FockerPlank(unsigned long long seed, Array<ParticleSpecies> plasma_particles, ParticleSpecies test_particle, double eta): beta(plasma_particles), alpha(test_particle), _eta(eta), gauss(seed) {}
+	FockerPlank(unsigned long long seed, Array<ParticleSpecies*> plasma_particles, ParticleSpecies& test_particle, double eta): beta(plasma_particles), alpha(test_particle), _eta(eta), gauss(seed) {}
 
 	/**
 	 * Slowing down from elastic collisions
@@ -51,8 +51,8 @@ public:
 		double nu_sd = 0;
 		// terms that depend on plasma particles
 		for(size_t i = 0; i < beta.size(); i++){
-			double xb = v_mod / beta[i].T(r, t);
-			nu_sd +=  sqr(beta[i].q) *  beta[i].n(r, t) * (1 + alpha.m/beta[i].m) * beta[i].logl * erf_minus_d_erf(xb);
+			double xb = v_mod / beta[i]->T(r, t);
+			nu_sd +=  sqr(beta[i]->q) *  beta[i]->n(r, t) * (1 + alpha.m/beta[i]->m) * beta[i]->logl * erf_minus_d_erf(xb);
 		}
 
 		// other terms
@@ -75,8 +75,8 @@ public:
 		double nu = 0;
 		// terms that depend on plasma particles
 		for(size_t i = 0; i < beta.size(); i++){
-			double xb = v_mod / beta[i].T(r, t);
-			nu +=  sqr(beta[i].q) * beta[i].n(r, t) * beta[i].logl * G(xb);
+			double xb = v_mod / beta[i]->T(r, t);
+			nu +=  sqr(beta[i]->q) * beta[i]->n(r, t) * beta[i]->logl * G(xb);
 		}
 
 		// other terms
@@ -99,8 +99,8 @@ public:
 		double nu = 0;
 		// terms that depend on plasma particles
 		for(size_t i = 0; i < beta.size(); i++){
-			double xb = v_mod / beta[i].T(r, t);
-			nu +=  sqr(beta[i].q) * beta[i].n(r, t) * beta[i].logl * (erf(xb) - G(xb));
+			double xb = v_mod / beta[i]->T(r, t);
+			nu +=  sqr(beta[i]->q) * beta[i]->n(r, t) * beta[i]->logl * (erf(xb) - G(xb));
 		}
 
 		// other terms
