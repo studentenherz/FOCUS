@@ -25,8 +25,10 @@ public:
 	
 	void do_step(system_type sys, state_type& x, scalar_type t, scalar_type dt){
 		orbit_stepper.do_step(sys, x, t, dt);
-		if (++steps % collisions_nstep == 0)
+		if (++steps == collisions_nstep){
 			collision_operator.euler_step(x, t, dt * collisions_nstep);
+			steps = 0;
+		}
 	}
 };
 
