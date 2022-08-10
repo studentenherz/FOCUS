@@ -64,8 +64,9 @@ struct MagneticFieldMatrix{
 
 class MagneticField{
 	MagneticFieldMatrix& M;
-	double B0;
 public:
+	double B0;
+
 	MagneticField(MagneticFieldMatrix& B, double B_0) : M(B), B0(B_0) {}
 
 	Vector3 operator()(Vector3 r, double /* t */ ){
