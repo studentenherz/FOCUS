@@ -62,24 +62,90 @@ struct MagneticFieldMatrix{
 	}
 };
 
-class MagneticField{
-	MagneticFieldMatrix& M;
+// class MagneticField{
+// 	MagneticFieldMatrix& M;
+// public:
+// 	double B0;
+
+// 	MagneticField(MagneticFieldMatrix& B, double B_0) : M(B), B0(B_0) {}
+
+// 	Vector3 operator()(Vector3 r, double /* t */ ){
+// 		ScalarField MBr(M.Br, M.r_min, M.r_max, M.z_min, M.z_max);
+// 		ScalarField MBt(M.Bt, M.r_min, M.r_max, M.z_min, M.z_max);
+// 		ScalarField MBz(M.Bz, M.r_min, M.r_max, M.z_min, M.z_max);
+
+// 		double x = r[0], y = r[2];
+// 		double Br = six_point_formula(x, y, MBr) / B0;
+// 		double Bt = six_point_formula(x, y, MBt) / B0;
+// 		double Bz = six_point_formula(x, y, MBz) / B0;
+
+// 		return Vector3 {Br, Bt, Bz};
+// 	}
+// };
+
+class FineEquilibrium{
+	Equilibrium& eq;
+	ChebyshevExpansion ch;
+	bool sign;
 public:
-	double B0;
+	FineEquilibrium(Equilibrium& eq, size_t n, bool sign = true): 
+	eq(eq), // Equilibrium 
+	ch(			// Chebyshev Expansion
+		n,		// order 
+		ScalarField( // Scalar Field to be expanded
+			eq.psi,			// matrix 
+	 		eq.rleft / eq.rdim, // rmin
+	 		eq.rleft / eq.rdim + 1, // rmax
+	 		(eq.zmid - 0.5 * eq.zdim) / eq.rdim, // zmin
+	 		(eq.zmid + 0.5 * eq.zdim) / eq.rdim), // xmax
+		min(eq.rbdry) / eq.rdim, // expansion rmin
+		max(eq.rbdry) / eq.rdim, // expansion rmax
+		min(eq.zbdry) / eq.rdim, // expansion zmin
+		max(eq.zbdry) / eq.rdim), // expansion zmax
+		sign(sign)
+	{}
 
-	MagneticField(MagneticFieldMatrix& B, double B_0) : M(B), B0(B_0) {}
+	double Psi(double r, double z){
+		return ch(r, z);
+	}
 
-	Vector3 operator()(Vector3 r, double /* t */ ){
-		ScalarField MBr(M.Br, M.r_min, M.r_max, M.z_min, M.z_max);
-		ScalarField MBt(M.Bt, M.r_min, M.r_max, M.z_min, M.z_max);
-		ScalarField MBz(M.Bz, M.r_min, M.r_max, M.z_min, M.z_max);
+	double F(double r, double z){
+		double psi_here = Psi(r, z);
+		return lagrange_interpolation_3(psi_here, eq.fpol, eq.simagx, eq.sibdry);
+	}
+	double Br(double r, double z){
+		return (sign ? -1.0 : 1.0) * ch.dy(r, z) / r * (sqr(eq.rdim) / eq.bcentr);
+	}
 
-		double x = r[0], y = r[2];
-		double Br = six_point_formula(x, y, MBr) / B0;
-		double Bt = six_point_formula(x, y, MBt) / B0;
-		double Bz = six_point_formula(x, y, MBz) / B0;
+	double Bz(double r, double z){
+		return (sign ? 1.0 : -1.0) * ch.dx(r, z) / r * (sqr(eq.rdim) / eq.bcentr);
+	}
 
-		return Vector3 {Br, Bt, Bz};
+
+	double Bt(double r, double z){
+		return F(r, z) / r * (eq.rdim / eq.bcentr);
+	}
+
+	Vector3 B(double r, double z){
+		return {Br(r, z), Bt(r, z), Bz(r, z)};
+	}
+
+	double B0(){
+		return eq.bcentr;
+	}
+};
+
+class MagneticField{
+	FineEquilibrium& fineq;
+public:
+	MagneticField(FineEquilibrium& eq): fineq(eq) {}
+
+	Vector3 operator()(Vector3 r, double /* t */){
+		return fineq.B(r[0], r[2]) / fineq.B0();
+	}
+
+	double B0(){
+		return fineq.B0();
 	}
 };
 

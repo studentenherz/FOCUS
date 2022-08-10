@@ -17,16 +17,17 @@ class FileObserver{
 	double _a, _v0, _Omega, _B0;
 	bool cart;
 	MagneticField& _B;
+	FineEquilibrium& fineq;
 public:
-	FileObserver(std::ofstream& fo, double a, double v0, double Omega, MagneticField& B, bool cart_coord = false): _fo(fo), _a(a), _v0(v0), _Omega(Omega),  _B0(B.B0), cart(cart_coord), _B(B) {}
+	FileObserver(std::ofstream& fo, double a, double v0, double Omega, MagneticField& B, FineEquilibrium& eq, bool cart_coord = false): _fo(fo), _a(a), _v0(v0), _Omega(Omega),  _B0(B.B0()), cart(cart_coord), _B(B), fineq(eq) {}
 	
 	void operator()(State v, double t){
 		// magnetic field 
 		Vector3 B = _B(get_position(v), t);
 		if (cart)
-			_fo << t / _Omega << '\t' << v[0] * cos(v[1]) * _a << ' ' << v[0] * sin(v[1]) * _a << ' ' << v[2] * _a << ' ' << (v[3] * cos(v[1]) - v[4] * sin(v[1])) * _v0 << ' ' << (v[3] * sin(v[1]) + v[3] * cos(v[1])) * _v0 << ' ' << v[5] * _v0 << ' ' << (B[0] * cos(v[1]) - B[1] * sin(v[1])) * _B0 << ' ' << (B[0] * sin(v[1]) + B[1] * cos(v[1])) * _B0 << ' ' << B[2] * _B0 << '\n';
+			_fo << t / _Omega << '\t' << v[0] * cos(v[1]) * _a << ' ' << v[0] * sin(v[1]) * _a << ' ' << v[2] * _a << ' ' << (v[3] * cos(v[1]) - v[4] * sin(v[1])) * _v0 << ' ' << (v[3] * sin(v[1]) + v[3] * cos(v[1])) * _v0 << ' ' << v[5] * _v0 << ' ' << (B[0] * cos(v[1]) - B[1] * sin(v[1])) * _B0 << ' ' << (B[0] * sin(v[1]) + B[1] * cos(v[1])) * _B0 << ' ' << B[2] * _B0 << ' ' << fineq.Psi(v[0], v[2]) << ' ' << fineq.F(v[0], v[2]) << '\n';
 		else
-			_fo << t/ _Omega << '\t' << v[0]  * _a << ' ' << v[1]  << ' ' << v[2] * _a << ' ' << v[3] * _v0 << ' ' << v[4] * _v0 << ' ' << v[5] * _v0 << ' ' << B * _B0 << '\n';
+			_fo << t/ _Omega << '\t' << v[0]  * _a << ' ' << v[1]  << ' ' << v[2] * _a << ' ' << v[3] * _v0 << ' ' << v[4] * _v0 << ' ' << v[5] * _v0 << ' ' << B * _B0 << ' ' << fineq.Psi(v[0], v[2]) << ' ' << fineq.F(v[0], v[2]) << '\n';
 	}
 };
 
@@ -38,13 +39,17 @@ int main(int argc, char* argv[]){
 
 	
 	Equilibrium eq = read_geqdsk(argv[1]);
-	MagneticFieldMatrix B_matrix(eq, 26, 600);
+	FineEquilibrium fineq(eq, 26);
+	// MagneticFieldMatrix B_matrix(eq, 26, 600);
 	
 	// dump("Br.dat", B_matrix.Br, false);
 	// dump("Bt.dat", B_matrix.Bt, false);
 	// dump("Bz.dat", B_matrix.Bz, false);
 
-	MagneticField B(B_matrix, eq.bcentr);
+
+
+	// MagneticField B(B_matrix, eq.bcentr);
+	MagneticField B(fineq);
 
 	double q_over_m =  9.58e7; // C/kg proton
 	double Omega = q_over_m * eq.bcentr; // cyclotron frequency
@@ -62,7 +67,7 @@ int main(int argc, char* argv[]){
 	std::ofstream fo(argv[2]);
 
 
-	FileObserver obs(fo, a, v0, Omega, B, false);
+	FileObserver obs(fo, a, v0, Omega, B, fineq, false);
 	integrate(rk46nl, sys, x, 0.0, 0.001, 300000, obs, 99);
 
 	return 0;
