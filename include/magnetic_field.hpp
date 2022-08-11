@@ -49,39 +49,18 @@ struct MagneticFieldMatrix{
 				double z = z_min + (z_max - z_min) * j / (N - 1); // dimensionless
 
 				// From \Psi definition
-				Br(i, j) =  (sign ? -1.0 : 1.0) * ch.dy(r, z) / r;
-				Bz(i, j) =  (sign ? 1.0 : -1.0) * ch.dx(r, z) / r;
+				Br(i, j) =  (sign ? -1.0 : 1.0) * (ch.dy(r, z) / (eq.bcentr * sqr(eq.rdim))) / r;
+				Bz(i, j) =  (sign ? 1.0 : -1.0) * (ch.dx(r, z) / (eq.bcentr * sqr(eq.rdim))) / r;
 
 				double psi_here = ch(r, z);
 				double F = lagrange_interpolation_3(psi_here, eq.fpol, eq.simagx, eq.sibdry);
 
 				// From F definition
-				Bt(i, j) = F / r;
+				Bt(i, j) = (F / (eq.bcentr * sqr(eq.rdim))) / r;
 			}
 		}
 	}
 };
-
-// class MagneticField{
-// 	MagneticFieldMatrix& M;
-// public:
-// 	double B0;
-
-// 	MagneticField(MagneticFieldMatrix& B, double B_0) : M(B), B0(B_0) {}
-
-// 	Vector3 operator()(Vector3 r, double /* t */ ){
-// 		ScalarField MBr(M.Br, M.r_min, M.r_max, M.z_min, M.z_max);
-// 		ScalarField MBt(M.Bt, M.r_min, M.r_max, M.z_min, M.z_max);
-// 		ScalarField MBz(M.Bz, M.r_min, M.r_max, M.z_min, M.z_max);
-
-// 		double x = r[0], y = r[2];
-// 		double Br = six_point_formula(x, y, MBr) / B0;
-// 		double Bt = six_point_formula(x, y, MBt) / B0;
-// 		double Bz = six_point_formula(x, y, MBz) / B0;
-
-// 		return Vector3 {Br, Bt, Bz};
-// 	}
-// };
 
 class FineEquilibrium{
 	Equilibrium& eq;
@@ -114,16 +93,16 @@ public:
 		return lagrange_interpolation_3(psi_here, eq.fpol, eq.simagx, eq.sibdry);
 	}
 	double Br(double r, double z){
-		return (sign ? -1.0 : 1.0) * ch.dy(r, z) / r * (sqr(eq.rdim) / eq.bcentr);
+		return (sign ? -1.0 : 1.0) * (ch.dy(r, z) / (eq.bcentr * sqr(eq.rdim))) / r;
 	}
 
 	double Bz(double r, double z){
-		return (sign ? 1.0 : -1.0) * ch.dx(r, z) / r * (sqr(eq.rdim) / eq.bcentr);
+		return (sign ? 1.0 : -1.0) * (ch.dx(r, z) / (eq.bcentr * sqr(eq.rdim))) / r;
 	}
 
 
 	double Bt(double r, double z){
-		return F(r, z) / r * (eq.rdim / eq.bcentr);
+		return (F(r, z) / (eq.bcentr * sqr(eq.rdim))) / r;
 	}
 
 	Vector3 B(double r, double z){
@@ -141,7 +120,7 @@ public:
 	MagneticField(FineEquilibrium& eq): fineq(eq) {}
 
 	Vector3 operator()(Vector3 r, double /* t */){
-		return fineq.B(r[0], r[2]) / fineq.B0();
+		return fineq.B(r[0], r[2]);
 	}
 
 	double B0(){
