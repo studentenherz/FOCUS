@@ -8,7 +8,7 @@ vector = executable('vector', 'vector.cpp', include_directories: incdir)
 odeint = executable('odeint', 'odeint.cpp', include_directories: incdir)
 magnetic_field = executable('magnetic_field', 'magnetic_field.cpp', include_directories: incdir, cpp_args: ['-g', '-O0'])
 random = executable('random', 'random.cpp', include_directories: incdir, cpp_args: ['-g', '-O0'])
-# collisions = executable('collisions', 'collisions.cpp', include_directories: incdir, cpp_args: ['-g', '-O0'])
+collisions = executable('collisions', 'collisions.cpp', include_directories: incdir, cpp_args: ['-g', '-O0'])
 
 
 copy = find_program('scripts/copy.py')

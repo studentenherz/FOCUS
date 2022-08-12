@@ -36,10 +36,10 @@ struct MagneticFieldMatrix{
 		ScalarField psi(eq.psi, mr_min, mr_max, mz_min, mz_max);
 		
 		// Dimensionless limits of plasma boundaries
-		r_min = min(eq.rbdry) / eq.rdim;
-		r_max = max(eq.rbdry) / eq.rdim;
-		z_min = min(eq.zbdry) / eq.rdim;
-		z_max = max(eq.zbdry) / eq.rdim;
+		r_min = min(eq.rlim) / eq.rdim;
+		r_max = max(eq.rlim) / eq.rdim;
+		z_min = min(eq.zlim) / eq.rdim;
+		z_max = max(eq.zlim) / eq.rdim;
 
 		ChebyshevExpansion ch(n, psi, r_min, r_max, z_min, z_max);
 
@@ -77,10 +77,10 @@ public:
 	 		eq.rleft / eq.rdim + 1, // rmax
 	 		(eq.zmid - 0.5 * eq.zdim) / eq.rdim, // zmin
 	 		(eq.zmid + 0.5 * eq.zdim) / eq.rdim), // xmax
-		min(eq.rbdry) / eq.rdim, // expansion rmin
-		max(eq.rbdry) / eq.rdim, // expansion rmax
-		min(eq.zbdry) / eq.rdim, // expansion zmin
-		max(eq.zbdry) / eq.rdim), // expansion zmax
+		min(eq.rlim) / eq.rdim, // expansion rmin
+		max(eq.rlim) / eq.rdim, // expansion rmax
+		min(eq.zlim) / eq.rdim, // expansion zmin
+		max(eq.zlim) / eq.rdim), // expansion zmax
 		sign(sign)
 	{}
 
@@ -125,6 +125,37 @@ public:
 
 	double B0(){
 		return fineq.B0();
+	}
+};
+
+class MagneticFieldFromMatrix{
+	MagneticFieldMatrix& M;
+	double _B0;
+public:
+
+	MagneticFieldFromMatrix(MagneticFieldMatrix& B, double B_0) : M(B), _B0(B_0) {}
+
+	Vector3 operator()(Vector3 r, double /* t */ ){
+		ScalarField MBr(M.Br, M.r_min, M.r_max, M.z_min, M.z_max);
+		ScalarField MBt(M.Bt, M.r_min, M.r_max, M.z_min, M.z_max);
+		ScalarField MBz(M.Bz, M.r_min, M.r_max, M.z_min, M.z_max);
+
+		double x = r[0], y = r[2];
+		double Br = six_point_formula(x, y, MBr);
+		if (std::isnan(Br))
+			std::cerr << "Nan value of Br for r = " << r << '\n';
+		double Bt = six_point_formula(x, y, MBt);
+		if (std::isnan(Bt))
+			std::cerr << "Nan value of Bt for r = " << r << '\n';
+		double Bz = six_point_formula(x, y, MBz);
+		if (std::isnan(Bz))
+			std::cerr << "Nan value of Bz for r = " << r << '\n';
+
+		return Vector3 {Br, Bt, Bz};
+	}
+
+	double B0(){
+		return _B0;
 	}
 };
 

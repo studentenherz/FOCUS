@@ -54,13 +54,8 @@ int main(int argc, char* argv[]){
 	}
 
 	Equilibrium eq = read_geqdsk(argv[1]);
-	MagneticFieldMatrix B_matrix(eq, 26, 600);
-	
-	// dump("Br.dat", B_matrix.Br, false);
-	// dump("Bt.dat", B_matrix.Bt, false);
-	// dump("Bz.dat", B_matrix.Bz, false);
-
-	MagneticField B(B_matrix, eq.bcentr);
+	FineEquilibrium fineq(eq, 26);
+	MagneticField B(fineq);
 
 	double q_e = 1.0;
 	double m_e = 1.0;
