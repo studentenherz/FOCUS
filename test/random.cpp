@@ -6,15 +6,15 @@
 #include "cxxopts.hpp"
 
 int main(int argc, char* argv[]){
-	cxxopts::Options options("random", "Generate random distributions from seed using ran2");
+	cxxopts::options options("random", "Generate random distributions from seed using ran2");
 
 	typedef unsigned long long ull;
 
 	options.add_options()
-	("s,seed", "Seed of random", cxxopts::value<ull>())
-	("h,help", "Show this help message")
-	("uniform_ofile", "Uniform distribution output file", cxxopts::value<std::string>()->default_value("uniform.dat"));
-	("normal_ofile", "Normal distribution output file", cxxopts::value<std::string>()->default_value("normal.dat"));
+	("s,seed", "Seed of random", cxxopts::value<ull>(), "n")
+	("u,uniform_ofile", "Uniform distribution output file", cxxopts::value<std::string>()->default_value("uniform.dat"), "file")
+	("n,normal_ofile", "Normal distribution output file", cxxopts::value<std::string>()->default_value("normal.dat"), "file")
+	("h,help", "Show this help message");
 
 	try{
 
@@ -38,7 +38,7 @@ int main(int argc, char* argv[]){
 			normal << norm() << '\n';
 
 		return 0;
-	} catch(cxxopts::OptionException const& e){
+	} catch(cxxopts::option_error const& e){
 		std::cerr << e.what() << std::endl;
 		return 1;
 	}

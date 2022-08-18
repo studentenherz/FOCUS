@@ -6,11 +6,11 @@
 int main(int argc, char* argv[]){
 	using namespace std;
 
-	cxxopts::Options options("vector", "A simple test of vectors in this library");
+	cxxopts::options options("vector", "A simple test of vectors in this library");
 
 	options.add_options()
-		("h,help", "Show this help")
 		("b,bfirst", "First coordinate of b", cxxopts::value<double>()->default_value("0"))
+		("h,help", "Show this help");
 
 	try{
 		auto result = options.parse(argc, argv);
@@ -40,7 +40,7 @@ int main(int argc, char* argv[]){
 		cout << "mod(a) = " << mod(a) << '\n';
 		return 0;
 	}
-	catch(cxxopts::OptionException const& e){
+	catch(cxxopts::option_error const& e){
 		cerr << e.what() << endl;
 		return 1;
 	}
