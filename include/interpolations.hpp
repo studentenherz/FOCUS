@@ -1,3 +1,7 @@
+/**
+ * @file interpolations.hpp
+ * @brief Methods for interpolating experimental data
+ */
 #if !defined(FOCUS_INCLUDE_INTERPOLATIONS_HPP)
 #define FOCUS_INCLUDE_INTERPOLATIONS_HPP
 

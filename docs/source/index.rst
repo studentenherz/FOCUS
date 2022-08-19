@@ -9,6 +9,7 @@ FOCUS stands for Full Orbit CUda Solver and is a code to simulate the behavior o
 		:caption: Code documentation
 
 		G-EQDSK file format <include/geqdsk>
+		Interpolations <include/interpolations>
 		include/chebyshev
 		include/odeint
 		include/types
