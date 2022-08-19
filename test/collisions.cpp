@@ -54,8 +54,9 @@ int main(int argc, char* argv[]){
 	}
 
 	Equilibrium eq = read_geqdsk(argv[1]);
-	FineEquilibrium fineq(eq, 26);
-	MagneticField B(fineq);
+	MagneticFieldMatrix B_matrix(eq, 26, 600);
+
+	MagneticFieldFromMatrix B(B_matrix, eq.bcentr);
 
 	double q_e = 1.0;
 	double m_e = 1.0;
@@ -73,14 +74,14 @@ int main(int argc, char* argv[]){
 
 	// Particles
 	ConstProfileParticle electron(q_e, m_e, logl_e, Tf, nf);
-	ConstProfileParticle alpha(1.0, 2.0 * 1836, logl_e, Tf, nf);
+	ConstProfileParticle alpha(1.01, 2.0 * 1836, logl_e, Tf, nf);
 
 	// Particles in plasma
 	Array<ParticleSpecies*> plasma(1);
 	plasma[0] = &electron;
 
 	// System with Lorentz force
-	typedef Lorentz<NullForce, MagneticField, NullVectorField> System;
+	typedef Lorentz<NullForce, MagneticFieldFromMatrix, NullVectorField> System;
 	System sys(gam, B, null_vector_field, null_force);
 
 	for (unsigned long long seed = 1; seed < 5; seed++){
@@ -92,7 +93,7 @@ int main(int argc, char* argv[]){
 		CollisionStepper<System, State, double> stepper(200, collisions);
 
 		// Initial step
-		State x = {2.0 / a, 0.0, 0.0, 0.0, 0.6, 0.0};
+		State x = {2.2 / a, 0, 0, 0.0, 0.01, 0.3};
 
 		std::string fname = "coll/" + std::to_string(seed) + ".dat";
 		// Observer
@@ -100,7 +101,7 @@ int main(int argc, char* argv[]){
 		FileObserver obs(fo, a, v0, Omega, true);
 
 		std::cout << "Calculating " << fname << '\n';
-		integrate(stepper, sys, x, 0.0, 0.001, 300000, obs, 99);
+		integrate(stepper, sys, x, 0.0, 0.0001, 30000000, obs, 999);
 
 		fo.close();
 	}
