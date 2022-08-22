@@ -14,8 +14,6 @@
  * two integers.
  * @param filename the name of the file.
  * @param M the matrix to store the data.
- * @param Nx dimension in x.
- * @param Ny dimension in y.
  * @return true if the file was read successfully, false otherwise.
  */
 template <typename T>
