@@ -1,3 +1,69 @@
+/**
+ * @file collisions.hpp
+ * @brief Implementation of the Focker-Plank elastic collisions theory.
+ * 
+ * The Focker-Plank theory [1] describes the slowing down and dispersion of ions in a plasma
+ * taking in consideration that, given the conditions of a fusion plasma, it is far more
+ * probable that a large deviation is cause by multiple succesive small deviation rather
+ * than a large unique one.
+ * 
+ * Using the Itô's calculus one gets that the variation of the velocity \f$ v \f$ in the 
+ * direction \f$ i \f$ caused by the elastic collisions is
+ * 
+ * \f[
+ * 	\frac{dv_i}{dt} = F_i(v, t) + \sqrt{D_{ii}(v, t)} \xi_i(t)
+ * \f]
+ * 
+ * where \f$ \xi_i(t) \f$ is white noise with Gaussian distribution that fulfills \f$ \langle \xi_i(t) \rangle = 0 \f$ 
+ * and \f$ \langle \xi_i(t) \xi_k(t') \rangle = \delta(t-t')\delta_{ik} \f$. For a plasma with species \f$ \beta \f$
+ * in a maxwellian equilibrium the friction coefficient \f$ F_i \f$ and the difusion tensor \f$ D_{ii} \f$ are known:
+ * 
+ * \f[
+ * 	\begin{aligned}
+ *	 F_{||}(v) &= -\nu_\text{sd}(v) v\\
+ * 	 D_{||}(v) &= \nu_{||}(v) v^2 \\
+ *   D_\perp(v) &= \nu_\perp(v) v^2
+ * \end{aligned}
+ * \f]
+ * 
+ * where the slowind down factor is given by
+ * 
+ * \f[
+ * 	\nu_\text{sd}(v) = \sum\limits_\beta \frac{A_\text{D}^\beta}{ 2 v^3} \left(1+ 
+ * 		\frac{m_\alpha}{m_\beta}\right)\left(\phi(x_\beta) - x_\beta \phi'(x_\beta)\right)
+ * \f]
+ * 
+ * and the dispersion frequencies along the instant parallel and perpendicular directions 
+ * are given respectively by
+ * 
+ * \f[
+ * 	  \nu_{||}(v) = \sum\limits_\beta \frac{A_\text{D}^\beta}{v^3}G(x_\beta)
+ * \f]
+ * 
+ * and
+ * 
+ * \f[
+ * 	  \nu_\perp(v) = \sum\limits_\beta \frac{A_\text{D}^\beta}{v^3}\left(\phi(x_\beta) - G(x_\beta)\right).
+ * \f]
+ * 
+ * In the previous equations \f$ x_\beta = v/v_{s,\beta} \f$ where \f$ v_{s,\beta} = \sqrt{2 k_\text{B} T / m_\beta} \f$,
+ *  \f$ \phi(x) \f$ is the error function, 
+ * 
+ * \f[
+ * 	G(x) = \frac{\phi(x) - x \phi'(x)}{2x^2}
+ * \f]
+ * 
+ * and 
+ * 
+ * \f[
+ *	A_\text{D}^\beta = \frac{q_\alpha^2q_\beta^2}{2 \pi \epsilon_0^2 m _\alpha^2} n_\beta \ln \Lambda_\beta.
+ * \f]
+ * 
+ * 
+ * [1] Krall, N., Trivelpiece, A., Kempton, J. Principles of Plasma Physics. International
+ * series in pure and applied physics. McGraw-Hill, 1973. URL https://books.google.com.ar/books?id=b0BRAAAAMAAJ.
+ */ 
+
 #if !defined(FOCUS_INCLUDE_COLLISIONS_HPP)
 #define FOCUS_INCLUDE_COLLISIONS_HPP
 
