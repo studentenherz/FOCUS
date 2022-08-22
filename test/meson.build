@@ -3,11 +3,11 @@ interpol = executable('interpolations', 'interpolations.cpp', include_directorie
 cheby_exp = executable('chebyshev_expansion', 'chebyshev_expansion.cpp', include_directories : incdir)
 cheby_der = executable('chebyshev_derivatives', 'chebyshev_derivatives.cpp', include_directories : incdir)
 cheby_der_exp = executable('chebyshev_derivative_expansion', 'chebyshev_derivative_expansion.cpp', include_directories: incdir)
-geqdsk = executable('geqdsk', 'geqdsk.cpp', include_directories: incdir)
+geqdsk = executable('geqdsk', 'geqdsk.cpp', include_directories: incdir, implicit_include_directories: false)
 vector = executable('vector', 'vector.cpp', include_directories: incdir, implicit_include_directories: false)
 odeint = executable('odeint', 'odeint.cpp', include_directories: incdir)
 magnetic_field = executable('magnetic_field', 'magnetic_field.cpp', include_directories: incdir)
-random = executable('random', 'random.cpp', include_directories: incdir)
+random = executable('random', 'random.cpp', include_directories: incdir, implicit_include_directories: false)
 collisions = executable('collisions', 'collisions.cpp', include_directories: incdir)
 
 
