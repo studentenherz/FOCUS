@@ -61,7 +61,7 @@ int main(int argc, char* argv[]){
 	double q_e = 1.0;
 	double m_e = 1.0;
 	double logl_e = 17.5;
-	double eta = 3453.5;
+	double eta = 0.000218938;
 	
 	double q_over_m =  9.58e7; // C/kg proton
 	double Omega = q_over_m * eq.bcentr; // cyclotron frequency
@@ -71,6 +71,8 @@ int main(int argc, char* argv[]){
 
 	double Tf = 1.61029;
 	double nf = 1.0;
+
+	std::cout << 1/Omega << '\n';
 
 	// Particles
 	ConstProfileParticle electron(q_e, m_e, logl_e, Tf, nf);
