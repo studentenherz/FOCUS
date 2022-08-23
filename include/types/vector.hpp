@@ -16,7 +16,10 @@ public:
 	/**
 	 * Default constructor creates the zero vector
 	 */
-	__host__ __device__ Vector() {
+	#ifdef CUDA_BUILD
+	__host__ __device__
+	#endif
+	Vector() {
 		for (size_t i = 0; i < n; i++)
 			v[i] = 0;
 	}
@@ -33,7 +36,10 @@ public:
 	// 	va_end(args);
 	// }
 
-	__host__ __device__ Vector(std::initializer_list<double> l){
+	#ifdef CUDA_BUILD
+	__host__ __device__
+	#endif
+	Vector(std::initializer_list<double> l){
 		size_t index = 0;
 		for(const double* it = l.begin(); it != l.end(); it++)
 			v[index++] = *it;
@@ -42,8 +48,15 @@ public:
 	/**
 	 * Access to vector component
 	 */
-	__host__ __device__ double &operator[](size_t i) {return v[(i < n ? i : n)];}
-	__host__ __device__ const double &operator[](size_t i) const {return v[(i < n ? i : n)];}
+	#ifdef CUDA_BUILD
+	__host__ __device__
+	#endif
+	double &operator[](size_t i) {return v[(i < n ? i : n)];}
+	
+	#ifdef CUDA_BUILD
+	__host__ __device__
+	#endif
+	const double &operator[](size_t i) const {return v[(i < n ? i : n)];}
 };
 
 // Vector Algebra
@@ -55,7 +68,10 @@ public:
  * @return vectorial sum a + b
  */
 template<size_t n>
-__host__ __device__ Vector<n> operator+(Vector<n> a, Vector<n> b){
+#ifdef CUDA_BUILD
+__host__ __device__
+#endif
+Vector<n> operator+(Vector<n> a, Vector<n> b){
 	Vector<n> c;
 	for(size_t i = 0; i < n; i++)
 		c[i] = a[i] + b[i];
@@ -69,7 +85,10 @@ __host__ __device__ Vector<n> operator+(Vector<n> a, Vector<n> b){
  * @return vectorial sum a + (-b)
  */
 template<size_t n>
-__host__ __device__ Vector<n> operator-(Vector<n> a, Vector<n> b){
+#ifdef CUDA_BUILD
+__host__ __device__
+#endif
+Vector<n> operator-(Vector<n> a, Vector<n> b){
 	Vector<n> c;
 	for(size_t i = 0; i < n; i++)
 		c[i] = a[i] - b[i];
@@ -83,7 +102,10 @@ __host__ __device__ Vector<n> operator-(Vector<n> a, Vector<n> b){
  * @return scaled vector t * a
  */
 template<size_t n>
-__host__ __device__ Vector<n> operator*(Vector<n> a, double t){
+#ifdef CUDA_BUILD
+__host__ __device__
+#endif
+Vector<n> operator*(Vector<n> a, double t){
 	Vector<n> c;
 	for(size_t i = 0; i < n; i++)
 		c[i] = a[i] * t;
@@ -97,7 +119,10 @@ __host__ __device__ Vector<n> operator*(Vector<n> a, double t){
  * @return scaled vector t * a
  */
 template<size_t n>
-__host__ __device__ Vector<n> operator*(double t, Vector<n> a){
+#ifdef CUDA_BUILD
+__host__ __device__
+#endif
+Vector<n> operator*(double t, Vector<n> a){
 	Vector<n> c;
 	for(size_t i = 0; i < n; i++)
 		c[i] = a[i] * t;
@@ -111,7 +136,10 @@ __host__ __device__ Vector<n> operator*(double t, Vector<n> a){
  * @return scaled vector a / t
  */
 template<size_t n>
-__host__ __device__ Vector<n> operator/(Vector<n> a, double t){
+#ifdef CUDA_BUILD
+__host__ __device__
+#endif
+Vector<n> operator/(Vector<n> a, double t){
 	Vector<n> c;
 	for(size_t i = 0; i < n; i++)
 		c[i] = a[i] / t;
@@ -125,7 +153,10 @@ __host__ __device__ Vector<n> operator/(Vector<n> a, double t){
  * @return dot product a . b
  */
 template<size_t n>
-__host__ __device__ double dot(Vector<n> a, Vector<n> b){
+#ifdef CUDA_BUILD
+__host__ __device__
+#endif
+double dot(Vector<n> a, Vector<n> b){
 	double s = 0;
 	for (size_t i = 0; i < n; i++)
 		s += a[i] * b[i];
@@ -139,7 +170,10 @@ __host__ __device__ double dot(Vector<n> a, Vector<n> b){
  * @return |v|
  */
 template<size_t n>
-__host__ __device__ double mod(Vector<n> v){
+#ifdef CUDA_BUILD
+__host__ __device__
+#endif
+double mod(Vector<n> v){
 	return sqrt(dot(v, v));
 }
 
@@ -149,6 +183,9 @@ __host__ __device__ double mod(Vector<n> v){
  * @return true if there is a nan value
  */
 template<size_t n>
+#ifdef CUDA_BUILD
+__host__ __device__
+#endif
 bool hasnan(Vector<n> v){
 	for(size_t i = 0; i<n; i++)
 		if(std::isnan(v[i]))
@@ -162,7 +199,10 @@ bool hasnan(Vector<n> v){
  * Out stream operator
  */
 template<size_t n>
-__host__ std::ostream& operator<<(std::ostream& out, const Vector<n>& v){
+#ifdef CUDA_BUILD
+__host__
+#endif 
+std::ostream& operator<<(std::ostream& out, const Vector<n>& v){
 	for(size_t i = 0; i < n; i++)
 		out << v[i] << ' ';
 	return out; 
@@ -172,7 +212,10 @@ __host__ std::ostream& operator<<(std::ostream& out, const Vector<n>& v){
  * In stream operator
  */
 template<size_t n>
-__host__ std::istream& operator>>(std::istream& in, Vector<n>& v){
+#ifdef CUDA_BUILD
+__host__
+#endif 
+std::istream& operator>>(std::istream& in, Vector<n>& v){
 	for(size_t i = 0; i < n; i++)
 		in >> v[i];
 	return in; 
@@ -188,7 +231,10 @@ typedef Vector<3> Vector3;
  * @param b another vector
  * @return dot product a x b
  */
-__host__ __device__ Vector3 cross(Vector3 a, Vector3 b){
+#ifdef CUDA_BUILD
+__host__ __device__
+#endif
+Vector3 cross(Vector3 a, Vector3 b){
 	Vector3 c;
 	for (size_t i = 0; i < 3; i++)
 		c[i] = a[(i + 1) % 3] * b[(i + 2) % 3] - a[(i + 2) % 3] * b[(i + 1) % 3];
@@ -203,7 +249,10 @@ typedef Vector<6> State;
  * @param x state
  * @return position
  */
-__host__ __device__ Vector3 get_position(State x){
+#ifdef CUDA_BUILD
+__host__ __device__
+#endif
+Vector3 get_position(State x){
 	Vector3 r;
 	for(size_t i = 0; i < 3; i++)
 		r[i] = x[i];
@@ -215,7 +264,10 @@ __host__ __device__ Vector3 get_position(State x){
  * @param x state
  * @return velocity
  */
-__host__ __device__ Vector3 get_velocity(State x){
+#ifdef CUDA_BUILD
+__host__ __device__
+#endif
+Vector3 get_velocity(State x){
 	Vector3 r;
 	for(size_t i = 3; i < 6; i++)
 		r[i - 3] = x[i];
