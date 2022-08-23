@@ -60,8 +60,52 @@
  * \f]
  * 
  * 
+ * With this we can include the effect of collisions for a single particle using Langevin equations
+ * 
+ * \f[
+ * 	\begin{aligned}
+ *		\frac{dv_1}{dt} &= -\nu_\text{sd} v + \sqrt{\nu_{||} v^2} \xi_1(t) \\ 
+ * 		\frac{dv_{2, 3}}{dt} &= \sqrt{\frac{\nu_\perp}{2} v^2} \xi_{2, 3}(t),
+ * 	\end{aligned}
+ * \f]
+ * 
+ * where 1 represents the direction instantly parallel to the velocity and 2, 3 represent a pair of perpendicular
+ * directions that make a right handed coordinates system. In the doctoral thesis by Clauser [2] it is shown
+ * that these equations can be solved using an Euler step wihout compromising the accuracy of the calculation. Hence
+ * the variations are calculated using
+ * 
+ * \f[
+ * 	\begin{aligned}
+ * 		\Delta v_1 &= -\nu_\text{sd} v \Delta t_\text{col} + \sqrt{\nu_{||} \Delta t_\text{col}} v N_1\\
+ * 		\Delta v_{2, 3} &= \sqrt{\frac{\nu_\perp \Delta t_\text{col}}{2} } v N_{2, 3}
+ * 	\end{aligned}
+ * \f]
+ * 
+ * where \f$ N_i \f$ are random numbers with a Gaussian distribution with mean 0 and variance 1.
+ * 
+ * As in other parts of the code, for calculations purposes it is wise to use some dimensionless factor to prevent
+ * floating point error, in this case we have to calculate \f$ \nu \Delta t \f$ that is a dimensionless quantity
+ * 
+ * \f[
+ * 	\begin{aligned}
+ * 		\nu \Delta t &= \frac{A^\beta_D}{2 v^3} F(x_\beta) \Delta t \\
+ * 		             &= \frac{q_\alpha^2q_\beta^2 \Delta t}{4 \pi \epsilon_0^2 m _\alpha^2 v^3} n_\beta \ln \Lambda_\beta F(x_\beta) \\
+ * 		             &= \frac{e^4Z_\alpha^2Z_\beta^2 \tau \Delta \hat{t}}{4 \pi \epsilon_0^2 m_e^2 \hat{m} _\alpha^2 v_0^3 \hat{v}^3} n_0 \hat{n}_\beta \ln \Lambda_\beta F(x_\beta) \\
+ *		             &= \eta \frac{Z_\alpha^2Z_\beta^2\Delta\hat{t}}{\hat{m} _\alpha^2\hat{v}^3} \hat{n}_\beta \ln \Lambda_\beta F(x_\beta)
+ * 	\end{aligned}
+ * \f]
+ * 
+ * where \f$ F(x_\beta) \f$ depends on the component we are calculating and defining the dimensionless factor
+ * 
+ * \f[
+ * 	\eta = \frac{e^4 \tau n_0}{4 \pi \epsilon_0^2 m_e^2 v_0^3}.
+ * \f]
+ * 
  * [1] Krall, N., Trivelpiece, A., Kempton, J. Principles of Plasma Physics. International
  * series in pure and applied physics. McGraw-Hill, 1973. URL https://books.google.com.ar/books?id=b0BRAAAAMAAJ.
+ * 
+ * [2] Clauser, C. F. Dinámica de partículas alfa en plasmas magnetizados y el efecto
+ * de las colisiones en la interacción partícula-plasma. Tesis Doctoral, 2018.
  */ 
 
 #if !defined(FOCUS_INCLUDE_COLLISIONS_HPP)
