@@ -1,3 +1,113 @@
+/**
+ * @file collisions.hpp
+ * @brief Implementation of the Focker-Plank elastic collisions theory.
+ * 
+ * The Focker-Plank theory [1] describes the slowing down and dispersion of ions in a plasma
+ * taking in consideration that, given the conditions of a fusion plasma, it is far more
+ * probable that a large deviation is cause by multiple succesive small deviation rather
+ * than a large unique one.
+ * 
+ * Using the Itô's calculus one gets that the variation of the velocity \f$ v \f$ in the 
+ * direction \f$ i \f$ caused by the elastic collisions is
+ * 
+ * \f[
+ * 	\frac{dv_i}{dt} = F_i(v, t) + \sqrt{D_{ii}(v, t)} \xi_i(t)
+ * \f]
+ * 
+ * where \f$ \xi_i(t) \f$ is white noise with Gaussian distribution that fulfills \f$ \langle \xi_i(t) \rangle = 0 \f$ 
+ * and \f$ \langle \xi_i(t) \xi_k(t') \rangle = \delta(t-t')\delta_{ik} \f$. For a plasma with species \f$ \beta \f$
+ * in a maxwellian equilibrium the friction coefficient \f$ F_i \f$ and the difusion tensor \f$ D_{ii} \f$ are known:
+ * 
+ * \f[
+ * 	\begin{aligned}
+ *	 F_{||}(v) &= -\nu_\text{sd}(v) v\\
+ * 	 D_{||}(v) &= \nu_{||}(v) v^2 \\
+ *   D_\perp(v) &= \nu_\perp(v) v^2
+ * \end{aligned}
+ * \f]
+ * 
+ * where the slowind down factor is given by
+ * 
+ * \f[
+ * 	\nu_\text{sd}(v) = \sum\limits_\beta \frac{A_\text{D}^\beta}{ 2 v^3} \left(1+ 
+ * 		\frac{m_\alpha}{m_\beta}\right)\left(\phi(x_\beta) - x_\beta \phi'(x_\beta)\right)
+ * \f]
+ * 
+ * and the dispersion frequencies along the instant parallel and perpendicular directions 
+ * are given respectively by
+ * 
+ * \f[
+ * 	  \nu_{||}(v) = \sum\limits_\beta \frac{A_\text{D}^\beta}{v^3}G(x_\beta)
+ * \f]
+ * 
+ * and
+ * 
+ * \f[
+ * 	  \nu_\perp(v) = \sum\limits_\beta \frac{A_\text{D}^\beta}{v^3}\left(\phi(x_\beta) - G(x_\beta)\right).
+ * \f]
+ * 
+ * In the previous equations \f$ x_\beta = v/v_{s,\beta} \f$ where \f$ v_{s,\beta} = \sqrt{2 k_\text{B} T / m_\beta} \f$,
+ *  \f$ \phi(x) \f$ is the error function, 
+ * 
+ * \f[
+ * 	G(x) = \frac{\phi(x) - x \phi'(x)}{2x^2}
+ * \f]
+ * 
+ * and 
+ * 
+ * \f[
+ *	A_\text{D}^\beta = \frac{q_\alpha^2q_\beta^2}{2 \pi \epsilon_0^2 m _\alpha^2} n_\beta \ln \Lambda_\beta.
+ * \f]
+ * 
+ * 
+ * With this we can include the effect of collisions for a single particle using Langevin equations
+ * 
+ * \f[
+ * 	\begin{aligned}
+ *		\frac{dv_1}{dt} &= -\nu_\text{sd} v + \sqrt{\nu_{||} v^2} \xi_1(t) \\ 
+ * 		\frac{dv_{2, 3}}{dt} &= \sqrt{\frac{\nu_\perp}{2} v^2} \xi_{2, 3}(t),
+ * 	\end{aligned}
+ * \f]
+ * 
+ * where 1 represents the direction instantly parallel to the velocity and 2, 3 represent a pair of perpendicular
+ * directions that make a right handed coordinates system. In the doctoral thesis by Clauser [2] it is shown
+ * that these equations can be solved using an Euler step wihout compromising the accuracy of the calculation. Hence
+ * the variations are calculated using
+ * 
+ * \f[
+ * 	\begin{aligned}
+ * 		\Delta v_1 &= -\nu_\text{sd} v \Delta t_\text{col} + \sqrt{\nu_{||} \Delta t_\text{col}} v N_1\\
+ * 		\Delta v_{2, 3} &= \sqrt{\frac{\nu_\perp \Delta t_\text{col}}{2} } v N_{2, 3}
+ * 	\end{aligned}
+ * \f]
+ * 
+ * where \f$ N_i \f$ are random numbers with a Gaussian distribution with mean 0 and variance 1.
+ * 
+ * As in other parts of the code, for calculations purposes it is wise to use some dimensionless factor to prevent
+ * floating point error, in this case we have to calculate \f$ \nu \Delta t \f$ that is a dimensionless quantity
+ * 
+ * \f[
+ * 	\begin{aligned}
+ * 		\nu \Delta t &= \frac{A^\beta_D}{2 v^3} F(x_\beta) \Delta t \\
+ * 		             &= \frac{q_\alpha^2q_\beta^2 \Delta t}{4 \pi \epsilon_0^2 m _\alpha^2 v^3} n_\beta \ln \Lambda_\beta F(x_\beta) \\
+ * 		             &= \frac{e^4Z_\alpha^2Z_\beta^2 \tau \Delta \hat{t}}{4 \pi \epsilon_0^2 m_e^2 \hat{m} _\alpha^2 v_0^3 \hat{v}^3} n_0 \hat{n}_\beta \ln \Lambda_\beta F(x_\beta) \\
+ *		             &= \eta \frac{Z_\alpha^2Z_\beta^2\Delta\hat{t}}{\hat{m} _\alpha^2\hat{v}^3} \hat{n}_\beta \ln \Lambda_\beta F(x_\beta)
+ * 	\end{aligned}
+ * \f]
+ * 
+ * where \f$ F(x_\beta) \f$ depends on the component we are calculating and defining the dimensionless factor
+ * 
+ * \f[
+ * 	\eta = \frac{e^4 \tau n_0}{4 \pi \epsilon_0^2 m_e^2 v_0^3}.
+ * \f]
+ * 
+ * [1] Krall, N., Trivelpiece, A., Kempton, J. Principles of Plasma Physics. International
+ * series in pure and applied physics. McGraw-Hill, 1973. URL https://books.google.com.ar/books?id=b0BRAAAAMAAJ.
+ * 
+ * [2] Clauser, C. F. Dinámica de partículas alfa en plasmas magnetizados y el efecto
+ * de las colisiones en la interacción partícula-plasma. Tesis Doctoral, 2018.
+ */ 
+
 #if !defined(FOCUS_INCLUDE_COLLISIONS_HPP)
 #define FOCUS_INCLUDE_COLLISIONS_HPP
 
@@ -29,13 +139,13 @@ double G(double x){
  * Langevin equation using Îto's method.
  */
 class FockerPlank{
-	Array<ParticleSpecies> beta;	// Particle species involved
-	ParticleSpecies alpha;				// Test particle species
+	Array<ParticleSpecies*> beta;	// Particle species involved
+	ParticleSpecies& alpha;				// Test particle species
 
 	double _eta;				// Dimensionless constant
 	NormalRand gauss;	// Gaussian random generator
 public:
-	FockerPlank(unsigned long long seed, Array<ParticleSpecies> plasma_particles, ParticleSpecies test_particle, double eta): beta(plasma_particles), alpha(test_particle), _eta(eta), gauss(seed) {}
+	FockerPlank(unsigned long long seed, Array<ParticleSpecies*> plasma_particles, ParticleSpecies& test_particle, double eta): beta(plasma_particles), alpha(test_particle), _eta(eta), gauss(seed) {}
 
 	/**
 	 * Slowing down from elastic collisions
@@ -51,8 +161,8 @@ public:
 		double nu_sd = 0;
 		// terms that depend on plasma particles
 		for(size_t i = 0; i < beta.size(); i++){
-			double xb = v_mod / beta[i].T(r, t);
-			nu_sd +=  sqr(beta[i].q) *  beta[i].n(r, t) * (1 + alpha.m/beta[i].m) * beta[i].logl * erf_minus_d_erf(xb);
+			double xb = v_mod / beta[i]->T(r, t);
+			nu_sd +=  sqr(beta[i]->q) *  beta[i]->n(r, t) * (1 + alpha.m/beta[i]->m) * beta[i]->logl * erf_minus_d_erf(xb);
 		}
 
 		// other terms
@@ -75,8 +185,8 @@ public:
 		double nu = 0;
 		// terms that depend on plasma particles
 		for(size_t i = 0; i < beta.size(); i++){
-			double xb = v_mod / beta[i].T(r, t);
-			nu +=  sqr(beta[i].q) * beta[i].n(r, t) * beta[i].logl * G(xb);
+			double xb = v_mod / beta[i]->T(r, t);
+			nu +=  sqr(beta[i]->q) * beta[i]->n(r, t) * beta[i]->logl * G(xb);
 		}
 
 		// other terms
@@ -99,8 +209,8 @@ public:
 		double nu = 0;
 		// terms that depend on plasma particles
 		for(size_t i = 0; i < beta.size(); i++){
-			double xb = v_mod / beta[i].T(r, t);
-			nu +=  sqr(beta[i].q) * beta[i].n(r, t) * beta[i].logl * (erf(xb) - G(xb));
+			double xb = v_mod / beta[i]->T(r, t);
+			nu +=  sqr(beta[i]->q) * beta[i]->n(r, t) * beta[i]->logl * (erf(xb) - G(xb));
 		}
 
 		// other terms

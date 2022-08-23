@@ -13,27 +13,6 @@
 #include "magnetic_field.hpp"
 #include "geqdsk.hpp"
 
-// // Homogeneous Magnetic Field in z direction
-// struct MagneticField{
-// 	double B0;
-// 	MagneticField(double B): B0(B) {}
-// 	Vector3 operator()(Vector3 /* r */, double /* t */ ){
-// 		Vector3 f;
-// 		f[2] = B0;
-// 		return f;
-// 	}
-// } B(1);
-
-// Constant temperature profile
-double Tf(Vector3 /* r */, double /* t */){
-	return 1.61029;
-}
-
-// Constant density profile
-double nf(Vector3 /* r */, double /* t */){
-	return 1.0;
-}
-
 
 template<typename system_type, typename state_type, typename scalar_type>
 class CollisionStepper{
@@ -46,8 +25,10 @@ public:
 	
 	void do_step(system_type sys, state_type& x, scalar_type t, scalar_type dt){
 		orbit_stepper.do_step(sys, x, t, dt);
-		if (++steps % collisions_nstep == 0)
+		if (++steps == collisions_nstep){
 			collision_operator.euler_step(x, t, dt * collisions_nstep);
+			steps = 0;
+		}
 	}
 };
 
@@ -74,17 +55,13 @@ int main(int argc, char* argv[]){
 
 	Equilibrium eq = read_geqdsk(argv[1]);
 	MagneticFieldMatrix B_matrix(eq, 26, 600);
-	
-	// dump("Br.dat", B_matrix.Br, false);
-	// dump("Bt.dat", B_matrix.Bt, false);
-	// dump("Bz.dat", B_matrix.Bz, false);
 
-	MagneticField B(B_matrix, eq.bcentr);
+	MagneticFieldFromMatrix B(B_matrix, eq.bcentr);
 
 	double q_e = 1.0;
 	double m_e = 1.0;
 	double logl_e = 17.5;
-	double eta = 3453.5;
+	double eta = 0.000218938;
 	
 	double q_over_m =  9.58e7; // C/kg proton
 	double Omega = q_over_m * eq.bcentr; // cyclotron frequency
@@ -92,16 +69,21 @@ int main(int argc, char* argv[]){
 	double a = eq.rdim; // m
 	double gam = v0 / (a * Omega); // dimensionless factor
 
+	double Tf = 1.61029;
+	double nf = 1.0;
+
+	std::cout << 1/Omega << '\n';
+
 	// Particles
-	ParticleSpecies electron(q_e, m_e, logl_e, Tf, nf);
-	ParticleSpecies alpha(1.0, 2.0 * 1836, logl_e, Tf, nf);
+	ConstProfileParticle electron(q_e, m_e, logl_e, Tf, nf);
+	ConstProfileParticle alpha(1.01, 2.0 * 1836, logl_e, Tf, nf);
 
 	// Particles in plasma
-	Array<ParticleSpecies> plasma(1);
-	plasma[0] = electron;
+	Array<ParticleSpecies*> plasma(1);
+	plasma[0] = &electron;
 
 	// System with Lorentz force
-	typedef Lorentz<NullForce, MagneticField, NullVectorField> System;
+	typedef Lorentz<NullForce, MagneticFieldFromMatrix, NullVectorField> System;
 	System sys(gam, B, null_vector_field, null_force);
 
 	for (unsigned long long seed = 1; seed < 5; seed++){
@@ -113,7 +95,7 @@ int main(int argc, char* argv[]){
 		CollisionStepper<System, State, double> stepper(200, collisions);
 
 		// Initial step
-		State x = {2.0 / a, 0.0, 0.0, 0.0, 0.6, 0.0};
+		State x = {2.2 / a, 0, 0, 0.0, 0.01, 0.3};
 
 		std::string fname = "coll/" + std::to_string(seed) + ".dat";
 		// Observer
@@ -121,7 +103,7 @@ int main(int argc, char* argv[]){
 		FileObserver obs(fo, a, v0, Omega, true);
 
 		std::cout << "Calculating " << fname << '\n';
-		integrate(stepper, sys, x, 0.0, 0.001, 300000, obs, 99);
+		integrate(stepper, sys, x, 0.0, 0.0001, 30000000, obs, 999);
 
 		fo.close();
 	}

@@ -143,6 +143,19 @@ __host__ __device__ double mod(Vector<n> v){
 	return sqrt(dot(v, v));
 }
 
+/**
+ * Checks if there is a nan value inside
+ * @param v Vector
+ * @return true if there is a nan value
+ */
+template<size_t n>
+bool hasnan(Vector<n> v){
+	for(size_t i = 0; i<n; i++)
+		if(std::isnan(v[i]))
+			return true;
+	return false;
+}
+
 // IO for vectors
 
 /**
@@ -208,5 +221,6 @@ __host__ __device__ Vector3 get_velocity(State x){
 		r[i - 3] = x[i];
 	return r;
 }
+
 
 #endif // FOCUS_INCLUDE_TYPES_VECTOR_HPP

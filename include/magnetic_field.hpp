@@ -36,14 +36,12 @@ struct MagneticFieldMatrix{
 		ScalarField psi(eq.psi, mr_min, mr_max, mz_min, mz_max);
 		
 		// Dimensionless limits of plasma boundaries
-		r_min = min(eq.rbdry) / eq.rdim;
-		r_max = max(eq.rbdry) / eq.rdim;
-		z_min = min(eq.zbdry) / eq.rdim;
-		z_max = max(eq.zbdry) / eq.rdim;
+		r_min = min(eq.rlim) / eq.rdim;
+		r_max = max(eq.rlim) / eq.rdim;
+		z_min = min(eq.zlim) / eq.rdim;
+		z_max = max(eq.zlim) / eq.rdim;
 
 		ChebyshevExpansion ch(n, psi, r_min, r_max, z_min, z_max);
-
-		double d_psi = (eq.sibdry - eq.simagx) / (eq.nx - 1);
 
 		for(size_t i = 0; i<N; i++){
 			double r = r_min + (r_max - r_min) * i / (N - 1); // dimensionless
@@ -51,44 +49,91 @@ struct MagneticFieldMatrix{
 				double z = z_min + (z_max - z_min) * j / (N - 1); // dimensionless
 
 				// From \Psi definition
-				Br(i, j) =  (sign ? -1.0 : 1.0) * ch.dy(r, z) / r;
-				Bz(i, j) =  (sign ? 1.0 : -1.0) * ch.dx(r, z) / r;
+				Br(i, j) =  (sign ? -1.0 : 1.0) * (ch.dy(r, z) / (eq.bcentr * sqr(eq.rdim))) / r;
+				Bz(i, j) =  (sign ? 1.0 : -1.0) * (ch.dx(r, z) / (eq.bcentr * sqr(eq.rdim))) / r;
 
 				double psi_here = ch(r, z);
-				size_t index = std::floor((psi_here - eq.simagx) / d_psi);
-				// Keep index inside boundaries
-				if (index <= 0) index = 1;
-				if (index >= eq.nx - 1) index = eq.nx - 2;
-
-				// Lagrange interpolation with the 3 closest points
-				// https://en.wikipedia.org/wiki/Lagrange_polynomial
-				Vector3 x, y, l;
-
-				// Get the points
-				for(size_t k = 0; k < 3; k++){
-					x[k] = eq.simagx + (index + k - 1) * d_psi;
-					y[k] = eq.fpol[index + k  - 1];
-				}
-
-				// Basis polynomials evaluated at psi_here
-				for(size_t k = 0; k < 3; k++)
-					l[k] = (psi_here - x[(k + 2) % 3])/(x[k] - x[(k + 2) % 3]) * (psi_here - x[(k + 1) % 3])/(x[k] - x[(k + 1) % 3]);
-				
-				// Linear combination
-				double F = dot(y, l);
+				double F = lagrange_interpolation_3(psi_here, eq.fpol, eq.simagx, eq.sibdry);
 
 				// From F definition
-				Bt(i, j) = F / r;
+				Bt(i, j) = (F / (eq.bcentr * sqr(eq.rdim))) / r;
 			}
 		}
 	}
 };
 
-class MagneticField{
-	MagneticFieldMatrix& M;
-	double B0;
+class FineEquilibrium{
+	Equilibrium& eq;
+	ChebyshevExpansion ch;
+	bool sign;
 public:
-	MagneticField(MagneticFieldMatrix& B, double B_0) : M(B), B0(B_0) {}
+	FineEquilibrium(Equilibrium& eq, size_t n, bool sign = true): 
+	eq(eq), // Equilibrium 
+	ch(			// Chebyshev Expansion
+		n,		// order 
+		ScalarField( // Scalar Field to be expanded
+			eq.psi,			// matrix 
+	 		eq.rleft / eq.rdim, // rmin
+	 		eq.rleft / eq.rdim + 1, // rmax
+	 		(eq.zmid - 0.5 * eq.zdim) / eq.rdim, // zmin
+	 		(eq.zmid + 0.5 * eq.zdim) / eq.rdim), // xmax
+		min(eq.rlim) / eq.rdim, // expansion rmin
+		max(eq.rlim) / eq.rdim, // expansion rmax
+		min(eq.zlim) / eq.rdim, // expansion zmin
+		max(eq.zlim) / eq.rdim), // expansion zmax
+		sign(sign)
+	{}
+
+	double Psi(double r, double z){
+		return ch(r, z);
+	}
+
+	double F(double r, double z){
+		double psi_here = Psi(r, z);
+		return lagrange_interpolation_3(psi_here, eq.fpol, eq.simagx, eq.sibdry);
+	}
+	double Br(double r, double z){
+		return (sign ? -1.0 : 1.0) * (ch.dy(r, z) / (eq.bcentr * sqr(eq.rdim))) / r;
+	}
+
+	double Bz(double r, double z){
+		return (sign ? 1.0 : -1.0) * (ch.dx(r, z) / (eq.bcentr * sqr(eq.rdim))) / r;
+	}
+
+
+	double Bt(double r, double z){
+		return (F(r, z) / (eq.bcentr * sqr(eq.rdim))) / r;
+	}
+
+	Vector3 B(double r, double z){
+		return {Br(r, z), Bt(r, z), Bz(r, z)};
+	}
+
+	double B0(){
+		return eq.bcentr;
+	}
+};
+
+class MagneticField{
+	FineEquilibrium& fineq;
+public:
+	MagneticField(FineEquilibrium& eq): fineq(eq) {}
+
+	Vector3 operator()(Vector3 r, double /* t */){
+		return fineq.B(r[0], r[2]);
+	}
+
+	double B0(){
+		return fineq.B0();
+	}
+};
+
+class MagneticFieldFromMatrix{
+	MagneticFieldMatrix& M;
+	double _B0;
+public:
+
+	MagneticFieldFromMatrix(MagneticFieldMatrix& B, double B_0) : M(B), _B0(B_0) {}
 
 	Vector3 operator()(Vector3 r, double /* t */ ){
 		ScalarField MBr(M.Br, M.r_min, M.r_max, M.z_min, M.z_max);
@@ -96,11 +141,21 @@ public:
 		ScalarField MBz(M.Bz, M.r_min, M.r_max, M.z_min, M.z_max);
 
 		double x = r[0], y = r[2];
-		double Br = six_point_formula(x, y, MBr) / B0;
-		double Bt = six_point_formula(x, y, MBt) / B0;
-		double Bz = six_point_formula(x, y, MBz) / B0;
+		double Br = six_point_formula(x, y, MBr);
+		if (std::isnan(Br))
+			std::cerr << "Nan value of Br for r = " << r << '\n';
+		double Bt = six_point_formula(x, y, MBt);
+		if (std::isnan(Bt))
+			std::cerr << "Nan value of Bt for r = " << r << '\n';
+		double Bz = six_point_formula(x, y, MBz);
+		if (std::isnan(Bz))
+			std::cerr << "Nan value of Bz for r = " << r << '\n';
 
 		return Vector3 {Br, Bt, Bz};
+	}
+
+	double B0(){
+		return _B0;
 	}
 };
 
