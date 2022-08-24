@@ -2,8 +2,6 @@
 
 #include "types/array.hpp"
 
-
-
 __global__ void k_sum_array(int dArr[], size_t* n, int* s){
 	Array<int> arr(dArr, *n);
 	
@@ -12,32 +10,43 @@ __global__ void k_sum_array(int dArr[], size_t* n, int* s){
 		*s += arr[i];
 }
 
-int main(){
-	size_t n = 10;
+class DoTheWork{
+	size_t hn;
 	size_t* dn;
-	int hArr[n];
-	for(size_t i = 0; i < n; i++)
-		hArr[i] = i;
+	int* hArr;
 	int* dArr;
-
 	int hsum;
 	int* dsum;
-	cudaMalloc(&dsum, sizeof(int));
-	cudaMalloc(&dn, sizeof(size_t));
-	cudaMalloc(&dArr, sizeof(int) * n);
+public:
+	DoTheWork(size_t n): hn(n) {
+		cudaMalloc(&dsum, sizeof(int));
+		cudaMalloc(&dn, sizeof(size_t));
+		cudaMalloc(&dArr, sizeof(int) * n);
 
-	cudaMemcpy(dArr, hArr, sizeof(int) * n, cudaMemcpyHostToDevice);
-	cudaMemcpy(dn, &n, sizeof(size_t), cudaMemcpyHostToDevice);
+		hArr = new int[n];
+		for(size_t i = 0; i < n; i++)
+			hArr[i] = i;
+		cudaMemcpy(dArr, hArr, sizeof(int) * n, cudaMemcpyHostToDevice);
+		cudaMemcpy(dn, &n, sizeof(size_t), cudaMemcpyHostToDevice);
+	}
 
-	k_sum_array<<<1, 1>>>(dArr, dn, dsum);
+	~DoTheWork(){
+		cudaFree(dsum);
+		cudaFree(dArr);
+		cudaFree(dn);
+	}
 
-	cudaMemcpy(&hsum, dsum, sizeof(int), cudaMemcpyDeviceToHost);
+	void now_do_it(){
+		k_sum_array<<<1, 1>>>(dArr, dn, dsum);
+		cudaMemcpy(&hsum, dsum, sizeof(int), cudaMemcpyDeviceToHost);
+		std::cout << hsum << '\n';
+	}
+};
 
-	cudaFree(dsum);
-	cudaFree(dArr);
-	cudaFree(dn);
+int main(){
 	
-	std::cout << hsum << '\n';
+	DoTheWork yo(11);
+	yo.now_do_it();
 
 	return 0;
 }
