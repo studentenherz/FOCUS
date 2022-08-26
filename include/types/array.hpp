@@ -5,6 +5,7 @@ template <typename T>
 class Array{
 	T *arr;
 	size_t _size;
+	bool _in_device_from_host;
 public:
 	/**
 	 * Default constructor
@@ -13,8 +14,7 @@ public:
 	#ifdef CUDA_BUILD
 	__host__ __device__
 	#endif
-	Array(size_t n = 0){
-		_size = n;
+	Array(size_t n = 0): _size(n), _in_device_from_host(false) {
 		arr = new T[_size + 1];
 	}
 
@@ -26,11 +26,8 @@ public:
 	#ifdef CUDA_BUILD
 	__host__ __device__
 	#endif
-	Array(T other_arr[], size_t n){
-		_size = n;
-		arr = new T[_size + 1];
-		for(size_t i = 0; i < _size; i++)
-			arr[i] = other_arr[i];
+	Array(T* other_arr, size_t n, bool in_device_from_host = true): _size(n), _in_device_from_host(in_device_from_host) {
+		arr = other_arr;
 	}
 	
 	/**
@@ -41,7 +38,7 @@ public:
 	#ifdef CUDA_BUILD
 	__host__ __device__
 	#endif
-	Array(Array&& other): _size(other._size) {
+	Array(Array&& other): _size(other._size), _in_device_from_host(other._in_device_from_host) {
 		arr = other.arr;
 		other.arr = NULL;
 	}
@@ -65,6 +62,7 @@ public:
 	__host__ __device__
 	#endif
 	~Array(){
+		if (_in_device_from_host) return;
 		delete[] arr;
 		arr = NULL;
 	}
@@ -133,7 +131,8 @@ __host__ __device__
 T min(const Array<T>& a){
 	T m = a[0];
 	for(size_t i = 1; i < a.size(); i++)
-		m = std::min(m, a[i]);
+		if (a[i] < m)
+			m = a[i];
 	return m;
 }
 
@@ -149,7 +148,8 @@ __host__ __device__
 T max(const Array<T>& a){
 	T m = a[0];
 	for(size_t i = 1; i < a.size(); i++)
-		m = std::max(m, a[i]);
+		if (a[i] > m)
+			m = a[i];
 	return m;
 }
 
