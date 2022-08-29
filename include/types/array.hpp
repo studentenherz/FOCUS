@@ -3,9 +3,9 @@
 
 template <typename T>
 class Array{
-	T *arr;
+	T *_arr;
 	size_t _size;
-	bool _in_device_from_host;
+	bool _copied;
 public:
 	/**
 	 * Default constructor
@@ -14,8 +14,8 @@ public:
 	#ifdef CUDA_BUILD
 	__host__ __device__
 	#endif
-	Array(size_t n = 0): _size(n), _in_device_from_host(false) {
-		arr = new T[_size + 1];
+	Array(size_t n = 0): _size(n), _copied(false) {
+		_arr = new T[_size + 1];
 	}
 
 	/**
@@ -24,11 +24,12 @@ public:
 	 * @param n size of array
 	 */
 	#ifdef CUDA_BUILD
-	__host__ __device__
-	#endif
-	Array(T* other_arr, size_t n, bool in_device_from_host = true): _size(n), _in_device_from_host(in_device_from_host) {
-		arr = other_arr;
+	__host__
+	Array(T* other_arr, size_t size, bool from_host = true): _size(size), _copied(from_host) {
+		cudaMalloc(&_arr, sizeof(T) * (_size + 1));
+		cudaMemcpy(_arr, other_arr, sizeof(T) * _size, cudaMemcpyHostToDevice);
 	}
+	#endif
 	
 	/**
 	 * Move constructor; this allows the array to be passed
@@ -38,9 +39,15 @@ public:
 	#ifdef CUDA_BUILD
 	__host__ __device__
 	#endif
-	Array(Array&& other): _size(other._size), _in_device_from_host(other._in_device_from_host) {
-		arr = other.arr;
-		other.arr = NULL;
+	Array(Array&& other){
+		_size = other._size;
+		_arr = other._arr;
+		_copied = other._copied;
+
+		// If the previous array was a copied one just copy
+		// else actually do the move
+		if (!_copied)
+			other._arr = NULL;
 	}
 
 	/**
@@ -50,9 +57,10 @@ public:
 	#ifdef CUDA_BUILD
 	__host__ __device__
 	#endif
-	Array(Array& other): Array(other._size) {
-		for(size_t i = 0; i < _size; i++)
-			arr[i] = other.arr[i];
+	Array(Array& other){
+		_copied = true;
+		_size = other._size;
+		_arr = other._arr;
 	}
 
 	/**
@@ -62,9 +70,9 @@ public:
 	__host__ __device__
 	#endif
 	~Array(){
-		if (_in_device_from_host) return;
-		delete[] arr;
-		arr = NULL;
+		if (_copied) return;
+		delete[] _arr;
+		_arr = NULL;
 	}
 
 	/**
@@ -77,8 +85,8 @@ public:
 	#endif
 	T &operator[](size_t i){
 		if (i > _size)
-			return arr[_size];
-		return arr[i];
+			return _arr[_size];
+		return _arr[i];
 	}
 	
 	/**
@@ -91,8 +99,8 @@ public:
 	#endif
 	const T &operator[](size_t i) const {
 		if (i > _size)
-			return arr[_size];
-		return arr[i];
+			return _arr[_size];
+		return _arr[i];
 	}
 
 	/** 
@@ -113,9 +121,9 @@ public:
 	__host__ __device__
 	#endif
 	void resize(size_t n){
-		delete[] arr;
+		delete[] _arr;
 		_size = n;
-		arr = new T[_size + 1];
+		_arr = new T[_size + 1];
 	}
 }; // class Array
 
