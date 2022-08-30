@@ -19,7 +19,7 @@ public:
 	}
 
 	/**
-	 * Construct from array
+	 * Construct in host for device from array
 	 * @param other_arr array to construct from
 	 * @param n size of array
 	 */
@@ -30,7 +30,7 @@ public:
 		cudaMemcpy(_arr, other_arr, sizeof(T) * _size, cudaMemcpyHostToDevice);
 	}
 	#endif
-	
+
 	/**
 	 * Move constructor; this allows the array to be passed
 	 * as a return value from a function sapping the pointers
@@ -62,6 +62,20 @@ public:
 		_size = other._size;
 		_arr = other._arr;
 	}
+
+	/**
+	 * Construct in host for device from Array 
+	 * @param other Array to construct from
+	 */
+	#ifdef CUDA_BUILD
+	__host__
+	void construct_in_host_for_device_from_array(Array<T>& other){
+		_copied = true;
+		_size = other._size;
+		cudaMalloc(&_arr, sizeof(T) * (_size + 1));
+		cudaMemcpy(_arr, other._arr, sizeof(T) * _size, cudaMemcpyHostToDevice);
+	}
+	#endif
 
 	/**
 	 * Desctructor; dealocate heap and set pointer to null

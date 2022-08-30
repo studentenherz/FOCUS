@@ -23,15 +23,23 @@ __global__ void k_sum_array(Array<int> arr, int* s){
 
 int main(){
 		size_t n = 10;
-		int raw_arr[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
 		int hsum;
 		int* dsum;
 		
+		//// Construct from C++ array
+		// int raw_arr[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+		// Array<int> hArr(arr, n);
+
+		// Construct from Array<T>, useful in order to use previously created interface
+		Array<int> arr(n);
+		for(size_t i =0; i<arr.size(); i++)
+			arr[i] = i + 1;
+
+		Array<int> hArr;
+		hArr.construct_in_host_for_device_from_array(arr);
+
 		cudaMalloc(&dsum, sizeof(int));
-
-		Array<int> arr(raw_arr, n);
-
-		k_sum_array<<<1, 1>>>(arr, dsum);
+		k_sum_array<<<1, 1>>>(hArr, dsum);
 
 		cudaMemcpy(&hsum, dsum, sizeof(int), cudaMemcpyDeviceToHost);
 		std::cout << hsum << '\n';
