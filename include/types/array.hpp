@@ -69,7 +69,7 @@ public:
 	 */
 	#ifdef CUDA_BUILD
 	__host__
-	void construct_in_host_for_device_from_array(Array<T>& other){
+	void construct_in_host_for_device(Array<T>& other){
 		_copied = true;
 		_size = other._size;
 		cudaMalloc(&_arr, sizeof(T) * (_size + 1));
