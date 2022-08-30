@@ -5,9 +5,10 @@
 #include "geqdsk.hpp"
 #include "files.hpp"
 #include "cxxopts.hpp"
+#include "types/scalar_field.hpp"
 
 __global__ 
-void kernel(Equilibrium eq, double *psi_sum, double *fpol_sum, int *idnum){
+void kernel(Equilibrium eq, ScalarField psi, double *psi_sum, double *fpol_sum, int *idnum){
 	*idnum = eq.idnum;
 
 	*fpol_sum = 0;
@@ -17,7 +18,7 @@ void kernel(Equilibrium eq, double *psi_sum, double *fpol_sum, int *idnum){
 	*psi_sum = 0;
 	for(size_t i = 0; i < eq.psi.shape().first; i++)
 		for(size_t j = 0; j < eq.psi.shape().second; j++)
-			*psi_sum += eq.psi(i, j);
+			*psi_sum += psi(i, j);
 }
 
 int main(int argc, char* argv[]){
@@ -91,6 +92,13 @@ int main(int argc, char* argv[]){
 		// Equilibrium dEq;
 		// dEq.construct_in_host_for_device(eq);
 
+		double mr_min = eq.rleft / eq.rdim;
+		double mr_max = eq.rleft / eq.rdim + 1;
+		double mz_min = (eq.zmid - 0.5 * eq.zdim) / eq.rdim;
+		double mz_max = (eq.zmid + 0.5 * eq.zdim) / eq.rdim;
+
+		ScalarField psi(eq.psi, mr_min, mr_max, mz_min, mz_max);
+
 		double *d_psi_sum, *d_fpol_sum;
 		int *d_idnum;
 
@@ -98,7 +106,7 @@ int main(int argc, char* argv[]){
 		cudaMalloc(&d_fpol_sum, sizeof(double));
 		cudaMalloc(&d_idnum, sizeof(int));
 
-		kernel<<<1, 1>>>(eq, d_psi_sum, d_fpol_sum, d_idnum);
+		kernel<<<1, 1>>>(eq, psi, d_psi_sum, d_fpol_sum, d_idnum);
 
 		double h_psi_sum, h_fpol_sum;
 		int h_idnum;

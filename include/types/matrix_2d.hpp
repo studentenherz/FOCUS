@@ -28,8 +28,20 @@ public:
 	Matrix2D& operator=(const Matrix2D&&) = delete;
 
 	/**
+	 * Copy constructor; put copied flag
+	 */
+	#ifdef CUDA_BUILD
+	__host__ __device__
+	#endif
+	Matrix2D(Matrix2D& other){
+		_shape = other._shape;
+		_arr = other._arr;
+		_copied = true;
+	}
+
+	/**
 	 * Move constructor; this allows the matrix to be passed
-	 * as a return value from a function sapping the pointers
+	 * as a return value from a function swapping the pointers
 	 * and keeping the allocated data on the heap.
 	 */
 	#ifdef CUDA_BUILD

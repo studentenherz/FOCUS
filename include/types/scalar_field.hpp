@@ -9,7 +9,7 @@
  * it represents
  */
 struct ScalarField{
-	Matrix2D<double>& M;	///< Matrix description of the field
+	Matrix2D<double> M;	///< Matrix description of the field
 
 	/**
 	 * @name Space limits
@@ -21,7 +21,20 @@ struct ScalarField{
 	double y_max;		///< maximum y
 	///@}
 
-	ScalarField(Matrix2D<double>& _M, double _x_min, double _x_max, double _y_min, double _y_max): M(_M), x_min(_x_min), x_max(_x_max), y_min(_y_min), y_max(_y_max) {}
+	/**
+	 * Constructor
+	 */
+	#ifdef CUDA_BUILD
+	__host__ __device__
+	#endif
+	ScalarField(Matrix2D<double> _M, double _x_min, double _x_max, double _y_min, double _y_max): M(_M), x_min(_x_min), x_max(_x_max), y_min(_y_min), y_max(_y_max) {}
+
+	#ifdef CUDA_BUILD
+	__host__
+	ScalarField(ScalarField& other): x_min(other.x_min), x_max(other.x_max), y_min(other.y_min), y_max(other.y_max) {
+		M.construct_in_host_for_device(other.M);
+	}
+	#endif
 
 	/**
 	 * Propagate the matrix access operator
@@ -29,6 +42,9 @@ struct ScalarField{
 	 * @param j second index
 	 * @return `M(i, j)`
 	 */
+	#ifdef CUDA_BUILD
+	__host__ __device__
+	#endif
 	double operator()(int i, int j) const {
 		return M(i, j);
 	}
