@@ -24,9 +24,9 @@ struct Equilibrium{
   double zmid;					///< z at middle of domain (meters)
   double rmagx;					///< R at magnetic axis (O-point) (meters)
 	double zmagx;					///< z at magnetic axis (O-point) (meters)
-  double simagx;        ///< Poloidal flux `psi` at magnetic axis
-  double sibdry;        ///< Poloidal flux `psi` at plasma boundary
-  double cpasma;        ///< Plasma current (Amperes)
+  double simagx;				///< Poloidal flux `psi` at magnetic axis
+  double sibdry;				///< Poloidal flux `psi` at plasma boundary
+  double cpasma;				///< Plasma current (Amperes)
 	///@}
 
 	/**
@@ -54,8 +54,8 @@ struct Equilibrium{
 	size_t nlim;								///< Number of points of wall limits
 	Array<double> rbdry;				///< Plasma boundary R (meters)
 	Array<double> zbdry;				///< Plasma boundary z (meters)
-	Array<double> rlim;				///< Wall limits R (meters)
-	Array<double> zlim;				///< Wall limits z (meters)
+	Array<double> rlim;					///< Wall limits R (meters)
+	Array<double> zlim;					///< Wall limits z (meters)
 	///@}
 
 
@@ -66,6 +66,52 @@ struct Equilibrium{
 	 * @param ny Number of points in z
 	 */
 	Equilibrium(int id = 0, size_t nx = 0, size_t ny = 0): idnum(id), nx(nx), ny(ny), fpol(nx), pres(nx), qpsi(nx), psi(nx, ny), nbdry(0), nlim(0) {}
+
+	/**
+	 * Default move constructor
+	 */
+	Equilibrium(Equilibrium&&) = default;
+
+	/**
+	 * Construct in host for device from Equilibrium 
+	 * @param other Equilibrium to construct from
+	 */
+	#ifdef CUDA_BUILD
+	__host__
+	Equilibrium(Equilibrium& other){
+		// Single parameters
+		idnum 	= other.idnum;
+		nx 			= other.nx;
+		ny 			= other.ny;
+		rdim		= other.rdim;
+		zdim 		= other.zdim;
+		rcentr 	= other.rcentr;
+		bcentr 	= other.bcentr;
+		rleft 	= other.rleft;
+		zmid 		= other.zmid;
+		rmagx 	= other.rmagx;
+		zmagx		= other.zmagx;
+		simagx 	= other.simagx;
+		sibdry 	= other.sibdry;
+		cpasma 	= other.cpasma;
+
+		// Profiles
+		fpol.construct_in_host_for_device(other.fpol);
+		pres.construct_in_host_for_device(other.pres);
+		qpsi.construct_in_host_for_device(other.qpsi);
+
+		// Poloidal flux
+		psi.construct_in_host_for_device(other.psi);
+
+		// Boundaries description
+		nbdry = other.nbdry; nlim = other.nlim;
+		rbdry.construct_in_host_for_device(other.rbdry);
+		zbdry.construct_in_host_for_device(other.zbdry);
+		rlim.construct_in_host_for_device(other.rlim);
+		zlim.construct_in_host_for_device(other.zlim);
+	}
+	#endif
+
 };
 
 #endif // FOCUS_INCLUDE_TYPES_EQUILIBRIUM_HPP

@@ -52,7 +52,7 @@ public:
 	 */
 	#ifdef CUDA_BUILD
 	__host__
-	void construct_in_host_for_device_from_matrix_2d(Matrix2D<T>& other){
+	void construct_in_host_for_device(Matrix2D<T>& other){
 		_copied = true;
 		_shape = other._shape;
 		size_t _size = _shape.first * _shape.second;
