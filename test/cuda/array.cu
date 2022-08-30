@@ -36,7 +36,7 @@ int main(){
 			arr[i] = i + 1;
 
 		Array<int> hArr;
-		hArr.construct_in_host_for_device_from_array(arr);
+		hArr.construct_in_host_for_device(arr);
 
 		cudaMalloc(&dsum, sizeof(int));
 		k_sum_array<<<1, 1>>>(hArr, dsum);
