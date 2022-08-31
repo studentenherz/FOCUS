@@ -18,6 +18,9 @@
  * @param obs_skip_steps Amount of steps to skip between observations (default = 0)
  */
 template<typename stepper_type, typename system_type, typename state_type, typename scalar_type, typename observer_type>
+#ifdef CUDA_BUILD
+__host__ __device__
+#endif
 size_t integrate(stepper_type& stepper, system_type& sys, state_type& x, scalar_type t0, scalar_type dt, size_t Nsteps, observer_type& obs, size_t obs_skip_steps = 0){
 	scalar_type t = t0;
 	size_t step = 0;
@@ -27,7 +30,7 @@ size_t integrate(stepper_type& stepper, system_type& sys, state_type& x, scalar_
 
 		stepper.do_step(sys, x, t, dt);
 		if(hasnan(x)){
-			std::cerr << "Interrupt at step " << step << " for nan value was encountered\n";
+			printf("Interrupt at step %d for nan value was encountered\n", (int)step);
 			break;
 		}
 		t += dt;
@@ -52,6 +55,9 @@ size_t integrate(stepper_type& stepper, system_type& sys, state_type& x, scalar_
  * @param Nsteps Amount of steps of integration
  */
 template<typename stepper_type, typename system_type, typename state_type, typename scalar_type>
+#ifdef CUDA_BUILD
+__host__ __device__
+#endif
 size_t integrate(stepper_type& stepper, system_type& sys, state_type& x, scalar_type t0, scalar_type dt, size_t Nsteps){
 	return integrate(stepper, sys, x, t0, dt, Nsteps, [] (state_type x, scalar_type t) {return;});
 }

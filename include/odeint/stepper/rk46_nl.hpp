@@ -10,7 +10,14 @@ class RK46NL{
 	scalar_type b[6] = {0.032918605146,  0.823256998200,  0.381530948900,  0.200092213184,  1.718581042715,  0.270000000000};
 	scalar_type c[6] = {0.000000000000,  0.032918605146,  0.249351723343,  0.466911705055,  0.582030414044,  0.847252983783};
 public:
+	#ifdef CUDA_BUILD
+	__host__ __device__
+	#endif
 	RK46NL() {}
+	
+	#ifdef CUDA_BUILD
+	__host__ __device__
+	#endif
 	void do_step(system_type sys, state_type& x, scalar_type t, scalar_type dt){
 		state_type dxdt, xx; // this assumes default constructor gives a zero state
 

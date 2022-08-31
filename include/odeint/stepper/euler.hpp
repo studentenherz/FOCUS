@@ -8,7 +8,14 @@
 template<typename system_type, typename state_type, typename scalar_type>
 class EulerStepper{
 public:
+	#ifdef CUDA_BUILD
+	__host__ __device__
+	#endif
 	EulerStepper() {}
+
+	#ifdef CUDA_BUILD
+	__host__ __device__
+	#endif
 	static void do_step(system_type sys, state_type& x, scalar_type t, scalar_type dt){
 		state_type dxdt;
 		sys(x, dxdt, t); // dxdt = f(x, t)

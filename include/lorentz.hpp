@@ -8,18 +8,42 @@
  */
 class NullVectorField {
 public:
+	#ifdef CUDA_BUILD
+	__host__ __device__
+	#endif
 	NullVectorField(){}
+	
+	#ifdef CUDA_BUILD
+	__host__ __device__
+	#endif
 	Vector3 operator()(Vector3 /* r */, double /* t */) {Vector3 zero; return zero;}
-} null_vector_field; // Null Vector Field object
+}; 
+
+NullVectorField null_vector_field; // Null Vector Field object
+#ifdef CUDA_BUILD
+__device__ NullVectorField d_null_vector_field; // Null Vector Field object for device
+#endif
 
 /**
  * A force class that returns zero
  */
 class NullForce{
 public:
+	#ifdef CUDA_BUILD
+	__host__ __device__
+	#endif
 	NullForce(){}
+	
+	#ifdef CUDA_BUILD
+	__host__ __device__
+	#endif
 	Vector3 operator()(State /* x */, double /* t */) {Vector3 zero; return zero;}
-} null_force; // Null Force object
+}; 
+
+NullForce null_force; // Null Force object
+#ifdef CUDA_BUILD
+__device__ NullForce d_null_force; // Null Force object for device
+#endif
 
 
 /**
@@ -39,6 +63,9 @@ public:
 	 * @param _E electric field, callable E(Vector3 r, double t)
 	 * @param _F additional force, callable F(State x, double t)
 	 */
+	#ifdef CUDA_BUILD
+	__host__ __device__
+	#endif
 	Lorentz(double _gam, magnetic_field_type& _B = null_vector_field, electric_field_type& _E = null_vector_field, force_type& _F = null_force): gam(_gam), B(_B), E(_E), F(_F) {}
 	
 	/**
@@ -47,6 +74,9 @@ public:
 	 * @param dxdt state derivative
 	 * @param t current time
 	 */
+	#ifdef CUDA_BUILD
+	__host__ __device__
+	#endif
 	void operator()(const State &x, State &dxdt, double t ){
 
 		Vector3 r = get_position(x);

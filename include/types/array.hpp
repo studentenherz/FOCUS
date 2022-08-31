@@ -76,6 +76,20 @@ public:
 		cudaMemcpy(_arr, other._arr, sizeof(T) * _size, cudaMemcpyHostToDevice);
 	}
 	#endif
+	
+	/**
+	 * Copy to host from device
+	 * @param other Array to construct from
+	 */
+	#ifdef CUDA_BUILD
+	__host__
+	void copy_to_host_from_device(Array<T>& other){
+		_copied = false;
+		_size = other._size;
+		_arr = new T[_size + 1];
+		cudaMemcpy(_arr, other._arr, sizeof(T) * _size, cudaMemcpyDeviceToHost);
+	}
+	#endif
 
 	/**
 	 * Desctructor; dealocate heap and set pointer to null
