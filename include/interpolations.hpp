@@ -22,6 +22,9 @@
  * @param x_max x corresponing to last value in f
  * @return f(xi) interpolated from f
  */
+#ifdef CUDA_BUILD
+__host__ __device__
+#endif
 double lagrange_interpolation_3(double xi, const Array<double>& f, double x_min, double x_max){
 	double d_x = (x_max - x_min) / (f.size() - 1); // Grid period
 	size_t index = std::floor((xi - x_min) / d_x); // Index of closest element to xi to the left
@@ -53,6 +56,9 @@ double lagrange_interpolation_3(double xi, const Array<double>& f, double x_min,
  * @param f Array of corresponding f(x) values
  * @return f(xi) interpolated from f
  */
+#ifdef CUDA_BUILD
+__host__ __device__
+#endif
 double lagrange_interpolation_3(double xi, const Array<double>& xs, const Array<double>& f){
 	// Index of closest element to xi to the left
 	size_t index = 1;
@@ -86,6 +92,9 @@ double lagrange_interpolation_3(double xi, const Array<double>& xs, const Array<
  * @param f scalar field given by a matrix and the (x, y) limits of the space it represents
  * @return interpolated f(x, y).
  */
+#ifdef CUDA_BUILD
+__host__ __device__
+#endif
 double four_point_formula(double x, double y, ScalarField f){
 	// The interpolation formula is
 	// f(x0 + ph, y0 + qk) = ....
@@ -130,6 +139,9 @@ double four_point_formula(double x, double y, ScalarField f){
  * @param f scalar field given by a matrix and the (x, y) limits of the space it represents
  * @return interpolated f(x, y).
  */
+#ifdef CUDA_BUILD
+__host__ __device__
+#endif
 double six_point_formula(double x, double y, ScalarField f){
 	// The interpolation formula is
 	// f(x0 + ph, y0 + qk) = ....

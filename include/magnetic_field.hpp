@@ -25,6 +25,9 @@ struct MagneticFieldMatrix{
 	 * @param sign if true (default) the negative sign on the poloidal
 	 * fields definition goes to the radial component
 	 */
+	#ifdef CUDA_BUILD
+	__host__
+	#endif
 	MagneticFieldMatrix(Equilibrium &eq, size_t n, size_t N, bool sign = true): Br(N, N), Bt(N, N), Bz(N, N) {
 
 		// Dimensionless limits of the matrixes 
@@ -60,7 +63,63 @@ struct MagneticFieldMatrix{
 			}
 		}
 	}
+
+	/**
+	 * Copy contructor for passing to the device
+	 */
+	#ifdef CUDA_BUILD
+	__host__
+	MagneticFieldMatrix(MagneticFieldMatrix& other): r_min(other.r_min), r_max(other.r_max), z_min(other.z_min), z_max(other.z_max)  {
+		Br.construct_in_host_for_device(other.Br);
+		Bt.construct_in_host_for_device(other.Bt);
+		Bz.construct_in_host_for_device(other.Bz);
+	}
+	#endif
 };
+
+class MagneticFieldFromMatrix{
+	MagneticFieldMatrix& M;
+	double _B0;
+public:
+
+	#ifdef CUDA_BUILD
+	__host__ __device__
+	#endif
+	MagneticFieldFromMatrix(MagneticFieldMatrix& B, double B_0) : M(B), _B0(B_0) {}
+
+	#ifdef CUDA_BUILD
+	__host__ __device__
+	#endif
+	Vector3 operator()(Vector3 r, double /* t */ ){
+		ScalarField MBr(M.Br, M.r_min, M.r_max, M.z_min, M.z_max);
+		ScalarField MBt(M.Bt, M.r_min, M.r_max, M.z_min, M.z_max);
+		ScalarField MBz(M.Bz, M.r_min, M.r_max, M.z_min, M.z_max);
+
+		double x = r[0], y = r[2];
+		double Br = six_point_formula(x, y, MBr);
+		double Bt = six_point_formula(x, y, MBt);
+		double Bz = six_point_formula(x, y, MBz);
+
+		// This can't be done in the __device__
+		// if (std::isnan(Br))
+		// 	std::cerr << "Nan value of Br for r = " << r << '\n';
+		// if (std::isnan(Bt))
+		// 	std::cerr << "Nan value of Bt for r = " << r << '\n';
+		// if (std::isnan(Bz))
+		// 	std::cerr << "Nan value of Bz for r = " << r << '\n';
+
+		return Vector3 {Br, Bt, Bz};
+	}
+
+	#ifdef CUDA_BUILD
+	__host__ __device__
+	#endif
+	double B0(){
+		return _B0;
+	}
+};
+
+#ifndef CUDA_BUILD
 
 class FineEquilibrium{
 	Equilibrium& eq;
@@ -128,35 +187,6 @@ public:
 	}
 };
 
-class MagneticFieldFromMatrix{
-	MagneticFieldMatrix& M;
-	double _B0;
-public:
-
-	MagneticFieldFromMatrix(MagneticFieldMatrix& B, double B_0) : M(B), _B0(B_0) {}
-
-	Vector3 operator()(Vector3 r, double /* t */ ){
-		ScalarField MBr(M.Br, M.r_min, M.r_max, M.z_min, M.z_max);
-		ScalarField MBt(M.Bt, M.r_min, M.r_max, M.z_min, M.z_max);
-		ScalarField MBz(M.Bz, M.r_min, M.r_max, M.z_min, M.z_max);
-
-		double x = r[0], y = r[2];
-		double Br = six_point_formula(x, y, MBr);
-		if (std::isnan(Br))
-			std::cerr << "Nan value of Br for r = " << r << '\n';
-		double Bt = six_point_formula(x, y, MBt);
-		if (std::isnan(Bt))
-			std::cerr << "Nan value of Bt for r = " << r << '\n';
-		double Bz = six_point_formula(x, y, MBz);
-		if (std::isnan(Bz))
-			std::cerr << "Nan value of Bz for r = " << r << '\n';
-
-		return Vector3 {Br, Bt, Bz};
-	}
-
-	double B0(){
-		return _B0;
-	}
-};
+#endif // CUDA_BUILD
 
 #endif // FOCUS_INCLUDE_MAGNETIC_FIELD_HPP
