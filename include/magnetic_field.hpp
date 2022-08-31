@@ -25,7 +25,7 @@ struct MagneticFieldMatrix{
 	 * @param sign if true (default) the negative sign on the poloidal
 	 * fields definition goes to the radial component
 	 */
-	#ifdef CUDA_BUILD
+	#ifdef __CUDACC__
 	__host__
 	#endif
 	MagneticFieldMatrix(Equilibrium &eq, size_t n, size_t N, bool sign = true): Br(N, N), Bt(N, N), Bz(N, N) {
@@ -67,7 +67,7 @@ struct MagneticFieldMatrix{
 	/**
 	 * Copy contructor for passing to the device
 	 */
-	#ifdef CUDA_BUILD
+	#ifdef __CUDACC__
 	__host__
 	MagneticFieldMatrix(MagneticFieldMatrix& other): r_min(other.r_min), r_max(other.r_max), z_min(other.z_min), z_max(other.z_max)  {
 		Br.construct_in_host_for_device(other.Br);
@@ -82,12 +82,12 @@ class MagneticFieldFromMatrix{
 	double _B0;
 public:
 
-	#ifdef CUDA_BUILD
+	#ifdef __CUDACC__
 	__host__ __device__
 	#endif
 	MagneticFieldFromMatrix(MagneticFieldMatrix& B, double B_0) : M(B), _B0(B_0) {}
 
-	#ifdef CUDA_BUILD
+	#ifdef __CUDACC__
 	__host__ __device__
 	#endif
 	Vector3 operator()(Vector3 r, double /* t */ ){
@@ -111,7 +111,7 @@ public:
 		return Vector3 {Br, Bt, Bz};
 	}
 
-	#ifdef CUDA_BUILD
+	#ifdef __CUDACC__
 	__host__ __device__
 	#endif
 	double B0(){
@@ -119,7 +119,7 @@ public:
 	}
 };
 
-#ifndef CUDA_BUILD
+#ifndef __CUDACC__
 
 class FineEquilibrium{
 	Equilibrium& eq;
@@ -187,6 +187,6 @@ public:
 	}
 };
 
-#endif // CUDA_BUILD
+#endif // __CUDACC__
 
 #endif // FOCUS_INCLUDE_MAGNETIC_FIELD_HPP

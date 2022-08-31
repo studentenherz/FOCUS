@@ -16,7 +16,7 @@ public:
 	 * @param n size on the first axis
 	 * @param m size on the second axis
 	 */
-	#ifdef CUDA_BUILD
+	#ifdef __CUDACC__
 	__host__ __device__
 	#endif
 	Matrix2D(size_t n = 0, size_t m = 0){
@@ -30,7 +30,7 @@ public:
 	/**
 	 * Copy constructor; put copied flag
 	 */
-	#ifdef CUDA_BUILD
+	#ifdef __CUDACC__
 	__host__ __device__
 	#endif
 	Matrix2D(Matrix2D& other){
@@ -44,7 +44,7 @@ public:
 	 * as a return value from a function swapping the pointers
 	 * and keeping the allocated data on the heap.
 	 */
-	#ifdef CUDA_BUILD
+	#ifdef __CUDACC__
 	__host__ __device__
 	#endif
 	Matrix2D(Matrix2D&& other){
@@ -62,7 +62,7 @@ public:
 	 * Construct in host for device from Matrix2D 
 	 * @param other matrix2D to construct from
 	 */
-	#ifdef CUDA_BUILD
+	#ifdef __CUDACC__
 	__host__
 	void construct_in_host_for_device(Matrix2D<T>& other){
 		_copied = true;
@@ -76,7 +76,7 @@ public:
 	/**
 	 * Desctructor; dealocate heap and set pointer to null
 	 */
-	#ifdef CUDA_BUILD
+	#ifdef __CUDACC__
 	__host__ __device__
 	#endif
 	~Matrix2D(){
@@ -90,7 +90,7 @@ public:
 	 * @param n size on the first axis
 	 * @param m size on the second axis
 	 */
-	#ifdef CUDA_BUILD
+	#ifdef __CUDACC__
 	__host__ __device__
 	#endif 
 	void reshape(size_t n, size_t m){
@@ -103,7 +103,7 @@ public:
 	 * Get shape of the matrix
 	 * @return shape
 	 */
-	#ifdef CUDA_BUILD
+	#ifdef __CUDACC__
 	__host__ __device__
 	#endif
 	shape_t shape() const {
@@ -116,7 +116,7 @@ public:
 	 * @param j index on the second axis
 	 * @return M(i, j)
 	 */
-	#ifdef CUDA_BUILD
+	#ifdef __CUDACC__
 	__host__ __device__
 	#endif
 	T &operator()(size_t i, size_t j){
@@ -131,7 +131,7 @@ public:
 	 * @param j index on the second axis
 	 * @return M(i, j)
 	 */
-	#ifdef CUDA_BUILD
+	#ifdef __CUDACC__
 	__host__ __device__
 	#endif
 	const T &operator()(size_t i, size_t j) const {

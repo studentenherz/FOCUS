@@ -11,7 +11,7 @@ public:
 	 * Default constructor
 	 * @param n size of array
 	 */
-	#ifdef CUDA_BUILD
+	#ifdef __CUDACC__
 	__host__ __device__
 	#endif
 	Array(size_t n = 0): _size(n), _copied(false) {
@@ -23,7 +23,7 @@ public:
 	 * @param other_arr array to construct from
 	 * @param n size of array
 	 */
-	#ifdef CUDA_BUILD
+	#ifdef __CUDACC__
 	__host__
 	Array(T* other_arr, size_t size, bool from_host = true): _size(size), _copied(from_host) {
 		cudaMalloc(&_arr, sizeof(T) * (_size + 1));
@@ -36,7 +36,7 @@ public:
 	 * as a return value from a function sapping the pointers
 	 * and keeping the allocated data on the heap.
 	 */
-	#ifdef CUDA_BUILD
+	#ifdef __CUDACC__
 	__host__ __device__
 	#endif
 	Array(Array&& other){
@@ -54,7 +54,7 @@ public:
 	 * Copy constructor; declaring the move constructor makes
 	 * compiler implicitly declare the copy constructor deleted
 	 */
-	#ifdef CUDA_BUILD
+	#ifdef __CUDACC__
 	__host__ __device__
 	#endif
 	Array(Array& other){
@@ -67,7 +67,7 @@ public:
 	 * Construct in host for device from Array 
 	 * @param other Array to construct from
 	 */
-	#ifdef CUDA_BUILD
+	#ifdef __CUDACC__
 	__host__
 	void construct_in_host_for_device(Array<T>& other){
 		_copied = true;
@@ -81,7 +81,7 @@ public:
 	 * Copy to host from device
 	 * @param other Array to construct from
 	 */
-	#ifdef CUDA_BUILD
+	#ifdef __CUDACC__
 	__host__
 	void copy_to_host_from_device(Array<T>& other){
 		_copied = false;
@@ -94,7 +94,7 @@ public:
 	/**
 	 * Desctructor; dealocate heap and set pointer to null
 	 */
-	#ifdef CUDA_BUILD
+	#ifdef __CUDACC__
 	__host__ __device__
 	#endif
 	~Array(){
@@ -108,7 +108,7 @@ public:
 	 * @param i index
 	 * @return reference to i-th element
 	 */
-	#ifdef CUDA_BUILD
+	#ifdef __CUDACC__
 	__host__ __device__
 	#endif
 	T &operator[](size_t i){
@@ -122,7 +122,7 @@ public:
 	 * @param i index
 	 * @return reference to i-th element
 	 */
-	#ifdef CUDA_BUILD
+	#ifdef __CUDACC__
 	__host__ __device__
 	#endif
 	const T &operator[](size_t i) const {
@@ -135,7 +135,7 @@ public:
 	 * Get array size
 	 * @return array size
 	 */
-	#ifdef CUDA_BUILD
+	#ifdef __CUDACC__
 	__host__ __device__
 	#endif
 	size_t size() const {
@@ -145,7 +145,7 @@ public:
 	/** 
 	 * Resize array droping stored values
 	 */
-	#ifdef CUDA_BUILD
+	#ifdef __CUDACC__
 	__host__ __device__
 	#endif
 	void resize(size_t n){
@@ -161,7 +161,7 @@ public:
  * @return smallest element of `a`
  */
 template<typename T>
-#ifdef CUDA_BUILD
+#ifdef __CUDACC__
 __host__ __device__
 #endif
 T min(const Array<T>& a){
@@ -178,7 +178,7 @@ T min(const Array<T>& a){
  * @return larges element of `a`
  */
 template<typename T>
-#ifdef CUDA_BUILD
+#ifdef __CUDACC__
 __host__ __device__
 #endif
 T max(const Array<T>& a){

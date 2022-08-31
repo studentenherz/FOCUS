@@ -76,7 +76,7 @@ struct Equilibrium{
 	 * Construct in host for device from Equilibrium 
 	 * @param other Equilibrium to construct from
 	 */
-	#ifdef CUDA_BUILD
+	#ifdef __CUDACC__
 	__host__
 	Equilibrium(Equilibrium& other){
 		// Single parameters

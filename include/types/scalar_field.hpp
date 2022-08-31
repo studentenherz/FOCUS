@@ -24,7 +24,7 @@ struct ScalarField{
 	/**
 	 * Constructor
 	 */
-	#ifdef CUDA_BUILD
+	#ifdef __CUDACC__
 	__host__ __device__
 	#endif
 	ScalarField(Matrix2D<double>& _M, double _x_min, double _x_max, double _y_min, double _y_max): M(_M), x_min(_x_min), x_max(_x_max), y_min(_y_min), y_max(_y_max) {}
@@ -35,7 +35,7 @@ struct ScalarField{
 	 * @param j second index
 	 * @return `M(i, j)`
 	 */
-	#ifdef CUDA_BUILD
+	#ifdef __CUDACC__
 	__host__ __device__
 	#endif
 	double operator()(int i, int j) const {

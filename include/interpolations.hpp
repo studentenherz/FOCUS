@@ -22,7 +22,7 @@
  * @param x_max x corresponing to last value in f
  * @return f(xi) interpolated from f
  */
-#ifdef CUDA_BUILD
+#ifdef __CUDACC__
 __host__ __device__
 #endif
 double lagrange_interpolation_3(double xi, const Array<double>& f, double x_min, double x_max){
@@ -56,7 +56,7 @@ double lagrange_interpolation_3(double xi, const Array<double>& f, double x_min,
  * @param f Array of corresponding f(x) values
  * @return f(xi) interpolated from f
  */
-#ifdef CUDA_BUILD
+#ifdef __CUDACC__
 __host__ __device__
 #endif
 double lagrange_interpolation_3(double xi, const Array<double>& xs, const Array<double>& f){
@@ -92,7 +92,7 @@ double lagrange_interpolation_3(double xi, const Array<double>& xs, const Array<
  * @param f scalar field given by a matrix and the (x, y) limits of the space it represents
  * @return interpolated f(x, y).
  */
-#ifdef CUDA_BUILD
+#ifdef __CUDACC__
 __host__ __device__
 #endif
 double four_point_formula(double x, double y, ScalarField f){
@@ -139,7 +139,7 @@ double four_point_formula(double x, double y, ScalarField f){
  * @param f scalar field given by a matrix and the (x, y) limits of the space it represents
  * @return interpolated f(x, y).
  */
-#ifdef CUDA_BUILD
+#ifdef __CUDACC__
 __host__ __device__
 #endif
 double six_point_formula(double x, double y, ScalarField f){
