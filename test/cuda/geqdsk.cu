@@ -50,7 +50,7 @@ int main(int argc, char* argv[]){
 			return 0;
 		}
 
-		Equilibrium eq = read_geqdsk(result["file"].as<std::string>().c_str());
+		Equilibrium eq = read_geqdsk(result["file"].as<std::string>());
 		std::cout << eq.idnum << '\n';
 		std::cout << eq.nx << '\n';
 		std::cout << eq.ny << '\n';

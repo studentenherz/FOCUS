@@ -154,7 +154,7 @@ int main(int argc, char* argv[]){
 			return 0;
 		}
 
-		Equilibrium eq = read_geqdsk(result["input_file"].as<std::string>().c_str());
+		Equilibrium eq = read_geqdsk(result["input_file"].as<std::string>());
 		MagneticFieldMatrix B_matrix(eq, 26, 600);
 
 		if (result.count("magnetic-field")){
