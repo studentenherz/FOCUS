@@ -18,6 +18,18 @@ public:
 		_arr = new T[_size + 1];
 	}
 
+	#ifdef __CUDACC__
+	__host__ __device__
+	#endif
+	Array(std::initializer_list<double> l): _size(l.size()) {
+		_arr = new T[_size + 1];
+    _copied = false;
+
+		size_t index = 0;
+		for(const double* it = l.begin(); it != l.end(); it++)
+			_arr[index++] = *it;
+	}
+
 	/**
 	 * Construct in host for device from array
 	 * @param other_arr array to construct from

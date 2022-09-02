@@ -118,10 +118,14 @@
 #include "types/particle.hpp"
 #include "types/vector.hpp"
 #include "random.hpp"
+#include "magnetic_field.hpp"
 
 /**
  * Error function minus it's derivative
  */
+#ifdef __CUDACC__
+__host__ __device__
+#endif
 double erf_minus_d_erf(double x){
 	return (erf(x) - x * two_over_sqrt_pi * exp(-sqr(x)));
 }
@@ -129,6 +133,9 @@ double erf_minus_d_erf(double x){
 /**
  * Another definition for formulae simplicity
  */
+#ifdef __CUDACC__
+__host__ __device__
+#endif
 double G(double x){
 	return erf_minus_d_erf(x)/(2 * sqr(x));
 }
@@ -139,13 +146,18 @@ double G(double x){
  * Langevin equation using Îto's method.
  */
 class FockerPlank{
-	Array<ParticleSpecies*> beta;	// Particle species involved
+	Array<ParticleSpecies*>& beta;	// Particle species involved
 	ParticleSpecies& alpha;				// Test particle species
+
+	MagneticFieldFromMatrix& _B;
 
 	double _eta;				// Dimensionless constant
 	NormalRand gauss;	// Gaussian random generator
 public:
-	FockerPlank(unsigned long long seed, Array<ParticleSpecies*> plasma_particles, ParticleSpecies& test_particle, double eta): beta(plasma_particles), alpha(test_particle), _eta(eta), gauss(seed) {}
+	#ifdef __CUDACC__
+	__host__ __device__
+	#endif
+	FockerPlank(unsigned long long seed, Array<ParticleSpecies*>& plasma_particles, ParticleSpecies& test_particle, MagneticFieldFromMatrix& B, double eta): beta(plasma_particles), alpha(test_particle), _B(B), _eta(eta), gauss(seed) {}
 
 	/**
 	 * Slowing down from elastic collisions
@@ -153,16 +165,21 @@ public:
 	 * @param t current time
 	 * @return rate of change of the parallel velocity
 	 */
+	#ifdef __CUDACC__
+	__host__ __device__
+	#endif
 	Vector3 slow_down(const State& x, double t){
 		Vector3 r = get_position(x);
 		Vector3 v = get_velocity(x);
 		double v_mod = mod(v);
 
+		double psi = _B.psi(r, t);
+
 		double nu_sd = 0;
 		// terms that depend on plasma particles
 		for(size_t i = 0; i < beta.size(); i++){
-			double xb = v_mod / beta[i]->T(r, t);
-			nu_sd +=  sqr(beta[i]->q) *  beta[i]->n(r, t) * (1 + alpha.m/beta[i]->m) * beta[i]->logl * erf_minus_d_erf(xb);
+			double xb = v_mod / beta[i]->T(psi, t);
+			nu_sd +=  sqr(beta[i]->q) *  beta[i]->n(psi, t) * (1 + alpha.m/beta[i]->m) * beta[i]->logl * erf_minus_d_erf(xb);
 		}
 
 		// other terms
@@ -177,16 +194,21 @@ public:
 	 * @param t current time
 	 * @return parallel dispersion coefficient
 	 */
+	#ifdef __CUDACC__
+	__host__ __device__
+	#endif
 	double parallel_dispersion_coeff(const State& x, double t){
 		Vector3 r = get_position(x);
 		Vector3 v = get_velocity(x);
 		double v_mod = mod(v);
 
+		double psi = _B.psi(r, t);
+
 		double nu = 0;
 		// terms that depend on plasma particles
 		for(size_t i = 0; i < beta.size(); i++){
-			double xb = v_mod / beta[i]->T(r, t);
-			nu +=  sqr(beta[i]->q) * beta[i]->n(r, t) * beta[i]->logl * G(xb);
+			double xb = v_mod / beta[i]->T(psi, t);
+			nu +=  sqr(beta[i]->q) * beta[i]->n(psi, t) * beta[i]->logl * G(xb);
 		}
 
 		// other terms
@@ -201,16 +223,21 @@ public:
 	 * @param t current time
 	 * @return perpendicular dispersion coefficient
 	 */
+	#ifdef __CUDACC__
+	__host__ __device__
+	#endif
 	double perpendicular_dispersion_coeff(const State& x, double t){
 		Vector3 r = get_position(x);
 		Vector3 v = get_velocity(x);
 		double v_mod = mod(v);
+		
+		double psi = _B.psi(r, t);
 
 		double nu = 0;
 		// terms that depend on plasma particles
 		for(size_t i = 0; i < beta.size(); i++){
-			double xb = v_mod / beta[i]->T(r, t);
-			nu +=  sqr(beta[i]->q) * beta[i]->n(r, t) * beta[i]->logl * (erf(xb) - G(xb));
+			double xb = v_mod / beta[i]->T(psi, t);
+			nu +=  sqr(beta[i]->q) * beta[i]->n(psi, t) * beta[i]->logl * (erf(xb) - G(xb));
 		}
 
 		// other terms
@@ -225,6 +252,9 @@ public:
 	 * @param t current time
 	 * @return rate of dispersion of the velocity
 	 */ 
+	#ifdef __CUDACC__
+	__host__ __device__
+	#endif
 	Vector3 dispersion(const State& x, double t){
 		Vector3 v = get_velocity(x);
 		double v_mod = mod(v);
@@ -259,6 +289,9 @@ public:
 	 * @param t current time
 	 * @param dt time delta
 	 */
+	#ifdef __CUDACC__
+	__host__ __device__
+	#endif
 	void euler_step(State& x, double t, double dt){
 		Vector3 dv = slow_down(x, t) * dt + dispersion(x, t) * sqrt(dt);
 	
