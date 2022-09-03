@@ -134,7 +134,17 @@ public:
 		size_t idx = threadIdx.x + blockIdx.x * blockDim.x;
 		return curand_normal_double(&d_states[idx]);
 	}
+
+	__device__
+	double operator()(){
+		return normal();
+	}
 };
+
+__global__
+void kernel_init_philox_rand(PhiloxCuRand philox, unsigned long long seed){
+  philox.init(seed);
+}
 
 #endif // __CUDACC__
 

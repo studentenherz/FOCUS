@@ -7,11 +7,6 @@
 #include "types/array.hpp"
 
 __global__
-void kernel_init_rand(PhiloxCuRand philox, unsigned long long seed){
-  philox.init(seed);
-}
-
-__global__
 void kernel_generate(PhiloxCuRand philox, Array<double> unif, Array<double> norm){
   size_t idx = threadIdx.x + blockDim.x * blockIdx.x;
   if (idx >= unif.size()) return;
@@ -56,7 +51,7 @@ int main(int argc, char* argv[]){
     size_t Nthreads = nBlocks * threadsPerBlock;
 
     PhiloxCuRand philox(Nthreads);
-    kernel_init_rand<<<nBlocks, threadsPerBlock>>>(philox, 1234);
+    kernel_init_philox_rand<<<nBlocks, threadsPerBlock>>>(philox, 1234);
 
     Array<double> h_unif(Ntotal);
     Array<double> h_norm(Ntotal);
