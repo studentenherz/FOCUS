@@ -19,9 +19,9 @@ class CollisionStepper{
 	const size_t collisions_nstep;
 	size_t steps = 0;
 	RK46NL<system_type, state_type, scalar_type> orbit_stepper;
-	FockerPlank& collision_operator;
+	FockerPlank<NormalRand> & collision_operator;
 public:
-	CollisionStepper(size_t nstep, FockerPlank& collisions): collisions_nstep(nstep), collision_operator(collisions) {}
+	CollisionStepper(size_t nstep, FockerPlank<NormalRand>& collisions): collisions_nstep(nstep), collision_operator(collisions) {}
 	
 	void do_step(system_type sys, state_type& x, scalar_type t, scalar_type dt){
 		orbit_stepper.do_step(sys, x, t, dt);
@@ -89,8 +89,10 @@ int main(int argc, char* argv[]){
 
 	for (unsigned long long seed = 1; seed < 5; seed++){
 
+		NormalRand ran(seed);
+
 		// Collisions operator
-		FockerPlank collisions(seed, plasma, alpha, B, eta);
+		FockerPlank<NormalRand> collisions(plasma, alpha, B, eta, ran);
 
 		// Stepper
 		CollisionStepper<System, State, double> stepper(200, collisions);

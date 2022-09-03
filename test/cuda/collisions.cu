@@ -34,15 +34,15 @@ public:
 	}
 };
 
-template<typename system_type, typename state_type, typename scalar_type>
+template<typename system_type, typename state_type, typename scalar_type, typename CollisionOperator_t>
 class CollisionStepper{
 	const size_t collisions_nstep;
 	size_t steps = 0;
 	RK46NL<system_type, state_type, scalar_type> orbit_stepper;
-	FockerPlank& collision_operator;
+	CollisionOperator_t& collision_operator;
 public:
 	__host__ __device__
-	CollisionStepper(size_t nstep, FockerPlank& collisions): collisions_nstep(nstep), collision_operator(collisions) {}
+	CollisionStepper(size_t nstep, CollisionOperator_t& collisions): collisions_nstep(nstep), collision_operator(collisions) {}
 
 	__host__ __device__	
 	void do_step(system_type sys, state_type& x, scalar_type t, scalar_type dt){
@@ -56,7 +56,7 @@ public:
 
 // Integration Kernel
 __global__
-void k_integrate(MagneticFieldMatrix B_matrix, Equilibrium eq, State x0, double t0, double dt, size_t Nsteps, Array<double> times, Array<State> states, size_t nskip, Array<ParticleSpecies*> plasma, ParticleSpecies* test_part, double eta){
+void k_integrate(MagneticFieldMatrix B_matrix, Equilibrium eq, State x0, double t0, double dt, size_t Nsteps, Array<double> times, Array<State> states, size_t nskip, Array<ParticleSpecies*> plasma, ParticleSpecies* test_part, double eta, PhiloxCuRand philox){
 	MagneticFieldFromMatrix B(B_matrix, eq.bcentr);
 
 	double q_over_m =  9.58e7; // C/kg proton
@@ -69,10 +69,10 @@ void k_integrate(MagneticFieldMatrix B_matrix, Equilibrium eq, State x0, double 
 	System sys(gam, B, d_null_vector_field, d_null_force);
 	
 	// Collisions operator
-	FockerPlank collisions(1LL, plasma, *test_part, B, eta);
+	FockerPlank<PhiloxCuRand> collisions(plasma, *test_part, B, eta, philox);
 
 	// Stepper
-	CollisionStepper<System, State, double> stepper(200, collisions);
+	CollisionStepper<System, State, double, FockerPlank<PhiloxCuRand>> stepper(200, collisions);
 
 	State x = x0;
 	ArrayObserver obs(times, states, a, v0, Omega, true);
@@ -121,7 +121,10 @@ void integrate_in_device(MagneticFieldMatrix& B_matrix, Equilibrium& eq, State x
 	Array<ParticleSpecies*> d_plasma;
 	d_plasma.construct_in_host_for_device(plasma);
 
-	k_integrate<<<1, 1>>>(B_matrix, eq, x0, t0, dt, Nsteps, d_times, d_states, nskip, d_plasma, d_alpha, eta);
+	PhiloxCuRand philox(1);
+	kernel_init_philox_rand<<<1, 1>>>(philox, 1);
+
+	k_integrate<<<1, 1>>>(B_matrix, eq, x0, t0, dt, Nsteps, d_times, d_states, nskip, d_plasma, d_alpha, eta, philox);
 
 	h_states.copy_to_host_from_device(d_states);
 	h_times.copy_to_host_from_device(d_times);
@@ -165,12 +168,13 @@ void integrate_in_host(MagneticFieldMatrix& B_matrix, Equilibrium& eq, State x0,
 	Array<ParticleSpecies*> plasma(1);
 	plasma[0] = &electron;
 
+	NormalRand ran(1);
 
 	// Collisions operator
-	FockerPlank collisions(1LL, plasma, alpha, B, eta);
+	FockerPlank<NormalRand> collisions(plasma, alpha, B, eta, ran);
 
 	// Stepper
-	CollisionStepper<System, State, double> stepper(200, collisions);
+	CollisionStepper<System, State, double, FockerPlank<NormalRand>> stepper(200, collisions);
 
 	State x = x0;
 	size_t Nout = size_t(Nsteps / (nskip + 1));

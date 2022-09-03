@@ -145,6 +145,7 @@ double G(double x){
  * calculation from Focker-Planks' theory in the
  * Langevin equation using Îto's method.
  */
+template<typename NormalRand_t>
 class FockerPlank{
 	Array<ParticleSpecies*>& beta;	// Particle species involved
 	ParticleSpecies& alpha;				// Test particle species
@@ -152,12 +153,12 @@ class FockerPlank{
 	MagneticFieldFromMatrix& _B;
 
 	double _eta;				// Dimensionless constant
-	NormalRand gauss;	// Gaussian random generator
+	NormalRand_t& gauss;	// Gaussian random generator
 public:
 	#ifdef __CUDACC__
 	__host__ __device__
 	#endif
-	FockerPlank(unsigned long long seed, Array<ParticleSpecies*>& plasma_particles, ParticleSpecies& test_particle, MagneticFieldFromMatrix& B, double eta): beta(plasma_particles), alpha(test_particle), _B(B), _eta(eta), gauss(seed) {}
+	FockerPlank(Array<ParticleSpecies*>& plasma_particles, ParticleSpecies& test_particle, MagneticFieldFromMatrix& B, double eta, NormalRand_t& normal_rand): beta(plasma_particles), alpha(test_particle), _B(B), _eta(eta), gauss(normal_rand) {}
 
 	/**
 	 * Slowing down from elastic collisions
