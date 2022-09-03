@@ -29,7 +29,7 @@ struct MagneticFieldMatrix{
 	#ifdef __CUDACC__
 	__host__
 	#endif
-	MagneticFieldMatrix(Equilibrium &eq, size_t n, size_t N, bool sign = true): Br(N, N), Bt(N, N), Bz(N, N) {
+	MagneticFieldMatrix(Equilibrium &eq, size_t n, size_t N, bool sign = true): psi(N, N), Br(N, N), Bt(N, N), Bz(N, N){
 
 		// Dimensionless limits of the matrixes 
 		double mr_min = eq.rleft / eq.rdim;
