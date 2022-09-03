@@ -2,6 +2,7 @@
 #define FOCUS_INCLUDE_RANDOM_HPP
 
 #include <cmath>
+#include <curand_kernel.h>
 
 #include "util.hpp"
 
@@ -104,5 +105,37 @@ public:
 		return sigma * sqrt(-2.0 * log(x1)) * cos(two_pi * x2) + mu;
 	}
 };
+
+#ifdef __CUDACC__
+
+class PhiloxCuRand{
+	curandStatePhilox4_32_10_t *d_states;
+	size_t _n;
+public:
+	__host__
+	PhiloxCuRand(size_t n): _n(n) {
+		cudaMalloc(&d_states, _n * sizeof(curandStatePhilox4_32_10_t));
+	}
+
+	__device__
+	void init(unsigned long long seed, unsigned long long subsequence = 0LL, unsigned long long offset = 0LL){
+		size_t idx = threadIdx.x + blockIdx.x * blockDim.x;
+		curand_init(seed, idx, offset, &d_states[idx]);
+	}
+
+	__device__
+	double uniform(){
+		size_t idx = threadIdx.x + blockIdx.x * blockDim.x;
+		return curand_uniform_double(&d_states[idx]);
+	}
+
+	__device__
+	double normal(){
+		size_t idx = threadIdx.x + blockIdx.x * blockDim.x;
+		return curand_normal_double(&d_states[idx]);
+	}
+};
+
+#endif // __CUDACC__
 
 #endif // FOCUS_INCLUDE_RANDOM_HPP
