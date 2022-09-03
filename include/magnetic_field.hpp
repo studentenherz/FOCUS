@@ -9,6 +9,7 @@
 #include "types/vector.hpp"
 
 struct MagneticFieldMatrix{
+	Matrix2D<double> psi;	// psi
 	Matrix2D<double> Br;	// B_r
 	Matrix2D<double> Bt;	// B_t
 	Matrix2D<double> Bz;	// B_z
@@ -36,7 +37,7 @@ struct MagneticFieldMatrix{
 		double mz_min = (eq.zmid - 0.5 * eq.zdim) / eq.rdim;
 		double mz_max = (eq.zmid + 0.5 * eq.zdim) / eq.rdim;
 
-		ScalarField psi(eq.psi, mr_min, mr_max, mz_min, mz_max);
+		ScalarField raw_psi(eq.psi, mr_min, mr_max, mz_min, mz_max);
 		
 		// Dimensionless limits of plasma boundaries
 		r_min = min(eq.rlim) / eq.rdim;
@@ -44,7 +45,7 @@ struct MagneticFieldMatrix{
 		z_min = min(eq.zlim) / eq.rdim;
 		z_max = max(eq.zlim) / eq.rdim;
 
-		ChebyshevExpansion ch(n, psi, r_min, r_max, z_min, z_max);
+		ChebyshevExpansion ch(n, raw_psi, r_min, r_max, z_min, z_max);
 
 		for(size_t i = 0; i<N; i++){
 			double r = r_min + (r_max - r_min) * i / (N - 1); // dimensionless
@@ -55,8 +56,8 @@ struct MagneticFieldMatrix{
 				Br(i, j) =  (sign ? -1.0 : 1.0) * (ch.dy(r, z) / (eq.bcentr * sqr(eq.rdim))) / r;
 				Bz(i, j) =  (sign ? 1.0 : -1.0) * (ch.dx(r, z) / (eq.bcentr * sqr(eq.rdim))) / r;
 
-				double psi_here = ch(r, z);
-				double F = lagrange_interpolation_3(psi_here, eq.fpol, eq.simagx, eq.sibdry);
+				psi(i, j) = ch(r, z);
+				double F = lagrange_interpolation_3(psi(i, j), eq.fpol, eq.simagx, eq.sibdry);
 
 				// From F definition
 				Bt(i, j) = (F / (eq.bcentr * sqr(eq.rdim))) / r;
@@ -70,6 +71,7 @@ struct MagneticFieldMatrix{
 	#ifdef __CUDACC__
 	__host__
 	MagneticFieldMatrix(MagneticFieldMatrix& other): r_min(other.r_min), r_max(other.r_max), z_min(other.z_min), z_max(other.z_max)  {
+		psi.construct_in_host_for_device(other.psi);
 		Br.construct_in_host_for_device(other.Br);
 		Bt.construct_in_host_for_device(other.Bt);
 		Bz.construct_in_host_for_device(other.Bz);
@@ -109,6 +111,15 @@ public:
 		// 	std::cerr << "Nan value of Bz for r = " << r << '\n';
 
 		return Vector3 {Br, Bt, Bz};
+	}
+
+	#ifdef __CUDACC__
+	__host__ __device__
+	#endif
+	double psi(Vector3 r, double /* t */ ){
+		ScalarField Psi(M.psi, M.r_min, M.r_max, M.z_min, M.z_max);
+		double x = r[0], y = r[2];
+		return six_point_formula(x, y, Psi);
 	}
 
 	#ifdef __CUDACC__

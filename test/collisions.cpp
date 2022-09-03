@@ -69,14 +69,15 @@ int main(int argc, char* argv[]){
 	double a = eq.rdim; // m
 	double gam = v0 / (a * Omega); // dimensionless factor
 
-	double Tf = 1.61029;
-	double nf = 1.0;
+	Array<double> Tf = {1.61029};
+	Array<double> nf = {1.0};
+	Array<double> psi = {0};
 
 	std::cout << 1/Omega << '\n';
 
 	// Particles
-	ConstProfileParticle electron(q_e, m_e, logl_e, Tf, nf);
-	ConstProfileParticle alpha(1.01, 2.0 * 1836, logl_e, Tf, nf);
+	ParticleSpecies electron(q_e, m_e, logl_e, psi, Tf, nf);
+	ParticleSpecies alpha(1.01, 2.0 * 1836, logl_e, psi, Tf, nf);
 
 	// Particles in plasma
 	Array<ParticleSpecies*> plasma(1);
@@ -89,7 +90,7 @@ int main(int argc, char* argv[]){
 	for (unsigned long long seed = 1; seed < 5; seed++){
 
 		// Collisions operator
-		FockerPlank collisions(seed, plasma, alpha, eta);
+		FockerPlank collisions(seed, plasma, alpha, B, eta);
 
 		// Stepper
 		CollisionStepper<System, State, double> stepper(200, collisions);
@@ -103,7 +104,7 @@ int main(int argc, char* argv[]){
 		FileObserver obs(fo, a, v0, Omega, true);
 
 		std::cout << "Calculating " << fname << '\n';
-		integrate(stepper, sys, x, 0.0, 0.0001, 30000000, obs, 999);
+		integrate(stepper, sys, x, 0.0, 0.0001, 300000, obs, 999);
 
 		fo.close();
 	}

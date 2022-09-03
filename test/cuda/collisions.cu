@@ -11,6 +11,8 @@
 #include "odeint/integrator.hpp"
 #include "odeint/stepper/rk46_nl.hpp"
 #include "cxxopts.hpp"
+#include "types/particle.hpp"
+#include "collisions.hpp"
 
 class ArrayObserver{
 	Array<double> &_times;
@@ -32,9 +34,29 @@ public:
 	}
 };
 
+template<typename system_type, typename state_type, typename scalar_type>
+class CollisionStepper{
+	const size_t collisions_nstep;
+	size_t steps = 0;
+	RK46NL<system_type, state_type, scalar_type> orbit_stepper;
+	FockerPlank& collision_operator;
+public:
+	__host__ __device__
+	CollisionStepper(size_t nstep, FockerPlank& collisions): collisions_nstep(nstep), collision_operator(collisions) {}
+
+	__host__ __device__	
+	void do_step(system_type sys, state_type& x, scalar_type t, scalar_type dt){
+		orbit_stepper.do_step(sys, x, t, dt);
+		if (++steps == collisions_nstep){
+			collision_operator.euler_step(x, t, dt * collisions_nstep);
+			steps = 0;
+		}
+	}
+};
+
 // Integration Kernel
 __global__
-void k_integrate(MagneticFieldMatrix B_matrix, Equilibrium eq, State x0, double t0, double dt, size_t Nsteps, Array<double> times, Array<State> states, size_t nskip){
+void k_integrate(MagneticFieldMatrix B_matrix, Equilibrium eq, State x0, double t0, double dt, size_t Nsteps, Array<double> times, Array<State> states, size_t nskip, Array<ParticleSpecies*> plasma, ParticleSpecies* test_part, double eta){
 	MagneticFieldFromMatrix B(B_matrix, eq.bcentr);
 
 	double q_over_m =  9.58e7; // C/kg proton
@@ -45,11 +67,17 @@ void k_integrate(MagneticFieldMatrix B_matrix, Equilibrium eq, State x0, double 
 
 	typedef Lorentz<NullForce, MagneticFieldFromMatrix, NullVectorField> System;
 	System sys(gam, B, d_null_vector_field, d_null_force);
+	
+	// Collisions operator
+	FockerPlank collisions(1LL, plasma, *test_part, B, eta);
+
+	// Stepper
+	CollisionStepper<System, State, double> stepper(200, collisions);
+
 	State x = x0;
-	RK46NL<System, State, double> rk46nl;
 	ArrayObserver obs(times, states, a, v0, Omega, true);
 
-	integrate(rk46nl, sys, x, t0, dt, Nsteps, obs, nskip);
+	integrate(stepper, sys, x, t0, dt, Nsteps, obs, nskip);
 }
 
 void integrate_in_device(MagneticFieldMatrix& B_matrix, Equilibrium& eq, State x0, double t0, double dt, size_t Nsteps, std::string ofname, size_t nskip){
@@ -62,7 +90,38 @@ void integrate_in_device(MagneticFieldMatrix& B_matrix, Equilibrium& eq, State x
 	Array<double> d_times;
 	d_times.construct_in_host_for_device(h_times);
 
-	k_integrate<<<1, 1>>>(B_matrix, eq, x0, t0, dt, Nsteps, d_times, d_states, nskip);
+	double q_e = 1.0;
+	double m_e = 1.0;
+	double logl_e = 17.5;
+	double eta = 0.000218938;
+
+	Array<double> Tf = {1.61029};
+	Array<double> nf = {1.0};
+	Array<double> psi = {0};
+	
+	// Particles
+	ParticleSpecies electron(q_e, m_e, logl_e, psi, Tf, nf);
+	ParticleSpecies alpha(1.01, 2.0 * 1836, logl_e, psi, Tf, nf);
+	
+	electron.construct_in_host_for_device(psi, Tf, nf);
+	alpha.construct_in_host_for_device(psi, Tf, nf);
+
+	ParticleSpecies *d_electron, *d_alpha;
+
+	cudaMalloc(&d_electron, sizeof(ParticleSpecies));
+	cudaMalloc(&d_alpha, sizeof(ParticleSpecies));
+
+	cudaMemcpy(d_electron, &electron, sizeof(ParticleSpecies), cudaMemcpyHostToDevice);
+	cudaMemcpy(d_alpha, &alpha, sizeof(ParticleSpecies), cudaMemcpyHostToDevice);
+
+	// Particles in plasma
+	Array<ParticleSpecies*> plasma(1);
+	plasma[0] = d_electron;
+
+	Array<ParticleSpecies*> d_plasma;
+	d_plasma.construct_in_host_for_device(plasma);
+
+	k_integrate<<<1, 1>>>(B_matrix, eq, x0, t0, dt, Nsteps, d_times, d_states, nskip, d_plasma, d_alpha, eta);
 
 	h_states.copy_to_host_from_device(d_states);
 	h_times.copy_to_host_from_device(d_times);
@@ -77,6 +136,7 @@ void integrate_in_device(MagneticFieldMatrix& B_matrix, Equilibrium& eq, State x
 }
 
 void integrate_in_host(MagneticFieldMatrix& B_matrix, Equilibrium& eq, State x0, double t0, double dt, size_t Nsteps, std::string ofname, size_t nskip){
+	
 	MagneticFieldFromMatrix B(B_matrix, eq.bcentr);
 
 	double q_over_m =  9.58e7; // C/kg proton
@@ -87,15 +147,38 @@ void integrate_in_host(MagneticFieldMatrix& B_matrix, Equilibrium& eq, State x0,
 
 	typedef Lorentz<NullForce, MagneticFieldFromMatrix, NullVectorField> System;
 	System sys(gam, B, null_vector_field, null_force);
-	State x = x0;
-	RK46NL<System, State, double> rk46nl;
+	
+	double q_e = 1.0;
+	double m_e = 1.0;
+	double logl_e = 17.5;
+	double eta = 0.000218938;
 
+	Array<double> Tf = {1.61029};
+	Array<double> nf = {1.0};
+	Array<double> psi = {0};
+	
+	// Particles
+	ParticleSpecies electron(q_e, m_e, logl_e, psi, Tf, nf);
+	ParticleSpecies alpha(1.01, 2.0 * 1836, logl_e, psi, Tf, nf);
+
+	// Particles in plasma
+	Array<ParticleSpecies*> plasma(1);
+	plasma[0] = &electron;
+
+
+	// Collisions operator
+	FockerPlank collisions(1LL, plasma, alpha, B, eta);
+
+	// Stepper
+	CollisionStepper<System, State, double> stepper(200, collisions);
+
+	State x = x0;
 	size_t Nout = size_t(Nsteps / (nskip + 1));
 	Array<State> states(Nout);
 	Array<double> times(Nout);
 
 	ArrayObserver obs(times, states, a, v0, Omega, true);
-	integrate(rk46nl, sys, x, t0, dt, Nsteps, obs, nskip);
+	integrate(stepper, sys, x, t0, dt, Nsteps, obs, nskip);
 
 	std::ofstream fo(ofname);
 
@@ -126,16 +209,16 @@ void output_b(MagneticFieldMatrix& B_matrix, Equilibrium& eq){
 }
 
 int main(int argc, char* argv[]){
-	cxxopts::options options("integrate", "Test integrate in CUDA");
+	cxxopts::options options("collisions", "Test collisions in CUDA");
 
 	options.add_options()
 		("input_file", "", cxxopts::value<std::string>())
-		("host_file", "", cxxopts::value<std::string>()->default_value("host.dat"))
-		("device_file", "", cxxopts::value<std::string>()->default_value("device.dat"))
+		("host_file", "", cxxopts::value<std::string>()->default_value("col_host.dat"))
+		("device_file", "", cxxopts::value<std::string>()->default_value("col_device.dat"))
 		("b,magnetic-field", "Output magnetic field data")
 		("h,help", "Show this help message");
 
-	options.positional_help("<G-EQDSK input file> [<Host integration out file> [<Device integration out file>]]");
+	options.positional_help("<G-EQDSK input file> [<Host collisions out file> [<Device collisions out file>]]");
 	options.parse_positional({"input_file", "host_file", "device_file"});
 
 	try{
@@ -157,7 +240,7 @@ int main(int argc, char* argv[]){
 		State x0 = {2.2 / eq.rdim, 0, 0, 0.0, 0.01, 0.3};
 		double t0 = 0;
 		double dt = 0.0001;
-		size_t N 	= 3100000;
+		size_t N 	= 900000;
 		size_t nskip 	= 999;
 		
 		integrate_in_host(B_matrix, eq, x0, t0, dt, N, result["host_file"].as<std::string>(), nskip);

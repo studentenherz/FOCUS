@@ -12,6 +12,9 @@ class Ran2
 {
 	unsigned long long u, v, w;
 public:
+	#ifdef __CUDACC__
+	__host__ __device__
+	#endif
 	Ran2(unsigned long long j) : v(4101842887655102017LL), w(1){
 		u = j ^ v;
 		int64();
@@ -25,6 +28,9 @@ public:
 	 * Get random unsigned int 64 bits (uniform distribution)
 	 * @return random unit64
 	 */
+	#ifdef __CUDACC__
+	__host__ __device__
+	#endif
 	inline unsigned long long int64(){
 		u = u * 2862933555777941757LL + 7046029254386353087LL;
 		v ^= v >> 17;
@@ -41,12 +47,18 @@ public:
 	 * Get random unsigned int 32 bits (uniform distribution)
 	 * @return random unit32
 	 */
+	#ifdef __CUDACC__
+	__host__ __device__
+	#endif
 	inline unsigned int int32() { return (unsigned int)int64(); }
 	
 	/**
 	 * Get random float 64 bits (uniform distribution)
 	 * @return random float64
 	 */
+	#ifdef __CUDACC__
+	__host__ __device__
+	#endif
 	inline double doub() { return 5.42101086242752217E-20 * int64(); }
 	
 	/**
@@ -55,6 +67,9 @@ public:
 	 * @param xmax higher limit
 	 * @return random float64 between xmin and xmax
 	 */
+	#ifdef __CUDACC__
+	__host__ __device__
+	#endif
 	double random(double xmin, double xmax){
 		return xmin + doub() * (xmax - xmin);
 	}
@@ -69,12 +84,18 @@ class NormalRand{
 	unsigned long long seed;
 	Ran2 ran;			// uniform random generator
 public:
+	#ifdef __CUDACC__
+	__host__ __device__
+	#endif
 	NormalRand(unsigned long long seed_, double sigma_ = 1.0, double mu_ = 0): sigma(sigma_), mu(mu_), seed(seed_), ran(seed) {};
 	
 	/**
 	 * Get random float 64 from normal distribution
 	 * @return random float64
 	 */
+	#ifdef __CUDACC__
+	__host__ __device__
+	#endif
 	double operator()(){
 		// This uses Box-Muller algorithm
 		double x1, x2;
