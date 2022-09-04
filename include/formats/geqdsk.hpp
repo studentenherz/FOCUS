@@ -6,8 +6,8 @@
  * and here:
  * https://github.com/bendudson/pyTokamak/blob/master/tokamak/formats/geqdsk.py
  */
-#if !defined(FOCUS_INCLUDE_GEQDSK_HPP)
-#define FOCUS_INCLUDE_GEQDSK_HPP
+#if !defined(FOCUS_FORMATS_INCLUDE_GEQDSK_HPP)
+#define FOCUS_FORMATS_INCLUDE_GEQDSK_HPP
 
 #include <fstream>
 #include <string>
@@ -122,4 +122,4 @@ Equilibrium read_geqdsk(std::string filename){
 	return eq;
 }
 
-#endif // FOCUS_INCLUDE_GEQDSK_HPP
+#endif // FOCUS_FORMATS_INCLUDE_GEQDSK_HPP
