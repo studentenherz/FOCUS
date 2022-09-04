@@ -11,7 +11,7 @@
 #include "types/vector.hpp"
 #include "types/equilibrium.hpp"
 #include "magnetic_field.hpp"
-#include "geqdsk.hpp"
+#include "formats/geqdsk.hpp"
 
 
 template<typename system_type, typename state_type, typename scalar_type>

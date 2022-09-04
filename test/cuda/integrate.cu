@@ -3,7 +3,7 @@
 #include <stdlib.h>
 
 #include "files.hpp"
-#include "geqdsk.hpp"
+#include "formats/geqdsk.hpp"
 #include "lorentz.hpp"
 #include "magnetic_field.hpp"
 #include "types/equilibrium.hpp"

@@ -2,7 +2,7 @@
 #include <string>
 #include <cassert>
 
-#include "geqdsk.hpp"
+#include "formats/geqdsk.hpp"
 #include "files.hpp"
 #include "cxxopts.hpp"
 #include "magnetic_field.hpp"

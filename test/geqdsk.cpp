@@ -1,7 +1,7 @@
 #include <fstream>
 #include <string>
 
-#include "geqdsk.hpp"
+#include "formats/geqdsk.hpp"
 #include "files.hpp"
 #include "cxxopts.hpp"
 
