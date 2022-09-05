@@ -46,7 +46,7 @@ int main(int argc, char* argv[]){
 		std::cout << "ni\n";
 		for (size_t i = 0; i < plasma.nexp; i++){
 				for (size_t ion = 0; ion < plasma.nion; ion++){
-					std::cout << plasma.ni(ion, i) << '\t';
+					std::cout << plasma.ni[ion][i] << '\t';
 				}
 			std::cout << '\n';
 		}
@@ -54,7 +54,7 @@ int main(int argc, char* argv[]){
 		std::cout << "ti\n";
 		for (size_t i = 0; i < plasma.nexp; i++){
 				for (size_t ion = 0; ion < plasma.nion; ion++){
-					std::cout << plasma.ti(ion, i) << '\t';
+					std::cout << plasma.ti[ion][i] << '\t';
 				}
 			std::cout << '\n';
 		}

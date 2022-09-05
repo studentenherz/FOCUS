@@ -2,7 +2,6 @@
 #define FOCUS_INCLUDE_TYPES_PLASMA_HPP
 
 #include "types/array.hpp"
-#include "types/matrix_2d.hpp"
 
 struct Plasma{
 	int shot;
@@ -17,12 +16,17 @@ struct Plasma{
 	Array<double> psi;
 
 	Array<double> ne;
-	Matrix2D<double> ni;	
+	Array<Array<double>> ni;	
 
 	Array<double> te;
-	Matrix2D<double> ti;	
+	Array<Array<double>> ti;	
 
-	Plasma(int shot, size_t nexp, size_t nion): shot(shot), nexp(nexp), nion(nion), mass(nion), z(nion), psi(nexp), ne(nexp), ni(nion, nexp), te(nexp), ti(nion, nexp) {} 
+	Plasma(int shot, size_t nexp, size_t nion): shot(shot), nexp(nexp), nion(nion), mass(nion), z(nion), psi(nexp), ne(nexp), ni(nion), te(nexp), ti(nion) {
+		for (size_t i = 0; i < nion; i++){
+			ni[i].resize(nexp);
+			ti[i].resize(nexp);
+		}
+	} 
 };
 
 #endif // FOCUS_INCLUDE_TYPES_PLASMA_HPP

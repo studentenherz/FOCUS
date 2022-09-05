@@ -136,7 +136,7 @@ Plasma read_input_gacode(std::string filename, bool negative_psi = true){
 						std::cerr << "Invalid line for ni\n";
 						goto RETURN_FAIL;
 					}
-					plasma.ni(ion, i) = std::stod(token);
+					plasma.ni[ion][i] = std::stod(token);
 				}
 			}
 			count++;
@@ -161,7 +161,7 @@ Plasma read_input_gacode(std::string filename, bool negative_psi = true){
 						std::cerr << "Invalid line for ti\n";
 						goto RETURN_FAIL;
 					}
-					plasma.ti(ion, i) = std::stod(token);
+					plasma.ti[ion][i] = std::stod(token);
 				}
 			}
 			count++;
