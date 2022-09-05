@@ -37,5 +37,15 @@ public:
 	}
 };
 
+/**
+ * Check if string matches a regular expresion
+ * @param s string
+ * @param rexpr regular expresion
+ * @return true if s matches rexpr
+ */
+inline bool regex_match(std::string s, std::string rexpr){
+	std::regex e(rexpr);
+	return std::regex_match(s, e);
+}
 
 #endif // FOCUS_INCLUDE_FORMATS_REGEX_TOKENIZER_HPP
