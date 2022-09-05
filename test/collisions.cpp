@@ -12,6 +12,7 @@
 #include "types/equilibrium.hpp"
 #include "magnetic_field.hpp"
 #include "formats/geqdsk.hpp"
+#include "formats/input_gacode.hpp"
 
 
 template<typename system_type, typename state_type, typename scalar_type>
@@ -48,8 +49,8 @@ public:
 };
 
 int main(int argc, char* argv[]){
-	if (argc < 2){
-		std::cout << "usage:\ncollisions <g-eqdsk file>\n";
+	if (argc < 3){
+		std::cout << "usage:\ncollisions <g-eqdsk file> <input.gacode file>\n";
 		return -1;
 	}
 
@@ -58,41 +59,34 @@ int main(int argc, char* argv[]){
 
 	MagneticFieldFromMatrix B(B_matrix, eq.bcentr);
 
-	double q_e = 1.0;
-	double m_e = 1.0;
-	double logl_e = 17.5;
-	double eta = 0.000218938;
+	double eta = 2.27418e-12;
+	double kappa = 0.0238557;
+	logl_prefactor = 18.4527;
 	
-	double q_over_m =  9.58e7; // C/kg proton
+	double q_over_m =  9.64853e7; // C/kg  (e/1 Da)
 	double Omega = q_over_m * eq.bcentr; // cyclotron frequency
 	double v0 = 1.84142e7; // m/s (3.54 MeV of a proton)
 	double a = eq.rdim; // m
 	double gam = v0 / (a * Omega); // dimensionless factor
 
-	Array<double> Tf = {1.61029};
-	Array<double> nf = {1.0};
-	Array<double> psi = {0};
 
 	std::cout << 1/Omega << '\n';
 
 	// Particles
-	ParticleSpecies electron(q_e, m_e, logl_e, psi, Tf, nf);
-	ParticleSpecies alpha(1.01, 2.0 * 1836, logl_e, psi, Tf, nf);
+	Particle alpha(1.01, 2.0 * 1836);
 
-	// Particles in plasma
-	Array<ParticleSpecies*> plasma(1);
-	plasma[0] = &electron;
+	Plasma plasma = read_input_gacode(argv[2]);
 
 	// System with Lorentz force
 	typedef Lorentz<NullForce, MagneticFieldFromMatrix, NullVectorField> System;
 	System sys(gam, B, null_vector_field, null_force);
 
-	for (unsigned long long seed = 1; seed < 5; seed++){
+	for (unsigned long long seed = 1; seed < 2; seed++){
 
 		NormalRand ran(seed);
 
 		// Collisions operator
-		FockerPlank<NormalRand> collisions(plasma, alpha, B, eta, ran);
+		FockerPlank<NormalRand> collisions(plasma, alpha, B, eta, kappa, ran);
 
 		// Stepper
 		CollisionStepper<System, State, double> stepper(200, collisions);

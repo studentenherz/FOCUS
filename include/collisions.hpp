@@ -119,6 +119,7 @@
 #include "types/vector.hpp"
 #include "random.hpp"
 #include "magnetic_field.hpp"
+#include "types/plasma.hpp"
 
 /**
  * Error function minus it's derivative
@@ -147,18 +148,37 @@ double G(double x){
  */
 template<typename NormalRand_t>
 class FockerPlank{
-	Array<ParticleSpecies*>& beta;	// Particle species involved
-	ParticleSpecies& alpha;				// Test particle species
+	Array<PlasmaParticleSpecies> beta;	// Particle species involved
+	Particle alpha;				// Test particle species
 
 	MagneticFieldFromMatrix& _B;
 
-	double _eta;				// Dimensionless constant
+	double _eta;					// Dimensionless constant
+	double _kappa;
 	NormalRand_t& gauss;	// Gaussian random generator
 public:
 	#ifdef __CUDACC__
 	__host__ __device__
 	#endif
-	FockerPlank(Array<ParticleSpecies*>& plasma_particles, ParticleSpecies& test_particle, MagneticFieldFromMatrix& B, double eta, NormalRand_t& normal_rand): beta(plasma_particles), alpha(test_particle), _B(B), _eta(eta), gauss(normal_rand) {}
+	FockerPlank(Plasma& plasma, Particle test_particle, MagneticFieldFromMatrix& B, double eta, double kappa, NormalRand_t& normal_rand): alpha(test_particle), _B(B), _eta(eta), _kappa(kappa), gauss(normal_rand) {
+		beta.resize(plasma.nion + 1);
+
+		// Ions
+		for (size_t i = 0; i < plasma.nion; i++){
+			beta[i].m = plasma.mass[i];
+			beta[i].q = plasma.z[i];
+			beta[i].psi_prof = &plasma.psi;
+			beta[i].T_prof = &plasma.ti[i];
+			beta[i].n_prof = &plasma.ni[i];
+		}
+
+		// Electrons
+		beta[plasma.nion].m = plasma.masse;
+		beta[plasma.nion].q = plasma.ze;
+		beta[plasma.nion].psi_prof = &plasma.psi;
+		beta[plasma.nion].T_prof = &plasma.te;
+		beta[plasma.nion].n_prof = &plasma.ne;
+	}
 
 	/**
 	 * Slowing down from elastic collisions
@@ -179,8 +199,9 @@ public:
 		double nu_sd = 0;
 		// terms that depend on plasma particles
 		for(size_t i = 0; i < beta.size(); i++){
-			double xb = v_mod / beta[i]->T(psi, t);
-			nu_sd +=  sqr(beta[i]->q) *  beta[i]->n(psi, t) * (1 + alpha.m/beta[i]->m) * beta[i]->logl * erf_minus_d_erf(xb);
+			double v_beta = _kappa * sqrt(2 * beta[i].T(psi, t) / beta[i].m);
+			double xb = v_mod / v_beta;
+			nu_sd +=  sqr(beta[i].q) *  beta[i].n(psi, t) * (1 + alpha.m/beta[i].m) * beta[i].logl(alpha, psi, t) * erf_minus_d_erf(xb);
 		}
 
 		// other terms
@@ -208,8 +229,9 @@ public:
 		double nu = 0;
 		// terms that depend on plasma particles
 		for(size_t i = 0; i < beta.size(); i++){
-			double xb = v_mod / beta[i]->T(psi, t);
-			nu +=  sqr(beta[i]->q) * beta[i]->n(psi, t) * beta[i]->logl * G(xb);
+			double v_beta = _kappa * sqrt(2 * beta[i].T(psi, t) / beta[i].m);
+			double xb = v_mod / v_beta;
+			nu +=  sqr(beta[i].q) * beta[i].n(psi, t) * beta[i].logl(alpha, psi, t) * G(xb);
 		}
 
 		// other terms
@@ -237,8 +259,9 @@ public:
 		double nu = 0;
 		// terms that depend on plasma particles
 		for(size_t i = 0; i < beta.size(); i++){
-			double xb = v_mod / beta[i]->T(psi, t);
-			nu +=  sqr(beta[i]->q) * beta[i]->n(psi, t) * beta[i]->logl * (erf(xb) - G(xb));
+			double v_beta = _kappa * sqrt(2 * beta[i].T(psi, t) / beta[i].m);
+			double xb = v_mod / v_beta;
+			nu +=  sqr(beta[i].q) * beta[i].n(psi, t) * beta[i].logl(alpha, psi, t) * (erf(xb) - G(xb));
 		}
 
 		// other terms
