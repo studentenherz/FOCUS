@@ -33,7 +33,7 @@ int main(int argc, char* argv[]){
 
 		std::cout << "psi\n";
 		for(size_t i = 0; i< plasma.nexp; i++)
-			std::cout << plasma.psi[i] << '\n';
+			std::cout << plasma.polflux[i] << '\n';
 
 		std::cout << "ne\n";
 		for(size_t i = 0; i< plasma.nexp; i++)
@@ -46,7 +46,7 @@ int main(int argc, char* argv[]){
 		std::cout << "ni\n";
 		for (size_t i = 0; i < plasma.nexp; i++){
 				for (size_t ion = 0; ion < plasma.nion; ion++){
-					std::cout << plasma.ni[ion][i] << '\t';
+					std::cout << plasma.ni(ion, i) << '\t';
 				}
 			std::cout << '\n';
 		}
@@ -54,16 +54,14 @@ int main(int argc, char* argv[]){
 		std::cout << "ti\n";
 		for (size_t i = 0; i < plasma.nexp; i++){
 				for (size_t ion = 0; ion < plasma.nion; ion++){
-					std::cout << plasma.ti[ion][i] << '\t';
+					std::cout << plasma.ti(ion, i) << '\t';
 				}
 			std::cout << '\n';
 		}
 
+		return EXIT_SUCCESS;
 	}catch(cxxopts::option_error const& e){
 		std::cerr << e.what() << '\n';
 		return EXIT_FAILURE;
 	}
-
-
-	return EXIT_SUCCESS;
 }

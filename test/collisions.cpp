@@ -61,7 +61,7 @@ int main(int argc, char* argv[]){
 
 	double eta = 2.27418e-12;
 	double kappa = 0.0238557;
-	logl_prefactor = 18.4527;
+	double logl_prefactor = 18.4527;
 	
 	double q_over_m =  9.64853e7; // C/kg  (e/1 Da)
 	double Omega = q_over_m * eq.bcentr; // cyclotron frequency
@@ -73,9 +73,10 @@ int main(int argc, char* argv[]){
 	std::cout << 1/Omega << '\n';
 
 	// Particles
-	Particle alpha(1.01, 2.0 * 1836);
+	Particle alpha(1.0, 4.001506);
 
 	Plasma plasma = read_input_gacode(argv[2]);
+	plasma.logl_prefactor = logl_prefactor;
 
 	// System with Lorentz force
 	typedef Lorentz<NullForce, MagneticFieldFromMatrix, NullVectorField> System;
@@ -92,7 +93,7 @@ int main(int argc, char* argv[]){
 		CollisionStepper<System, State, double> stepper(200, collisions);
 
 		// Initial step
-		State x = {2.2 / a, 0, 0, 0.0, 0.01, 0.3};
+		State x = {2.0 / a, 0, 0, 0.0, 0.3, 0.0};
 
 		std::string fname = "coll/" + std::to_string(seed) + ".dat";
 		// Observer
@@ -100,7 +101,7 @@ int main(int argc, char* argv[]){
 		FileObserver obs(fo, a, v0, Omega, true);
 
 		std::cout << "Calculating " << fname << '\n';
-		integrate(stepper, sys, x, 0.0, 0.0001, 300000, obs, 999);
+		integrate(stepper, sys, x, 0.0, 0.0001, 9000000, obs, 999);
 
 		fo.close();
 	}

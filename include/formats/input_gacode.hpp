@@ -107,12 +107,12 @@ Plasma read_input_gacode(std::string filename, bool negative_psi = true){
 		if (regex_match(line, "#.*\\s+polflux\\s*.*")){
 			for (size_t i = 0; i < plasma.nexp; i++){
 				if(!(tk.next(fi, token) && tk.next(fi, token))){ // index value
-					std::cerr << "Invalid line for psi\n";
+					std::cerr << "Invalid line for polflux\n";
 					goto RETURN_FAIL;
 				}
-				// For some reason the psi sign here is different than the 
+				// For some reason the polflux sign here is different than the 
 				// sign in the respective G-EQDSK file
-				plasma.psi[i] = (negative_psi ? -1.0 : 1.0) * std::stod(token); 
+				plasma.polflux[i] = (negative_psi ? -1.0 : 1.0) * std::stod(token); 
 			}
 			count++;
 			continue;
@@ -136,7 +136,7 @@ Plasma read_input_gacode(std::string filename, bool negative_psi = true){
 						std::cerr << "Invalid line for ni\n";
 						goto RETURN_FAIL;
 					}
-					plasma.ni[ion][i] = std::stod(token);
+					plasma.ni(ion, i) = std::stod(token);
 				}
 			}
 			count++;
@@ -161,7 +161,7 @@ Plasma read_input_gacode(std::string filename, bool negative_psi = true){
 						std::cerr << "Invalid line for ti\n";
 						goto RETURN_FAIL;
 					}
-					plasma.ti[ion][i] = std::stod(token);
+					plasma.ti(ion, i) = std::stod(token);
 				}
 			}
 			count++;

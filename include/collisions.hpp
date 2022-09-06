@@ -148,7 +148,7 @@ double G(double x){
  */
 template<typename NormalRand_t>
 class FockerPlank{
-	Array<PlasmaParticleSpecies> beta;	// Particle species involved
+	Plasma beta;	// Particle species involved
 	Particle alpha;				// Test particle species
 
 	MagneticFieldFromMatrix& _B;
@@ -160,25 +160,7 @@ public:
 	#ifdef __CUDACC__
 	__host__ __device__
 	#endif
-	FockerPlank(Plasma& plasma, Particle test_particle, MagneticFieldFromMatrix& B, double eta, double kappa, NormalRand_t& normal_rand): alpha(test_particle), _B(B), _eta(eta), _kappa(kappa), gauss(normal_rand) {
-		beta.resize(plasma.nion + 1);
-
-		// Ions
-		for (size_t i = 0; i < plasma.nion; i++){
-			beta[i].m = plasma.mass[i];
-			beta[i].q = plasma.z[i];
-			beta[i].psi_prof = &plasma.psi;
-			beta[i].T_prof = &plasma.ti[i];
-			beta[i].n_prof = &plasma.ni[i];
-		}
-
-		// Electrons
-		beta[plasma.nion].m = plasma.masse;
-		beta[plasma.nion].q = plasma.ze;
-		beta[plasma.nion].psi_prof = &plasma.psi;
-		beta[plasma.nion].T_prof = &plasma.te;
-		beta[plasma.nion].n_prof = &plasma.ne;
-	}
+	FockerPlank(Plasma& plasma_particles, Particle test_particle, MagneticFieldFromMatrix& B, double eta, double kappa, NormalRand_t& normal_rand): beta(plasma_particles), alpha(test_particle), _B(B), _eta(eta), _kappa(kappa), gauss(normal_rand) {}
 
 	/**
 	 * Slowing down from elastic collisions
@@ -199,9 +181,9 @@ public:
 		double nu_sd = 0;
 		// terms that depend on plasma particles
 		for(size_t i = 0; i < beta.size(); i++){
-			double v_beta = _kappa * sqrt(2 * beta[i].T(psi, t) / beta[i].m);
+			double v_beta = _kappa * sqrt(2 * beta[i].T(psi, t) / beta[i].m());
 			double xb = v_mod / v_beta;
-			nu_sd +=  sqr(beta[i].q) *  beta[i].n(psi, t) * (1 + alpha.m/beta[i].m) * beta[i].logl(alpha, psi, t) * erf_minus_d_erf(xb);
+			nu_sd +=  sqr(beta[i].q()) *  beta[i].n(psi, t) * (1 + alpha.m/beta[i].m()) * beta[i].logl(alpha, psi, t) * erf_minus_d_erf(xb);
 		}
 
 		// other terms
@@ -229,9 +211,9 @@ public:
 		double nu = 0;
 		// terms that depend on plasma particles
 		for(size_t i = 0; i < beta.size(); i++){
-			double v_beta = _kappa * sqrt(2 * beta[i].T(psi, t) / beta[i].m);
+			double v_beta = _kappa * sqrt(2 * beta[i].T(psi, t) / beta[i].m());
 			double xb = v_mod / v_beta;
-			nu +=  sqr(beta[i].q) * beta[i].n(psi, t) * beta[i].logl(alpha, psi, t) * G(xb);
+			nu +=  sqr(beta[i].q()) * beta[i].n(psi, t) * beta[i].logl(alpha, psi, t) * G(xb);
 		}
 
 		// other terms
@@ -259,9 +241,9 @@ public:
 		double nu = 0;
 		// terms that depend on plasma particles
 		for(size_t i = 0; i < beta.size(); i++){
-			double v_beta = _kappa * sqrt(2 * beta[i].T(psi, t) / beta[i].m);
+			double v_beta = _kappa * sqrt(2 * beta[i].T(psi, t) / beta[i].m());
 			double xb = v_mod / v_beta;
-			nu +=  sqr(beta[i].q) * beta[i].n(psi, t) * beta[i].logl(alpha, psi, t) * (erf(xb) - G(xb));
+			nu +=  sqr(beta[i].q()) * beta[i].n(psi, t) * beta[i].logl(alpha, psi, t) * (erf(xb) - G(xb));
 		}
 
 		// other terms
