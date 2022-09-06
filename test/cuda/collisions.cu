@@ -22,17 +22,25 @@ class ArrayObserver{
 	double _a, _v0, _Omega;
 	bool cart;
 	size_t index = 0;
+	size_t Nout;
 public:
 	__host__ __device__
-	ArrayObserver(Array<double> &times, Array<State> &states, double a, double v0, double Omega, bool cart_coord = false): _times(times), _states(states), _a(a), _v0(v0), _Omega(Omega), cart(cart_coord) {}
+	ArrayObserver(Array<double> &times, Array<State> &states, double a, double v0, double Omega, size_t Nout, bool cart_coord = false): _times(times), _states(states), _a(a), _v0(v0), _Omega(Omega), cart(cart_coord), Nout(Nout) {}
 	
 	__host__ __device__
 	void operator()(State v, double t){
-		_times[index] = t / _Omega;
+		#ifdef __CUDA_ARCH__
+		size_t i = (threadIdx.x + blockDim.x * blockIdx.x) * Nout + index;
+		#else
+		size_t i = index;
+		#endif
+
+		_times[i] = t / _Omega;
 		if (cart)
-			_states[index++] = {v[0] * cos(v[1]) * _a, v[0] * sin(v[1]) * _a, v[2] * _a, (v[3] * cos(v[1]) - v[4] * sin(v[1])) * _v0, (v[3] * sin(v[1]) + v[3] * cos(v[1])) * _v0, v[5] * _v0};
+			_states[i] = {v[0] * cos(v[1]) * _a, v[0] * sin(v[1]) * _a, v[2] * _a, (v[3] * cos(v[1]) - v[4] * sin(v[1])) * _v0, (v[3] * sin(v[1]) + v[3] * cos(v[1])) * _v0, v[5] * _v0};
 		else
-			_states[index++] = {v[0]  * _a, v[1] , v[2] * _a, v[3] * _v0, v[4] * _v0, v[5] * _v0};
+			_states[i] = {v[0]  * _a, v[1] , v[2] * _a, v[3] * _v0, v[4] * _v0, v[5] * _v0};
+		index++;
 	}
 };
 
@@ -58,7 +66,7 @@ public:
 
 // Integration Kernel
 __global__
-void k_integrate(MagneticFieldMatrix B_matrix, Equilibrium eq, State x0, double t0, double dt, size_t Nsteps, Array<double> times, Array<State> states, size_t nskip, Plasma beta, Particle test_part, double eta, double kappa, PhiloxCuRand philox){
+void k_integrate(MagneticFieldMatrix B_matrix, Equilibrium eq, State x0, double t0, double dt, size_t Nsteps, Array<double> times, Array<State> states, size_t Nout, size_t nskip, Plasma beta, Particle test_part, double eta, double kappa, PhiloxCuRand philox){
 	MagneticFieldFromMatrix B(B_matrix, eq.bcentr);
 
 	double q_over_m =  9.58e7; // C/kg proton
@@ -77,18 +85,18 @@ void k_integrate(MagneticFieldMatrix B_matrix, Equilibrium eq, State x0, double 
 	CollisionStepper<System, State, double, FockerPlank<PhiloxCuRand>> stepper(200, collisions);
 
 	State x = x0;
-	ArrayObserver obs(times, states, a, v0, Omega, true);
+	ArrayObserver obs(times, states, a, v0, Omega, Nout, true);
 
 	integrate(stepper, sys, x, t0, dt, Nsteps, obs, nskip);
 }
 
-void integrate_in_device(MagneticFieldMatrix& B_matrix, Equilibrium& eq, State x0, double t0, double dt, size_t Nsteps, std::string ofname, size_t nskip, Plasma plasma){
+void integrate_in_device(MagneticFieldMatrix& B_matrix, Equilibrium& eq, State x0, double t0, double dt, size_t Nsteps, std::string ofname, size_t nskip, Plasma plasma, size_t nparts = 1){
 	size_t Nout = size_t(Nsteps / (nskip + 1));
-	Array<State> h_states(Nout);
+	Array<State> h_states(nparts * Nout);
 	Array<State> d_states;
 	d_states.construct_in_host_for_device(h_states);
 
-	Array<double> h_times(Nout);
+	Array<double> h_times(nparts * Nout);
 	Array<double> d_times;
 	d_times.construct_in_host_for_device(h_times);
 
@@ -98,24 +106,26 @@ void integrate_in_device(MagneticFieldMatrix& B_matrix, Equilibrium& eq, State x
 	// Particles
 	Particle alpha(1.0, 4.001506);
 
-	PhiloxCuRand philox(1);
-	kernel_init_philox_rand<<<1, 1>>>(philox, 1);
+	PhiloxCuRand philox(nparts);
+	kernel_init_philox_rand<<<1, nparts>>>(philox, 1);
 
 	Plasma d_plasma(0, 0, 0);
 	d_plasma.construct_in_host_for_device(plasma);
 
-	k_integrate<<<1, 1>>>(B_matrix, eq, x0, t0, dt, Nsteps, d_times, d_states, nskip, d_plasma, alpha, eta, kappa, philox);
+	k_integrate<<<1, nparts>>>(B_matrix, eq, x0, t0, dt, Nsteps, d_times, d_states, Nout, nskip, d_plasma, alpha, eta, kappa, philox);
 
 	h_states.copy_to_host_from_device(d_states);
 	h_times.copy_to_host_from_device(d_times);
 
-	std::ofstream fo(ofname);
+	for (size_t par = 0; par < nparts; par++){
+		std::ofstream fo(ofname + std::to_string(par));
 
-	for(size_t i =0; i < h_states.size(); i++){
-		fo << h_times[i] << ' ' << h_states[i] << '\n';
+		for(size_t i =0; i < Nout; i++){
+			fo << h_times[par * Nout + i] << ' ' << h_states[par * Nout + i] << '\n';
+		}
+
+		fo.close();
 	}
-
-	fo.close();
 }
 
 void integrate_in_host(MagneticFieldMatrix& B_matrix, Equilibrium& eq, State x0, double t0, double dt, size_t Nsteps, std::string ofname, size_t nskip, Plasma& plasma){
@@ -150,7 +160,7 @@ void integrate_in_host(MagneticFieldMatrix& B_matrix, Equilibrium& eq, State x0,
 	Array<State> states(Nout);
 	Array<double> times(Nout);
 
-	ArrayObserver obs(times, states, a, v0, Omega, true);
+	ArrayObserver obs(times, states, a, v0, Omega, Nout, true);
 	integrate(stepper, sys, x, t0, dt, Nsteps, obs, nskip);
 
 	std::ofstream fo(ofname);
@@ -214,7 +224,7 @@ int main(int argc, char* argv[]){
 		State x0 = {2.2 / eq.rdim, 0, 0, 0.0, 0.01, 0.3};
 		double t0 = 0;
 		double dt = 0.0001;
-		size_t N 	= 3000000;
+		size_t N 	= 30000000;
 		size_t nskip 	= 999;
 		double logl_prefactor = 18.4527;
 
@@ -223,7 +233,7 @@ int main(int argc, char* argv[]){
 		plasma.logl_prefactor = logl_prefactor;
 		
 		integrate_in_host(B_matrix, eq, x0, t0, dt, N, result["host_file"].as<std::string>(), nskip, plasma);
-		integrate_in_device(B_matrix, eq, x0, t0, dt, N, result["device_file"].as<std::string>(), nskip, plasma);
+		integrate_in_device(B_matrix, eq, x0, t0, dt, N, result["device_file"].as<std::string>(), nskip, plasma, 3);
 
 		return 0;
 	}
