@@ -10,6 +10,7 @@ magnetic_field = executable('magnetic_field', 'magnetic_field.cpp', include_dire
 random = executable('random', 'random.cpp', include_directories: incdir, implicit_include_directories: false)
 collisions = executable('collisions', 'collisions.cpp', include_directories: incdir, implicit_include_directories: false)
 input_gacode = executable('input_gacode', 'input_gacode.cpp', include_directories: incdir, implicit_include_directories: false)
+input_states = executable('input_states', 'input_states.cpp', include_directories: incdir, implicit_include_directories: false)
 
 
 copy = find_program('scripts/copy.py')

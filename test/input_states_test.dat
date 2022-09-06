@@ -1,0 +1,8 @@
+# This is a test input in the format 
+# r [m] | theta [rad] | z [m] | vr [m/s] | vtheta [m/s] | vz [m/s]
+
+# this is just a comment line 
+
+2.0 1 1.1 0.0 1.32 0.1
+1 2 3 4 5 6
+1e-12 22e123 0 1231 31323123 1.231E+3
