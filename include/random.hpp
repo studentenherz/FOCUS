@@ -2,7 +2,9 @@
 #define FOCUS_INCLUDE_RANDOM_HPP
 
 #include <cmath>
+#ifdef __CUDACC__
 #include <curand_kernel.h>
+#endif
 
 #include "util.hpp"
 
