@@ -27,9 +27,6 @@ Array<State> load_states(std::string filename){
 		return Array<State>(0);
 	}
 
-	Tokenizer<std::ifstream> tk("[+-]?\\d*[\\.]?\\d+(?:[Ee][+-]?\\d+)?"); // captures any number;
-	std::string token;
-
 	std::vector<State> v_states;
 
 	double r, q, z, vr, vq, vz;
