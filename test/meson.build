@@ -13,6 +13,7 @@ random = executable('random', 'random.cpp', include_directories: incdir, implici
 collisions = executable('collisions', 'collisions.cpp', include_directories: incdir, implicit_include_directories: false)
 input_gacode = executable('input_gacode', 'input_gacode.cpp', include_directories: incdir, implicit_include_directories: false)
 particle_states = executable('particle_states', 'particle_states.cpp', include_directories: incdir, implicit_include_directories: false, cpp_args: '-DGIT_VERSION="@0@"'.format(git_version.stdout().strip()))
+pitch_E_2_state = executable('pitch_E_2_state', 'pitch_E_2_state.cpp', include_directories: incdir, implicit_include_directories: false, cpp_args: '-DGIT_VERSION="@0@"'.format(git_version.stdout().strip()))
 
 
 copy = find_program('scripts/copy.py')
