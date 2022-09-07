@@ -8,3 +8,4 @@ project('com..focus', 'cpp',
 incdir = include_directories(['include', 'extern/include'])
 
 subdir('test')
+subdir('src')
