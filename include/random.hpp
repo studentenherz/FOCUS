@@ -122,7 +122,8 @@ public:
 	__device__
 	void init(unsigned long long seed, unsigned long long subsequence = 0LL, unsigned long long offset = 0LL){
 		size_t idx = threadIdx.x + blockIdx.x * blockDim.x;
-		curand_init(seed, idx, offset, &d_states[idx]);
+		if (idx < _n)
+			curand_init(seed, idx, offset, &d_states[idx]);
 	}
 
 	__device__
