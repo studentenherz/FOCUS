@@ -29,10 +29,8 @@ size_t integrate(stepper_type& stepper, system_type& sys, state_type& x, scalar_
 			obs(x, t);
 
 		stepper.do_step(sys, x, t, dt);
-		if(hasnan(x)){
-			printf("Interrupt at step %d for nan value was encountered\n", (int)step);
+		if(hasnan(x))
 			break;
-		}
 		t += dt;
 		step++;
 	}
