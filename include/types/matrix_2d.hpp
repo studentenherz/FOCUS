@@ -74,6 +74,20 @@ public:
 	#endif
 
 	/**
+	 * Copy to host from device
+	 * @param other matrix2D to construct from
+	 */
+	#ifdef __CUDACC__
+	__host__
+	void copy_to_host_from_device(Matrix2D<T>& other){
+		_copied = false;
+		_shape = other._shape;
+		size_t _size = _shape.first * _shape.second;
+		cudaMemcpy(_arr, other._arr, sizeof(T) * _size, cudaMemcpyDeviceToHost);
+	}
+	#endif
+
+	/**
 	 * Desctructor; dealocate heap and set pointer to null
 	 */
 	#ifdef __CUDACC__
