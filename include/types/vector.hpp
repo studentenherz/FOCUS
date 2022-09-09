@@ -241,6 +241,32 @@ Vector3 cross(Vector3 a, Vector3 b){
 	return c;
 }
 
+/**
+ * Angle between two 3-Vectors
+ * @param a one vector
+ * @param b another vector
+ * @return dot product a x b
+ */
+#ifdef __CUDACC__
+__host__ __device__
+#endif
+double angle_between(Vector3 a, Vector3 b){
+	return acos(dot(a, b) / (mod(a) * mod(b)));
+}
+
+/**
+ * Pitch between two 3-Vectors
+ * @param a one vector
+ * @param b another vector
+ * @return dot product a x b
+ */
+#ifdef __CUDACC__
+__host__ __device__
+#endif
+double pitch_between(Vector3 a, Vector3 b){
+	return dot(a, b) / (mod(a) * mod(b));
+}
+
 // State: space + velocity 3-Vectors
 typedef Vector<6> State;
 
