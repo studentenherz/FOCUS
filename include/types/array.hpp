@@ -37,7 +37,7 @@ public:
 	 */
 	#ifdef __CUDACC__
 	__host__
-	Array(T* other_arr, size_t size, bool from_host = true): _size(size), _copied(from_host) {
+	Array(T* other_arr, size_t size): _size(size), _copied(false) {
 		cudaMalloc(&_arr, sizeof(T) * (_size + 1));
 		cudaMemcpy(_arr, other_arr, sizeof(T) * _size, cudaMemcpyHostToDevice);
 	}
@@ -114,6 +114,22 @@ public:
 		delete[] _arr;
 		_arr = NULL;
 	}
+
+	#ifdef __CUDACC__
+	__host__
+	void deallocate_cuda(){
+		cudaFree(_arr);
+	}
+	#endif
+
+	#ifdef __CUDACC__
+	__host__
+	T from_device_at(size_t i){
+		T h_val;
+		cudaMemcpy(&h_val, &_arr[i], sizeof(T), cudaMemcpyDeviceToHost);
+		return h_val;
+	}
+	#endif
 
 	/**
 	 * Write access to the array
