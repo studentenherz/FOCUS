@@ -68,7 +68,7 @@ struct ElectricField{
 
 int main(){
 	typedef Lorentz<NullForce, MagneticField, ElectricField> System;
-	System sys(1, B, E, null_force);
+	System sys(1, 1, B, E, null_force);
 
 	EulerStepper<System, State, double> euler;
 	RK46NL<System, State, double> rk46nl;

@@ -70,7 +70,7 @@ int main(int argc, char* argv[]){
 	double gam = v0 / (a * Omega); // dimensionless factor
 
 	typedef Lorentz<NullForce, MagneticFieldFromMatrix, NullVectorField> System;
-	System sys(gam, B, null_vector_field, null_force);
+	System sys(gam, 1, B, null_vector_field, null_force);
 	State x = {2.2 / a, 0, 0, 0.0, 0.01, 0.3};
 	RK46NL<System, State, double> rk46nl;
 

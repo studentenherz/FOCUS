@@ -80,7 +80,7 @@ int main(int argc, char* argv[]){
 
 	// System with Lorentz force
 	typedef Lorentz<NullForce, MagneticFieldFromMatrix, NullVectorField> System;
-	System sys(gam, B, null_vector_field, null_force);
+	System sys(gam, alpha.q/alpha.m, B, null_vector_field, null_force);
 
 	for (unsigned long long seed = 1; seed < 2; seed++){
 
