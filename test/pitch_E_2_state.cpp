@@ -24,7 +24,7 @@ State pitch_E_2_state(double R, double z, double vpll_v, double E, double theta,
 	double r_m = R / 100.0;
 	double z_m = z / 100.0;
 
-	double v_mod = 4.39284e5 * sqrt(E/part.m);
+	double v_mod = 1.38914e4 * sqrt(E/part.m);
   Vector3 r = {r_m / a, theta_rad, z_m / a}; // Normalized
 	Vector3 b = B(r, 0.0);
 
