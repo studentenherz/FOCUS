@@ -70,7 +70,7 @@ struct Equilibrium{
 	/**
 	 * Default move constructor
 	 */
-	Equilibrium(Equilibrium&&) = default;
+	// Equilibrium(Equilibrium&&) = default;
 
 	/**
 	 * Construct in host for device from Equilibrium 
@@ -78,7 +78,7 @@ struct Equilibrium{
 	 */
 	#ifdef __CUDACC__
 	__host__
-	Equilibrium(Equilibrium& other){
+	void construct_in_host_for_device(Equilibrium& other){
 		// Single parameters
 		idnum 	= other.idnum;
 		nx 			= other.nx;

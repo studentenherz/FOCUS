@@ -18,6 +18,14 @@ struct MagneticFieldMatrix{
 	double z_min, z_max; // z limits
 
 	/**
+	 * Default constructor, create empty object
+	 */
+	#ifdef __CUDACC__
+	__host__
+	#endif
+	MagneticFieldMatrix() {}
+
+	/**
 	 * Calculate magnetic fields from n'th order
 	 * Chebyshev expansion of psi
 	 * @param eq Equilibrium from EFIT's G-EQDSK
@@ -66,11 +74,19 @@ struct MagneticFieldMatrix{
 	}
 
 	/**
-	 * Copy contructor for passing to the device
+	 * Construct in host for device from another
+	 * @param other MagneticFieldMatrix to copy from
 	 */
 	#ifdef __CUDACC__
 	__host__
-	MagneticFieldMatrix(MagneticFieldMatrix& other): r_min(other.r_min), r_max(other.r_max), z_min(other.z_min), z_max(other.z_max)  {
+	void construct_in_host_for_device(MagneticFieldMatrix& other){
+		// Single parameters
+		r_min = other.r_min;
+		r_max = other.r_max;
+		z_min = other.z_min;
+		z_max = other.z_max;
+
+		// Containers
 		psi.construct_in_host_for_device(other.psi);
 		Br.construct_in_host_for_device(other.Br);
 		Bt.construct_in_host_for_device(other.Bt);
