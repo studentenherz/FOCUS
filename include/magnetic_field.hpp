@@ -48,9 +48,9 @@ struct MagneticFieldMatrix{
 		ChebyshevExpansion ch(n, raw_psi, r_min, r_max, z_min, z_max);
 
 		for(size_t i = 0; i<N; i++){
-			double r = r_min + (r_max - r_min) * i / (N - 1); // dimensionless
+			double r = r_min + (r_max - r_min) * i / (N - 1); // dimensionless r
 			for(size_t j = 0; j<N; j++){
-				double z = z_min + (z_max - z_min) * j / (N - 1); // dimensionless
+				double z = z_min + (z_max - z_min) * j / (N - 1); // dimensionless z
 
 				// From \Psi definition
 				Br(i, j) =  (sign ? -1.0 : 1.0) * (ch.dy(r, z) / (eq.bcentr * sqr(eq.rdim))) / r;
@@ -60,7 +60,7 @@ struct MagneticFieldMatrix{
 				double F = lagrange_interpolation_3(psi(i, j), eq.fpol, eq.simagx, eq.sibdry);
 
 				// From F definition
-				Bt(i, j) = (F / (eq.bcentr * sqr(eq.rdim))) / r;
+				Bt(i, j) = (F / (eq.bcentr * eq.rdim)) / r;
 			}
 		}
 	}
