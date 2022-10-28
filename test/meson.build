@@ -11,6 +11,7 @@ odeint = executable('odeint', 'odeint.cpp', include_directories: incdir, implici
 magnetic_field = executable('magnetic_field', 'magnetic_field.cpp', include_directories: incdir, implicit_include_directories: false)
 random = executable('random', 'random.cpp', include_directories: incdir, implicit_include_directories: false)
 collisions = executable('collisions', 'collisions.cpp', include_directories: incdir, implicit_include_directories: false)
+slow_down = executable('slow_down', 'slow_down.cpp', include_directories: incdir, implicit_include_directories: false, cpp_args: ['-O3', '-DFOCUS_TEST_SLOW_DOWN'])
 input_gacode = executable('input_gacode', 'input_gacode.cpp', include_directories: incdir, implicit_include_directories: false)
 particle_states = executable('particle_states', 'particle_states.cpp', include_directories: incdir, implicit_include_directories: false, cpp_args: '-DGIT_VERSION="@0@"'.format(git_version.stdout().strip()))
 pitch_E_2_state = executable('pitch_E_2_state', 'pitch_E_2_state.cpp', include_directories: incdir, implicit_include_directories: false, cpp_args: '-DGIT_VERSION="@0@"'.format(git_version.stdout().strip()))

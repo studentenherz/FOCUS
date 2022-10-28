@@ -146,12 +146,12 @@ double G(double x){
  * calculation from Focker-Planks' theory in the
  * Langevin equation using Îto's method.
  */
-template<typename NormalRand_t>
+template<typename NormalRand_t, typename MagneticField_t>
 class FockerPlank{
 	Plasma beta;	// Particle species involved
 	Particle alpha;				// Test particle species
 
-	MagneticFieldFromMatrix& _B;
+	MagneticField_t& _B;
 
 	double _eta;					// Dimensionless constant
 	double _kappa;
@@ -160,7 +160,7 @@ public:
 	#ifdef __CUDACC__
 	__host__ __device__
 	#endif
-	FockerPlank(Plasma& plasma_particles, Particle test_particle, MagneticFieldFromMatrix& B, double eta, double kappa, NormalRand_t& normal_rand): beta(plasma_particles), alpha(test_particle), _B(B), _eta(eta), _kappa(kappa), gauss(normal_rand) {}
+	FockerPlank(Plasma& plasma_particles, Particle test_particle, MagneticField_t& B, double eta, double kappa, NormalRand_t& normal_rand): beta(plasma_particles), alpha(test_particle), _B(B), _eta(eta), _kappa(kappa), gauss(normal_rand) {}
 
 	/**
 	 * Slowing down from elastic collisions
@@ -299,7 +299,11 @@ public:
 	__host__ __device__
 	#endif
 	void euler_step(State& x, double t, double dt){
+		#ifdef FOCUS_TEST_SLOW_DOWN // For testing purposes
+		Vector3 dv = slow_down(x, t) * dt;
+		#else
 		Vector3 dv = slow_down(x, t) * dt + dispersion(x, t) * sqrt(dt);
+		#endif
 	
 		x[3] += dv[0];
 		x[4] += dv[1];

@@ -15,14 +15,14 @@
 #include "formats/input_gacode.hpp"
 
 
-template<typename system_type, typename state_type, typename scalar_type>
+template<typename system_type, typename state_type, typename scalar_type, typename collision_op_t>
 class CollisionStepper{
 	const size_t collisions_nstep;
 	size_t steps = 0;
 	RK46NL<system_type, state_type, scalar_type> orbit_stepper;
-	FockerPlank<NormalRand> & collision_operator;
+	collision_op_t& collision_operator;
 public:
-	CollisionStepper(size_t nstep, FockerPlank<NormalRand>& collisions): collisions_nstep(nstep), collision_operator(collisions) {}
+	CollisionStepper(size_t nstep, collision_op_t& collisions): collisions_nstep(nstep), collision_operator(collisions) {}
 	
 	void do_step(system_type sys, state_type& x, scalar_type t, scalar_type dt){
 		orbit_stepper.do_step(sys, x, t, dt);
@@ -87,10 +87,12 @@ int main(int argc, char* argv[]){
 		NormalRand ran(seed);
 
 		// Collisions operator
-		FockerPlank<NormalRand> collisions(plasma, alpha, B, eta, kappa, ran);
+		typedef FockerPlank<NormalRand, MagneticFieldFromMatrix> collision_t;
+		collision_t collisions(plasma, alpha, B, eta, kappa, ran);
 
 		// Stepper
-		CollisionStepper<System, State, double> stepper(200, collisions);
+		CollisionStepper<System, State, double, collision_t> stepper(200, collisions);
+
 
 		// Initial step
 		State x = {2.0 / a, 0, 0, 0.0, 0.3, 0.0};
