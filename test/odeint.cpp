@@ -1,10 +1,12 @@
 #include <iostream>
 #include <fstream>
 #include <cmath>
+#include <chrono>
 
 #include "odeint/integrator.hpp"
 #include "odeint/stepper/euler.hpp"
 #include "odeint/stepper/rk46_nl.hpp"
+#include "odeint/stepper/boris.hpp"
 #include "types/vector.hpp"
 #include "lorentz.hpp"
 
@@ -67,25 +69,41 @@ struct ElectricField{
 } E(10);
 
 int main(){
-	typedef Lorentz<NullForce, MagneticField, ElectricField> System;
-	System sys(1, 1, B, E, null_force);
+	typedef Lorentz<NullForce, MagneticField, NullVectorField> System;
+	System sys(1, 1, B, null_vector_field, null_force);
 
 	EulerStepper<System, State, double> euler;
 	RK46NL<System, State, double> rk46nl;
+	Boris<System> boris;
 
 	State x1 = {1, 0, 0, 0, 2, 1};
-	State x2 = x1;
+	State x2 = {1, 0, 0, 0, 2, 1};
+	State x3 = {1, 0, 0, 0, 2, 1};
 
 	std::ofstream euler_fo("xy_euler.dat");
 	std::ofstream rk46nl_fo("xy_rk46.dat");
+	std::ofstream boris_fo("xy_boris.dat");
 	FileObserver obs_euler(euler_fo);
 	FileObserver obs_rk46(rk46nl_fo);
+	FileObserver obs_boris(boris_fo);
 
-	integrate(euler, sys, x1, 0.0, 0.01, 10000, obs_euler);
-	integrate(rk46nl, sys, x2, 0.0, 0.01, 10000, obs_rk46);
+	size_t N = 100000;
+
+	integrate(euler, sys, x1, 0.0, 0.01, N, obs_euler);
+
+	auto start_rk46 = std::chrono::high_resolution_clock::now();
+	integrate(rk46nl, sys, x2, 0.0, 0.01, N, obs_rk46, 9);
+	auto end_rk46 = std::chrono::high_resolution_clock::now();
+
+	auto start_boris = std::chrono::high_resolution_clock::now();
+	integrate(boris, sys, x3, 0.0, 0.01, N, obs_boris, 9);
+	auto end_boris = std::chrono::high_resolution_clock::now();
 
 	std::cout << "Energy from Euler: " << mod(x1) << '\n';
-	std::cout << "Energy from Runge-Kutta: " << mod(x2) << '\n';
+	std::cout << "Runge-Kutta ran in " << std::chrono::duration_cast<std::chrono::milliseconds>(end_rk46 - start_rk46).count() << " ms\n";
+	std::cout << "Energy : " << mod(x2) << '\n';
+	std::cout << "Boris ran in " << std::chrono::duration_cast<std::chrono::milliseconds>(end_boris - start_boris).count() << " ms\n";
+	std::cout << "Energy : " << mod(x3) << '\n';
 
 	return 0;
 }
