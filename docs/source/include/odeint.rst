@@ -38,3 +38,4 @@ The currently implemented steppers are
 
 .. doxygenclass:: EulerStepper
 .. doxygenclass:: RK46NL
+.. doxygenclass:: Boris

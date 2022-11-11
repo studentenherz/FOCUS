@@ -8,6 +8,7 @@
  * Boris algorithm for integrating charged particles subjected to Lorentz force [1, 2]
  * 
  * [1] [https://www.particleincell.com/2011/vxb-rotation/](https://www.particleincell.com/2011/vxb-rotation/)
+ * 
  * [2] Qin, H., Zhang, S., Xiao, J., Liu, J., Sun, Y., & Tang, W. M. (2013). Why is Boris algorithm so good?. Physics of Plasmas, 20(8), 084503. [https://doi.org/10.1063/1.4818428](https://doi.org/10.1063/1.4818428)
  */
 template<typename system_type, typename state_type = State, typename scalar_type = double>
