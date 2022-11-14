@@ -57,7 +57,17 @@ template<typename stepper_type, typename system_type, typename state_type, typen
 __host__ __device__
 #endif
 size_t integrate(stepper_type& stepper, system_type& sys, state_type& x, scalar_type t0, scalar_type dt, size_t Nsteps){
-	return integrate(stepper, sys, x, t0, dt, Nsteps, [] (state_type x, scalar_type t) {return;});
+scalar_type t = t0;
+	size_t step = 0;
+	while(step < Nsteps){
+		stepper.do_step(sys, x, t, dt);
+		if(hasnan(x))
+			break;
+		t += dt;
+		step++;
+	}
+
+	return step;
 }
 
 #endif // FOCUS_INCLUDE_ODEINT_INTEGRATOR_HPP
