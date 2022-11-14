@@ -24,18 +24,6 @@ public:
 			v[i] = 0;
 	}
 
-	// /**
-	//  * Create a vector from x array
-	//  */
-	// Vector(double x, ...){
-	// 	std::va_list args;
-	// 	va_start(args, x);
-	// 	v[0] = x;
-	// 	for (size_t i = 1; i < n; i++)
-	// 		v[i] = va_arg(args, double);
-	// 	va_end(args);
-	// }
-
 	#ifdef __CUDACC__
 	__host__ __device__
 	#endif
@@ -71,7 +59,7 @@ template<size_t n>
 #ifdef __CUDACC__
 __host__ __device__
 #endif
-Vector<n> operator+(Vector<n> a, Vector<n> b){
+Vector<n> operator+(const Vector<n>& a, const Vector<n>& b){
 	Vector<n> c;
 	for(size_t i = 0; i < n; i++)
 		c[i] = a[i] + b[i];
@@ -88,7 +76,7 @@ template<size_t n>
 #ifdef __CUDACC__
 __host__ __device__
 #endif
-Vector<n> operator-(Vector<n> a, Vector<n> b){
+Vector<n> operator-(const Vector<n>& a, const Vector<n>& b){
 	Vector<n> c;
 	for(size_t i = 0; i < n; i++)
 		c[i] = a[i] - b[i];
@@ -105,7 +93,7 @@ template<size_t n>
 #ifdef __CUDACC__
 __host__ __device__
 #endif
-Vector<n> operator*(Vector<n> a, double t){
+Vector<n> operator*(const Vector<n>& a, double t){
 	Vector<n> c;
 	for(size_t i = 0; i < n; i++)
 		c[i] = a[i] * t;
@@ -122,10 +110,27 @@ template<size_t n>
 #ifdef __CUDACC__
 __host__ __device__
 #endif
-Vector<n> operator*(double t, Vector<n> a){
+Vector<n> operator*(double t, const Vector<n>& a){
 	Vector<n> c;
 	for(size_t i = 0; i < n; i++)
 		c[i] = a[i] * t;
+	return c;
+}
+
+/**
+ * Element-wise vector multiplication
+ * @param a a vector
+ * @param b other vector
+ * @return scaled vector t * a
+ */
+template<size_t n>
+#ifdef __CUDACC__
+__host__ __device__
+#endif
+Vector<n> operator*(const Vector<n>& a, const Vector<n>& b){
+	Vector<n> c;
+	for(size_t i = 0; i < n; i++)
+		c[i] = a[i] * b[i];
 	return c;
 }
 
@@ -139,7 +144,7 @@ template<size_t n>
 #ifdef __CUDACC__
 __host__ __device__
 #endif
-Vector<n> operator/(Vector<n> a, double t){
+Vector<n> operator/(const Vector<n>& a, double t){
 	Vector<n> c;
 	for(size_t i = 0; i < n; i++)
 		c[i] = a[i] / t;
@@ -156,7 +161,7 @@ template<size_t n>
 #ifdef __CUDACC__
 __host__ __device__
 #endif
-double dot(Vector<n> a, Vector<n> b){
+double dot(const Vector<n>& a, const Vector<n>& b){
 	double s = 0;
 	for (size_t i = 0; i < n; i++)
 		s += a[i] * b[i];
@@ -173,7 +178,7 @@ template<size_t n>
 #ifdef __CUDACC__
 __host__ __device__
 #endif
-double mod(Vector<n> v){
+double mod(const Vector<n>& v){
 	return sqrt(dot(v, v));
 }
 
@@ -186,7 +191,7 @@ template<size_t n>
 #ifdef __CUDACC__
 __host__ __device__
 #endif
-bool hasnan(Vector<n> v){
+bool hasnan(const Vector<n>& v){
 	for(size_t i = 0; i<n; i++)
 		if(std::isnan(v[i]))
 			return true;
@@ -234,7 +239,7 @@ typedef Vector<3> Vector3;
 #ifdef __CUDACC__
 __host__ __device__
 #endif
-Vector3 cross(Vector3 a, Vector3 b){
+Vector3 cross(const Vector3& a, const Vector3& b){
 	Vector3 c;
 	for (size_t i = 0; i < 3; i++)
 		c[i] = a[(i + 1) % 3] * b[(i + 2) % 3] - a[(i + 2) % 3] * b[(i + 1) % 3];
@@ -250,7 +255,7 @@ Vector3 cross(Vector3 a, Vector3 b){
 #ifdef __CUDACC__
 __host__ __device__
 #endif
-double angle_between(Vector3 a, Vector3 b){
+double angle_between(const Vector3& a, const Vector3& b){
 	return acos(dot(a, b) / (mod(a) * mod(b)));
 }
 
@@ -263,7 +268,7 @@ double angle_between(Vector3 a, Vector3 b){
 #ifdef __CUDACC__
 __host__ __device__
 #endif
-double pitch_between(Vector3 a, Vector3 b){
+double pitch_between(const Vector3& a, const Vector3& b){
 	return dot(a, b) / (mod(a) * mod(b));
 }
 
@@ -278,7 +283,7 @@ typedef Vector<6> State;
 #ifdef __CUDACC__
 __host__ __device__
 #endif
-Vector3 get_position(State x){
+Vector3 get_position(const State& x){
 	Vector3 r;
 	for(size_t i = 0; i < 3; i++)
 		r[i] = x[i];
@@ -293,11 +298,87 @@ Vector3 get_position(State x){
 #ifdef __CUDACC__
 __host__ __device__
 #endif
-Vector3 get_velocity(State x){
+Vector3 get_velocity(const State& x){
 	Vector3 r;
 	for(size_t i = 3; i < 6; i++)
 		r[i - 3] = x[i];
 	return r;
+}
+
+/**
+ * Convert vector from cylindrical coordinates to cartesian
+ * @param v cylindrical vector
+ * @param r cylindrical position
+ * @return vector in cartesian
+ */
+#ifdef __CUDACC__
+__host__ __device__
+#endif
+inline Vector3 cyl2cart(const Vector3& v, double theta){
+	Vector3 cart;
+	double c = cos(theta), s = sin(theta);
+
+	cart[0] = v[0] * c - v[1] * s;
+	cart[1] = v[0] * s + v[1] * c;
+	cart[2] = v[2];
+
+	return cart;
+}
+
+/**
+ * Convert vector from cartesian coordinates to cylindrical
+ * @param v cartesian vector
+ * @param r cylindrical position
+ * @return vector in cylindrical
+ */
+#ifdef __CUDACC__
+__host__ __device__
+#endif
+inline Vector3 cart2cyl(const Vector3& v, double theta){
+	Vector3 cyl;
+	double c = cos(theta), s = sin(theta);
+
+	cyl[0] = v[0] * c + v[1] * s;
+	cyl[1] = v[1] * c - v[0] * s;
+	cyl[2] = v[2];
+
+	return cyl;
+}
+
+/**
+ * Convert from cylindrical coordinates to cartesian
+ * @param r cylindrical vcoordinates
+ * @return cartesian coordinates
+ */
+#ifdef __CUDACC__
+__host__ __device__
+#endif
+inline Vector3 cyl2cart(const Vector3& r){
+	Vector3 cart;
+
+	cart[0] = r[0] * cos(r[1]);
+	cart[1] = r[0] * sin(r[1]);
+	cart[2] = r[2];
+
+	return cart;
+}
+
+/**
+ * Convert from cartesian coordinates to cylindrical
+ * @param r cartesian coordinates
+ * @return cylindrical coordinates
+ */
+#ifdef __CUDACC__
+__host__ __device__
+#endif
+inline Vector3 cart2cyl(const Vector3& r){
+	Vector3 cyl;
+
+	cyl[0] = sqrt(r[0] * r[0] + r[1] * r[1]);
+	cyl[1] = atan2(r[1], r[0]);
+	cyl[2] = r[2];
+
+	return cyl;
 }
 
 

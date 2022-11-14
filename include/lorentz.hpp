@@ -51,12 +51,13 @@ __device__ NullForce d_null_force; // Null Force object for device
  */
 template<typename force_type, typename magnetic_field_type, typename electric_field_type = magnetic_field_type>
 class Lorentz{
+public:
 	const double gam;			// dimensionless factor
 	const double Z_m;			// dimensionless charge over mass
 	magnetic_field_type& B;	// magnetic induction field
 	electric_field_type& E;	// electric field
 	force_type& F;					// other forces
-public:
+	
 	/**
 	 * Constructor of Motion Equation
 	 * @param _gam dimensionless gamma factor

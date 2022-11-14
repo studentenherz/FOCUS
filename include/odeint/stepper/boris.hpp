@@ -51,7 +51,7 @@ public:
 		Vector3 Ec = cyl2cart(Ecil, r_cyl[1]);
 
 		// Calculate v'
-		Vector3 vp = vc + sys.gam * dt * (Ec  + cross(vc, Bc) / 2);
+		Vector3 vp = vc + sys.Z_m * dt * (Ec  + cross(vc, Bc) / 2);
 		Vector3 t = sys.Z_m * Bc * dt / 2;
 
 		double s = 1.0/(1.0 + dot(t, t));
