@@ -25,27 +25,27 @@ int main(int argc, char* argv[]){
 		}
 
 		Equilibrium eq = read_geqdsk(result["file"].as<std::string>().c_str());
-		std::cout << eq.idnum << '\n';
-		std::cout << eq.nx << '\n';
-		std::cout << eq.ny << '\n';
-		std::cout << eq.rdim << '\n';
-		std::cout << eq.zdim << '\n';
-		std::cout << eq.rcentr << '\n';
-		std::cout << eq.rleft << '\n';
-		std::cout << eq.zmid << '\n';
-		std::cout << eq.rmagx << '\n';
-		std::cout << eq.zmagx << '\n';
-		std::cout << eq.simagx << '\n';
-		std::cout << eq.sibdry << '\n';
-		std::cout << eq.bcentr << '\n';
-		std::cout << eq.cpasma << '\n';
-		std::cout << eq.simagx << '\n';
-		std::cout << eq.rmagx << '\n';
-		std::cout << eq.zmagx << '\n';
-		std::cout << eq.sibdry << '\n';
+		std::cout << "idnum " << eq.idnum   << '\n';
+		std::cout << "nx    " << eq.nx      << '\n';
+		std::cout << "ny    " << eq.ny      << '\n';
+		std::cout << "rdim  " << eq.rdim    << '\n';
+		std::cout << "zdim  " << eq.zdim    << '\n';
+		std::cout << "rcentr" << eq.rcentr  << '\n';
+		std::cout << "rleft " << eq.rleft   << '\n';
+		std::cout << "zmid  " << eq.zmid    << '\n';
+		std::cout << "rmagx " << eq.rmagx   << '\n';
+		std::cout << "zmagx " << eq.zmagx   << '\n';
+		std::cout << "simagx " << eq.simagx  << '\n';
+		std::cout << "sibdry " << eq.sibdry  << '\n';
+		std::cout << "bcentr " << eq.bcentr  << '\n';
+		std::cout << "cpasma " << eq.cpasma  << '\n';
+		std::cout << "simagx " << eq.simagx  << '\n';
+		std::cout << "rmagx " << eq.rmagx   << '\n';
+		std::cout << "zmagx " << eq.zmagx   << '\n';
+		std::cout << "sibdry " << eq.sibdry  << '\n';
 
-		for (size_t i = 0; i < eq.nx; i++)
-			std::cout << eq.fpol[i] << '\t' << eq.pres[i] << '\t' << eq.qpsi[i] << '\n';
+		 for (size_t i = 0; i < eq.nx; i++)
+		 	std::cout << eq.fpol[i] << '\t' << eq.pres[i] << '\t' << eq.qpsi[i] << '\n';
 
 		dump("psi_from_geqdsk.dat", eq.psi, false);
 		
