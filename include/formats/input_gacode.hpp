@@ -22,21 +22,19 @@ Plasma read_input_gacode(std::string filename, bool negative_psi = true){
 		RETURN_FAIL: return Plasma(-1, 0, 0);
 	}
 
-	int shot;
-	size_t nexp, nion;
+	int shot = -1;
+	int nexp = -1, nion = -1;
 
 	Tokenizer<std::ifstream> tk("[+-]?\\d*[\\.]?\\d+(?:[Ee][+-]?\\d+)?"); // captures any number;
 	
 	std::string line, token;
-	short count = 0;
-	while(count < 3 && std::getline(fi, line)){
+	while((nexp == -1 || nion == -1) && std::getline(fi, line)){
 		if (regex_match(line, "#.*shot.*")){
 			if(!tk.next(fi, token)){
 				std::cerr << "Invalid line for shot\n";
 				goto RETURN_FAIL;
 			}
 			shot = std::stoi(token);
-			count++;
 			continue;
 		}
 		if (regex_match(line, "#.*nion.*")){
@@ -45,7 +43,6 @@ Plasma read_input_gacode(std::string filename, bool negative_psi = true){
 				goto RETURN_FAIL;
 			}
 			nion = std::stoul(token);
-			count++;
 			continue;
 		}
 		if (regex_match(line, "#.*nexp.*")){
@@ -54,15 +51,17 @@ Plasma read_input_gacode(std::string filename, bool negative_psi = true){
 				goto RETURN_FAIL;
 			}
 			nexp = std::stoul(token);
-			count++;
 			continue;
 		}
 	}
 
+	bool end = (nexp == -1 || nion == -1);
+	if (nexp == -1) std::cerr << "Error No specification of nexp\n";
+	if (nion == -1) std::cerr << "Error No specification of nion\n";
+	if (end) exit(-1);
 
 	Plasma plasma(shot, nexp, nion);
 
-	count = 0;
 	while(std::getline(fi, line)){
 		if (regex_match(line, "#.*masse.*")){
 			if(!tk.next(fi, token)){
@@ -70,7 +69,6 @@ Plasma read_input_gacode(std::string filename, bool negative_psi = true){
 				goto RETURN_FAIL;
 			}
 			plasma.masse = std::stod(token);
-			count++;
 			continue;
 		}
 		if (regex_match(line, "#.*\\s+ze\\s*")){
@@ -79,7 +77,6 @@ Plasma read_input_gacode(std::string filename, bool negative_psi = true){
 				goto RETURN_FAIL;
 			}
 			plasma.ze = std::stod(token);
-			count++;
 			continue;
 		}
 		if (regex_match(line, "#.*\\s+mass\\s*.*")){
@@ -90,7 +87,6 @@ Plasma read_input_gacode(std::string filename, bool negative_psi = true){
 				}
 				plasma.mass[i] = std::stod(token);
 			}
-			count++;
 			continue;
 		}
 		if (regex_match(line, "#.*\\s+z(?:$|\\s+.*)")){
@@ -101,7 +97,6 @@ Plasma read_input_gacode(std::string filename, bool negative_psi = true){
 				}
 				plasma.z[i] = std::stod(token);
 			}
-			count++;
 			continue;
 		}
 		if (regex_match(line, "#.*\\s+polflux\\s*.*")){
@@ -114,7 +109,6 @@ Plasma read_input_gacode(std::string filename, bool negative_psi = true){
 				// sign in the respective G-EQDSK file
 				plasma.polflux[i] = (negative_psi ? -1.0 : 1.0) * std::stod(token); 
 			}
-			count++;
 			continue;
 		}
 		if (regex_match(line, "#.*\\s+ne\\s*.*")){
@@ -125,7 +119,6 @@ Plasma read_input_gacode(std::string filename, bool negative_psi = true){
 				}
 				plasma.ne[i] = std::stod(token); 
 			}
-			count++;
 			continue;
 		}
 		if (regex_match(line, "#.*\\s+ni\\s*.*")){
@@ -139,7 +132,6 @@ Plasma read_input_gacode(std::string filename, bool negative_psi = true){
 					plasma.ni(ion, i) = std::stod(token);
 				}
 			}
-			count++;
 			continue;
 		}
 		if (regex_match(line, "#.*\\s+te\\s*.*")){
@@ -150,7 +142,6 @@ Plasma read_input_gacode(std::string filename, bool negative_psi = true){
 				}
 				plasma.te[i] = std::stod(token); 
 			}
-			count++;
 			continue;
 		}
 		if (regex_match(line, "#.*\\s+ti\\s*.*")){
@@ -164,7 +155,6 @@ Plasma read_input_gacode(std::string filename, bool negative_psi = true){
 					plasma.ti(ion, i) = std::stod(token);
 				}
 			}
-			count++;
 			continue;
 		}
 	}
