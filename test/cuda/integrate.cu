@@ -11,6 +11,7 @@
 #include "odeint/integrator.hpp"
 #include "odeint/stepper/rk46_nl.hpp"
 #include "cxxopts.hpp"
+#include "types/particle.hpp"
 
 class ArrayObserver{
 	Array<double> &_times;
@@ -43,8 +44,9 @@ void k_integrate(MagneticFieldMatrix B_matrix, Equilibrium eq, State x0, double 
 	double a = eq.rdim; // m
 	double gam = v0 / (a * Omega); // dimensionless factor
 
+	Particle part(1, 1.04);
 	typedef Lorentz<NullForce, MagneticFieldFromMatrix, NullVectorField> System;
-	System sys(gam, B, d_null_vector_field, d_null_force);
+	System sys(gam, part, B, d_null_vector_field, d_null_force);
 	State x = x0;
 	RK46NL<System, State, double> rk46nl;
 	ArrayObserver obs(times, states, a, v0, Omega, true);
@@ -85,8 +87,9 @@ void integrate_in_host(MagneticFieldMatrix& B_matrix, Equilibrium& eq, State x0,
 	double a = eq.rdim; // m
 	double gam = v0 / (a * Omega); // dimensionless factor
 
+	Particle part(1, 1.04);
 	typedef Lorentz<NullForce, MagneticFieldFromMatrix, NullVectorField> System;
-	System sys(gam, B, null_vector_field, null_force);
+	System sys(gam, part, B, null_vector_field, null_force);
 	State x = x0;
 	RK46NL<System, State, double> rk46nl;
 

@@ -115,7 +115,7 @@ int main(int argc, char* argv[]){
 
 		// System with Lorentz force
 		typedef Lorentz<NullForce, HomogeneusNullB, NullVectorField> System;
-		System sys(gam, alpha.q/alpha.m, B, null_vector_field, null_force);
+		System sys(gam, alpha, B, null_vector_field, null_force);
 
 		double dt = 0.1;
 		size_t N = 810000000;

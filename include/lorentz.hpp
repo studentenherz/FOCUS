@@ -2,6 +2,7 @@
 #define FOCUS_INCLUDE_LORENTZ_HPP
 
 #include "types/vector.hpp"
+#include "types/particle.hpp"
 
 /**
  * A vector field class that returns zero
@@ -53,7 +54,7 @@ template<typename force_type, typename magnetic_field_type, typename electric_fi
 class Lorentz{
 public:
 	const double gam;			// dimensionless factor
-	const double Z_m;			// dimensionless charge over mass
+	Particle& part;				// particle
 	magnetic_field_type& B;	// magnetic induction field
 	electric_field_type& E;	// electric field
 	force_type& F;					// other forces
@@ -61,7 +62,7 @@ public:
 	/**
 	 * Constructor of Motion Equation
 	 * @param _gam dimensionless gamma factor
-	 * @param _Z_m dimensionless charge over mass
+	 * @param _part particle
 	 * @param _B magnetic field, callable B(Vector3 r, double t)
 	 * @param _E electric field, callable E(Vector3 r, double t)
 	 * @param _F additional force, callable F(State x, double t)
@@ -69,7 +70,7 @@ public:
 	#ifdef __CUDACC__
 	__host__ __device__
 	#endif
-	Lorentz(double _gam, double _Z_m, magnetic_field_type& _B = null_vector_field, electric_field_type& _E = null_vector_field, force_type& _F = null_force): gam(_gam), Z_m(_Z_m), B(_B), E(_E), F(_F) {}
+	Lorentz(double _gam, Particle& _part, magnetic_field_type& _B = null_vector_field, electric_field_type& _E = null_vector_field, force_type& _F = null_force): gam(_gam), part(_part), B(_B), E(_E), F(_F) {}
 	
 	/**	
 	 * Equation system for integration using the Lorentz force
@@ -86,6 +87,8 @@ public:
 		Vector3 b = B(r, t);
 		Vector3 e = E(r, t);
 		Vector3 f = F(x, t);	// other forces
+
+		double Z_m = part.q / part.m;
 
 		dxdt[0] = gam * x[3];															// d(rho)/dt = v_rho
 		dxdt[1] = gam * x[4] / x[0];											// d(theta)/dt = v_theta / rho
