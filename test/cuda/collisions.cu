@@ -76,13 +76,13 @@ void k_integrate(MagneticFieldMatrix B_matrix, Equilibrium eq, State x0, double 
 	double gam = v0 / (a * Omega); // dimensionless factor
 
 	typedef Lorentz<NullForce, MagneticFieldFromMatrix, NullVectorField> System;
-	System sys(gam, B, d_null_vector_field, d_null_force);
+	System sys(gam, test_part, B, d_null_vector_field, d_null_force);
 	
 	// Collisions operator
-	FockerPlank<PhiloxCuRand> collisions(beta, test_part, B, eta, kappa, philox);
+	FockerPlank<PhiloxCuRand, MagneticFieldFromMatrix> collisions(beta, test_part, B, eta, kappa, philox);
 
 	// Stepper
-	CollisionStepper<System, State, double, FockerPlank<PhiloxCuRand>> stepper(200, collisions);
+	CollisionStepper<System, State, double, FockerPlank<PhiloxCuRand, MagneticFieldFromMatrix>> stepper(200, collisions);
 
 	State x = x0;
 	ArrayObserver obs(times, states, a, v0, Omega, Nout, true);
@@ -139,21 +139,21 @@ void integrate_in_host(MagneticFieldMatrix& B_matrix, Equilibrium& eq, State x0,
 	double gam = v0 / (a * Omega); // dimensionless factor
 
 	typedef Lorentz<NullForce, MagneticFieldFromMatrix, NullVectorField> System;
-	System sys(gam, B, null_vector_field, null_force);
+	Particle alpha(1.0, 4.001506);
+	System sys(gam, alpha, B, null_vector_field, null_force);
 	
 	double eta = 2.27418e-12;
 	double kappa = 0.0238557;
 
 	// Particles
-	Particle alpha(1.0, 4.001506);
 
 	NormalRand ran(1);
 
 	// Collisions operator
-	FockerPlank<NormalRand> collisions(plasma, alpha, B, eta, kappa, ran);
+	FockerPlank<NormalRand, MagneticFieldFromMatrix> collisions(plasma, alpha, B, eta, kappa, ran);
 
 	// Stepper
-	CollisionStepper<System, State, double, FockerPlank<NormalRand>> stepper(200, collisions);
+	CollisionStepper<System, State, double, FockerPlank<NormalRand, MagneticFieldFromMatrix>> stepper(200, collisions);
 
 	State x = x0;
 	size_t Nout = size_t(Nsteps / (nskip + 1));

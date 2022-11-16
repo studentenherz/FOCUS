@@ -7,6 +7,7 @@
 #include "odeint/stepper/euler.hpp"
 #include "odeint/stepper/rk46_nl.hpp"
 #include "odeint/stepper/boris.hpp"
+#include "types/particle.hpp"
 #include "types/vector.hpp"
 #include "lorentz.hpp"
 
@@ -70,7 +71,8 @@ struct ElectricField{
 
 int main(){
 	typedef Lorentz<NullForce, MagneticField, NullVectorField> System;
-	System sys(1, 1, B, null_vector_field, null_force);
+	Particle part(1, 1);
+	System sys(1, part, B, null_vector_field, null_force);
 
 	EulerStepper<System, State, double> euler;
 	RK46NL<System, State, double> rk46nl;

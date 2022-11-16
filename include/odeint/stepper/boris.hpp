@@ -30,6 +30,8 @@ public:
 		Vector3 rc = cyl2cart(r_cyl);
 		Vector3 vc = cyl2cart(v_cyl, r_cyl[1]);
 
+		double Z_m = sys.part.q / sys.part.m;
+
 		/* 
 			The Boris method is similar to a leapfrog method as is has
 			staggered position and velocities. Some define then the velocity
@@ -51,8 +53,8 @@ public:
 		Vector3 Ec = cyl2cart(Ecil, r_cyl[1]);
 
 		// Calculate v'
-		Vector3 vp = vc + sys.Z_m * dt * (Ec  + cross(vc, Bc) / 2);
-		Vector3 t = sys.Z_m * Bc * dt / 2;
+		Vector3 vp = vc + Z_m * dt * (Ec  + cross(vc, Bc) / 2);
+		Vector3 t = Z_m * Bc * dt / 2;
 
 		double s = 1.0/(1.0 + dot(t, t));
 		double v_dot_t = vp[0]*t[0] + vp[1]*t[1] + vp[2]*t[2];

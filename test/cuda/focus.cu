@@ -73,7 +73,7 @@ void k_integrate(MagneticFieldMatrix B_matrix, Equilibrium eq, Plasma plasma, Pa
 		MagneticFieldFromMatrix B(B_matrix, eq.bcentr);
 		
 		// Lorentz Force Equiations System
-		system_t sys(gamma, test_particle.q/test_particle.m, B, d_null_vector_field, d_null_force);
+		system_t sys(gamma, test_particle, B, d_null_vector_field, d_null_force);
 		
 		// Collision operator
 		FockerPlank<PhiloxCuRand, MagneticFieldFromMatrix> collision(plasma, test_particle, B, eta, kappa, philox);
