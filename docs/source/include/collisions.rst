@@ -2,5 +2,5 @@
 Focker-Plank elastic collisions
 ===============================
 
-.. doxygenfile:: collisions.hpp
+.. doxygenfile:: focker_plank.hpp
 	

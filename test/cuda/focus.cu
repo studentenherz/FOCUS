@@ -14,7 +14,7 @@
 #include "types/particle.hpp"
 #include "types/vector.hpp"
 #include "types/plasma.hpp"
-#include "collisions.hpp"
+#include "collisions/focker_plank.hpp"
 #include "lorentz.hpp"
 #include "cxxopts.hpp"
 #include "formats/matrix.hpp"

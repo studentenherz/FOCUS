@@ -1,5 +1,5 @@
 /**
- * @file collisions.hpp
+ * @file focker_plank.hpp
  * @brief Implementation of the Focker-Plank elastic collisions theory.
  * 
  * The Focker-Plank theory [1] describes the slowing down and dispersion of ions in a plasma
@@ -108,8 +108,8 @@
  * de las colisiones en la interacción partícula-plasma. Tesis Doctoral, 2018.
  */ 
 
-#if !defined(FOCUS_INCLUDE_COLLISIONS_HPP)
-#define FOCUS_INCLUDE_COLLISIONS_HPP
+#if !defined(FOCUS_INCLUDE_COLLISIONS_FOCKER_PLANK_HPP)
+#define FOCUS_INCLUDE_COLLISIONS_FOCKER_PLANK_HPP
 
 #include <cmath>
 
@@ -311,4 +311,4 @@ public:
 	}
 };
 
-#endif // FOCUS_INCLUDE_COLLISIONS_HPP
+#endif // FOCUS_INCLUDE_COLLISIONS_FOCKER_PLANK_HPP
