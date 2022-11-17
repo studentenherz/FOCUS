@@ -2,7 +2,7 @@
 #include <fstream>
 #include <stdlib.h>
 
-#include "files.hpp"
+#include "formats/matrix.hpp"
 #include "formats/geqdsk.hpp"
 #include "formats/input_gacode.hpp"
 #include "lorentz.hpp"

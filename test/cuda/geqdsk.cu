@@ -3,7 +3,7 @@
 #include <cassert>
 
 #include "formats/geqdsk.hpp"
-#include "files.hpp"
+#include "formats/matrix.hpp"
 #include "cxxopts.hpp"
 #include "magnetic_field.hpp"
 #include "types/vector.hpp"

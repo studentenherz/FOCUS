@@ -17,7 +17,7 @@
 #include "collisions.hpp"
 #include "lorentz.hpp"
 #include "cxxopts.hpp"
-#include "files.hpp"
+#include "formats/matrix.hpp"
 
 void adimensionalize(Array<State> states, double v0, double a){
 	for (size_t i = 0; i < states.size(); i++){

@@ -2,7 +2,7 @@
 #include <string>
 
 #include "formats/geqdsk.hpp"
-#include "files.hpp"
+#include "formats/matrix.hpp"
 #include "cxxopts.hpp"
 
 int main(int argc, char* argv[]){

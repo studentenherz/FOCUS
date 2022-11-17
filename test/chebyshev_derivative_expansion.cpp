@@ -4,7 +4,7 @@
 #include "chebyshev.hpp"
 #include "types/matrix_2d.hpp"
 #include "types/scalar_field.hpp"
-#include "files.hpp"
+#include "formats/matrix.hpp"
 
 double f(double x, double y){
 	return 3 * sin(x / 10) * cos(2 * y + 1);
