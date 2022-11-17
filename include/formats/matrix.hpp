@@ -1,5 +1,5 @@
-#if !defined(FOCUS_INCLUDE_FILES_HPP)
-#define FOCUS_INCLUDE_FILES_HPP
+#if !defined(FOCUS_INCLUDE_FORMATS_MATRIX_HPP)
+#define FOCUS_INCLUDE_FORMATS_MATRIX_HPP
 
 #include <string>
 #include <fstream>
@@ -68,4 +68,4 @@ bool dump(std::string filename, const Matrix2D<T>& M, bool matrix_shape = true){
 	return true;
 }
 
-#endif // FOCUS_INCLUDE_FILES_HPP
+#endif // FOCUS_INCLUDE_FORMATS_MATRIX_HPP

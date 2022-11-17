@@ -2,7 +2,7 @@
 #include <iomanip>
 
 #include "chebyshev.hpp"
-#include "files.hpp"
+#include "formats/matrix.hpp"
 
 int main(int argc, char const *argv[]){
 	if (argc < 4){
