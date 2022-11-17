@@ -2,7 +2,7 @@
 #include <iostream>
 #include <string>
 
-#include "collisions.hpp"
+#include "collisions/focker_plank.hpp"
 #include "lorentz.hpp"
 #include "odeint/integrator.hpp"
 #include "odeint/stepper/rk46_nl.hpp"

@@ -14,7 +14,7 @@
 #include "odeint/integrator.hpp"
 #include "odeint/stepper/rk46_nl.hpp"
 #include "cxxopts.hpp"
-#include "collisions.hpp"
+#include "collisions/focker_plank.hpp"
 
 class ArrayObserver{
 	Array<double> &_times;
