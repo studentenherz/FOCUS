@@ -112,6 +112,48 @@ double lagrange_interpolation_3(double xi, const Array<double>& xs, const Matrix
 	return dot(y, l);
 }
 
+/**
+ * Interpolate 2D using the 4 points formula.
+ * 
+ * Abramowitz, M., Stegun, I. A., & Romer, R. H. (1988). 
+ * Handbook of mathematical functions with formulas, graphs,
+ * and mathematical tables. 25.2.66
+ * 
+ * @param x from (x, y) desidered interpolation point.
+ * @param y from (x, y) desidered interpolation point.
+ * @param xs Array of points corresponding to x that the matrix represents
+ * @param ys Array of points corresponding to y that the matrix represents
+ * @param M Matrix representation to interpolate
+ * @return interpolated M(x, y).
+ */
+#ifdef __CUDACC__
+__host__ __device__
+#endif
+double four_point_formula(double x, double y, const Array<double>& xs, const Array<double>& ys, const Matrix2D<double>& M){
+	// The interpolation formula is
+	// f(x0 + ph, y0 + qk) = ....
+	// where (h, k) are the periods and (x0, y0)
+	// is a point of the 2D lattice.
+
+	size_t Nx, Ny;
+	Nx = M.shape().first;
+	Ny = M.shape().second;
+
+	size_t i = 0, j = 0;
+	while (x > xs[i] && i < Nx - 2) i++;
+	while (y > ys[j] && j < Ny - 2) j++;
+
+	if (i >= Nx - 1 || j >= Ny - 1){
+		// HERE THERE MUST BE A WARNING LOG
+		return nan("");
+	}
+
+	double p = (x - xs[i]) / (xs[i + 1] - xs[i]);
+	double q = (y - ys[j]) / (ys[j + 1] - ys[j]);
+
+	return (1 - p) * (1 - q) * M(i, j) + p * (1 - q) * M(i + 1, j) + q * (1 - p) * M(i, j + 1) + p * q * M(i + 1, j + 1);
+}
+
 
 /**
  * Interpolate 2D using the 4 points formula.
