@@ -21,12 +21,12 @@ public:
 	#ifdef __CUDACC__
 	__host__ __device__
 	#endif
-	Array(std::initializer_list<double> l): _size(l.size()) {
+	Array(std::initializer_list<T> l): _size(l.size()) {
 		_arr = new T[_size + 1];
     _copied = false;
 
 		size_t index = 0;
-		for(const double* it = l.begin(); it != l.end(); it++)
+		for(const T* it = l.begin(); it != l.end(); it++)
 			_arr[index++] = *it;
 	}
 
