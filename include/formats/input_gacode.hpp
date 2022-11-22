@@ -10,6 +10,7 @@
 #include <fstream>
 #include <iostream>
 #include <string>
+#include <sstream>
 #include <regex>
 
 #include "formats/regex_tokenizer.hpp"
@@ -63,6 +64,16 @@ Plasma read_input_gacode(std::string filename, bool negative_psi = true){
 	Plasma plasma(shot, nexp, nion);
 
 	while(std::getline(fi, line)){
+		if (regex_match(line, "#.*name.*")){
+			std::getline(fi, line);
+			std::stringstream ss(line);
+			for (size_t i = 0; i < plasma.nion; i++){
+				std::string name;
+				ss >> name;
+				plasma.species_identifier.push_back(name);
+			}
+			continue;
+		}
 		if (regex_match(line, "#.*masse.*")){
 			if(!tk.next(fi, token)){
 				std::cerr << "Invalid line for masse\n";
