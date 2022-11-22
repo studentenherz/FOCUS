@@ -23,6 +23,10 @@ int main(int argc, char* argv[]){
 		std::cout << "masse " << plasma.masse << '\n'; 
 		std::cout << "ze " << plasma.ze << '\n';
 		 
+		std::cout << "species identifiers\n";
+		for(size_t i = 0; i< plasma.nion; i++)
+			std::cout << plasma.species_identifier[i] << '\n';
+		 
 		std::cout << "mass\n";
 		for(size_t i = 0; i< plasma.nion; i++)
 			std::cout << plasma.mass[i] << '\n';
