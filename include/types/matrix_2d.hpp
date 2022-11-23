@@ -22,7 +22,7 @@ public:
 	Matrix2D(size_t n = 0, size_t m = 0){
 		_copied = false;
 		_shape = {n, m};
-		_arr = new T[n * m + 1];
+		_arr = new T[n * m];
 	}
 
 	Matrix2D& operator=(const Matrix2D&&) = delete;
@@ -68,7 +68,7 @@ public:
 		_copied = true;
 		_shape = other._shape;
 		size_t _size = _shape.first * _shape.second;
-		cudaMalloc(&_arr, sizeof(T) * (_size + 1));
+		cudaMalloc(&_arr, sizeof(T) * _size);
 		cudaMemcpy(_arr, other._arr, sizeof(T) * _size, cudaMemcpyHostToDevice);
 	}
 	#endif
@@ -109,7 +109,7 @@ public:
 	#endif 
 	void reshape(size_t n, size_t m){
 		delete[] _arr;
-		_arr = new T[n * m + 1];
+		_arr = new T[n * m];
 		_shape = {n, m};
 	}
 
@@ -124,35 +124,75 @@ public:
 		return _shape;
 	}
 
+	#ifdef __CUDA_ARCH__
+
 	/** 
-	 * Write access to matrix
+	 * Write access to matrix (device)
 	 * @param i index on the first axis
 	 * @param j index on the second axis
 	 * @return M(i, j)
 	 */
-	#ifdef __CUDACC__
-	__host__ __device__
-	#endif
+	__device__
 	T &operator()(size_t i, size_t j){
-		if (i > _shape.first || j > _shape.second)
-			return _arr[_shape.first * _shape.second];
+		if (i >= _shape.first || j >= _shape.second){
+			printf("Error, out of bounds access to Matrix2D %s %d\n", __FILE__, __LINE__);
+			assert(0);
+		}
 		return _arr[i * _shape.second + j];
 	}
 	
 	/** 
-	 * Read-only access to matrix
+	 * Read-only access to matrix (device)
+	 * @param i index on the first axis
+	 * @param j index on the second axis
+	 * @return M(i, j)
+	 */
+	__device__
+	const T &operator()(size_t i, size_t j) const {
+		if (i >= _shape.first || j >= _shape.second){
+			printf("Error, out of bounds access to Matrix2D %s %d\n", __FILE__, __LINE__);
+			assert(0);
+		}
+		return _arr[i * _shape.second + j];
+	}
+
+	#else
+
+	/** 
+	 * Write access to matrix (host)
 	 * @param i index on the first axis
 	 * @param j index on the second axis
 	 * @return M(i, j)
 	 */
 	#ifdef __CUDACC__
-	__host__ __device__
+	__host__
 	#endif
-	const T &operator()(size_t i, size_t j) const {
-		if (i > _shape.first || j > _shape.second)
-			return _arr[_shape.first * _shape.second];
+	T &operator()(size_t i, size_t j){
+		if (i >= _shape.first || j >= _shape.second){
+			fprintf(stderr, "Error, out of bounds access to Matrix2D %s %d\n", __FILE__, __LINE__);
+			exit(2);
+		}
 		return _arr[i * _shape.second + j];
 	}
+	
+	/** 
+	 * Read-only access to matrix (host)
+	 * @param i index on the first axis
+	 * @param j index on the second axis
+	 * @return M(i, j)
+	 */
+	#ifdef __CUDACC__
+	__host__
+	#endif
+	const T &operator()(size_t i, size_t j) const {
+		if (i >= _shape.first || j >= _shape.second){
+			fprintf(stderr, "Error, out of bounds access to Matrix2D %s %d\n", __FILE__, __LINE__);
+			exit(2);
+		}
+		return _arr[i * _shape.second + j];
+	}
+
+	#endif // __CUDA_ARCH__
 };
 
 #endif // FOCUS_INCLUDE_TYPES_MATRIX_2D_HPP

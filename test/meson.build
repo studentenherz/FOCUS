@@ -1,5 +1,7 @@
 git_version = run_command('git', 'describe', '--dirty=*', '--always',  '--match', '"NOT A TAG"', capture: true, check:true)
 
+array = executable('failin_array', 'array.cpp', include_directories: incdir)
+matrix_2d = executable('failin_matrix_2d', 'matrix_2d.cpp', include_directories: incdir)
 files = executable('files', 'files.cpp', include_directories : incdir, implicit_include_directories: false)
 interpol = executable('interpolations', 'interpolations.cpp', include_directories : incdir, implicit_include_directories: false)
 cheby_exp = executable('chebyshev_expansion', 'chebyshev_expansion.cpp', include_directories : incdir, implicit_include_directories: false)
@@ -24,6 +26,15 @@ cmp = find_program('cmp')
 run_command(copy, 'data', 'data', check : true)
 
 # TESTS
+
+test('Out of bound array fails', array,
+	should_fail: true
+)
+
+test('Out of bound matrix fails', matrix_2d,
+	should_fail: true
+)
+
 test('Load and dump files', files, 
 	args : [
 		join_paths(meson.build_root(), meson.current_build_dir(), 'data/matrix_from_efit.dat'), 
