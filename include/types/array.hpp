@@ -15,14 +15,14 @@ public:
 	__host__ __device__
 	#endif
 	Array(size_t n = 0): _size(n), _copied(false) {
-		_arr = new T[_size + 1];
+		_arr = new T[_size];
 	}
 
 	#ifdef __CUDACC__
 	__host__ __device__
 	#endif
 	Array(std::initializer_list<T> l): _size(l.size()) {
-		_arr = new T[_size + 1];
+		_arr = new T[_size];
     _copied = false;
 
 		size_t index = 0;
@@ -38,7 +38,7 @@ public:
 	#ifdef __CUDACC__
 	__host__
 	Array(T* other_arr, size_t size): _size(size), _copied(false) {
-		cudaMalloc(&_arr, sizeof(T) * (_size + 1));
+		cudaMalloc(&_arr, sizeof(T) * (_size));
 		cudaMemcpy(_arr, other_arr, sizeof(T) * _size, cudaMemcpyHostToDevice);
 	}
 	#endif
@@ -84,7 +84,7 @@ public:
 	void construct_in_host_for_device(Array<T>& other){
 		_copied = true;
 		_size = other._size;
-		cudaMalloc(&_arr, sizeof(T) * (_size + 1));
+		cudaMalloc(&_arr, sizeof(T) * _size);
 		cudaMemcpy(_arr, other._arr, sizeof(T) * _size, cudaMemcpyHostToDevice);
 	}
 	#endif
@@ -98,7 +98,7 @@ public:
 	void copy_to_host_from_device(Array<T>& other){
 		_copied = false;
 		_size = other._size;
-		_arr = new T[_size + 1];
+		_arr = new T[_size];
 		cudaMemcpy(_arr, other._arr, sizeof(T) * _size, cudaMemcpyDeviceToHost);
 	}
 	#endif
@@ -131,33 +131,71 @@ public:
 	}
 	#endif
 
+	#ifdef __CUDA_ARCH__
+
 	/**
-	 * Write access to the array
+	 * Write access to the array (device)
 	 * @param i index
 	 * @return reference to i-th element
 	 */
-	#ifdef __CUDACC__
-	__host__ __device__
-	#endif
+	__device__
 	T &operator[](size_t i){
-		if (i > _size)
-			return _arr[_size];
+		if (i >= _size){
+			printf("Error, out of bounds access to Array %s %d\n", __FILE__, __LINE__);
+			assert(0);
+		}
 		return _arr[i];
 	}
 	
 	/**
-	 * Read only access to the array
+	 * Read only access to the array (device)
+	 * @param i index
+	 * @return reference to i-th element
+	 */
+	__device__
+	const T &operator[](size_t i) const {
+		if (i >= _size){
+			printf("Error, out of bounds access to Array %s %d\n", __FILE__, __LINE__);
+			assert(0);
+		}
+		return _arr[i];
+	}
+
+	#else
+
+	/**
+	 * Write access to the array (host)
 	 * @param i index
 	 * @return reference to i-th element
 	 */
 	#ifdef __CUDACC__
-	__host__ __device__
+	__host__
 	#endif
-	const T &operator[](size_t i) const {
-		if (i > _size)
-			return _arr[_size];
+	T &operator[](size_t i){
+		if (i >= _size){
+			fprintf(stderr, "Error, out of bounds access to Array %s %d\n", __FILE__, __LINE__);
+			exit(2);
+		}
 		return _arr[i];
 	}
+	
+	/**
+	 * Read only access to the array (host)
+	 * @param i index
+	 * @return reference to i-th element
+	 */
+	#ifdef __CUDACC__
+	__host__
+	#endif
+	const T &operator[](size_t i) const {
+		if (i >= _size){
+			fprintf(stderr, "Error, out of bounds access to Array %s %d\n", __FILE__, __LINE__);
+			exit(2);
+		}
+		return _arr[i];
+	}
+
+	#endif	// __CUDA_ARCH__
 
 	/** 
 	 * Get array size
