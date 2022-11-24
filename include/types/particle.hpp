@@ -7,8 +7,8 @@
 
 struct Particle{
 	double m;			///< mass
-	uint q;				///< charge
-	uint n;				///< Principal quantum number
+	int q;				///< charge
+	ulong n;			///< Principal quantum number
 	double t;			///< Time since it's been in this quantum state
 
 	#ifdef __CUDACC__
