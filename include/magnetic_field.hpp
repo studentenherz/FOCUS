@@ -109,14 +109,10 @@ public:
 	__host__ __device__
 	#endif
 	Vector3 operator()(Vector3 r, double /* t */ ){
-		ScalarField MBr(M.Br, M.r_min, M.r_max, M.z_min, M.z_max);
-		ScalarField MBt(M.Bt, M.r_min, M.r_max, M.z_min, M.z_max);
-		ScalarField MBz(M.Bz, M.r_min, M.r_max, M.z_min, M.z_max);
-
 		double x = r[0], y = r[2];
-		double Br = six_point_formula(x, y, MBr);
-		double Bt = six_point_formula(x, y, MBt);
-		double Bz = six_point_formula(x, y, MBz);
+		double Br = six_point_formula(x, y, M.Br, M.r_min, M.r_max, M.z_min, M.z_max);
+		double Bt = six_point_formula(x, y, M.Bt, M.r_min, M.r_max, M.z_min, M.z_max);
+		double Bz = six_point_formula(x, y, M.Bz, M.r_min, M.r_max, M.z_min, M.z_max);
 
 		// This can't be done in the __device__
 		// if (std::isnan(Br))
@@ -133,9 +129,8 @@ public:
 	__host__ __device__
 	#endif
 	double psi(Vector3 r, double /* t */ ){
-		ScalarField Psi(M.psi, M.r_min, M.r_max, M.z_min, M.z_max);
 		double x = r[0], y = r[2];
-		return six_point_formula(x, y, Psi);
+		return six_point_formula(x, y, M.psi, M.r_min, M.r_max, M.z_min, M.z_max);
 	}
 
 	#ifdef __CUDACC__
