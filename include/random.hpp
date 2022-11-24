@@ -62,7 +62,7 @@ public:
 	#ifdef __CUDACC__
 	__host__ __device__
 	#endif
-	inline double doub() { return 5.42101086242752217E-20 * int64(); }
+	inline double uniform() { return 5.42101086242752217E-20 * int64(); }
 	
 	/**
 	 * Get random float 64 bits in a range (uniform distribution)
@@ -74,7 +74,7 @@ public:
 	__host__ __device__
 	#endif
 	double random(double xmin, double xmax){
-		return xmin + doub() * (xmax - xmin);
+		return xmin + uniform() * (xmax - xmin);
 	}
 };
 
@@ -102,8 +102,8 @@ public:
 	double operator()(){
 		// This uses Box-Muller algorithm
 		double x1, x2;
-		x1 = ran.doub(); // 0 to 1
-		x2 = ran.doub(); // 0 to 1
+		x1 = ran.uniform(); // 0 to 1
+		x2 = ran.uniform(); // 0 to 1
 		return sigma * sqrt(-2.0 * log(x1)) * cos(two_pi * x2) + mu;
 	}
 };
