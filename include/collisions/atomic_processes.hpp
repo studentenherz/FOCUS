@@ -290,4 +290,49 @@ Array<AtomicProcess> load_atomic_processes(std::vector<std::string> species_iden
 	return processes;
 }
 
+template <typename RandomGenerator_t, typename MagneticField_t>
+class AtomicProcessesHandler{
+	Array<AtomicProcess>& processes;
+	RandomGenerator_t& ran_gen;
+	Plasma& plasma;
+	double energy_conversion_factor;
+	double n_conversion_factor_4_APs;
+	double Omega;
+public:
+	MagneticField_t& B;
+	#ifdef __CUDACC__
+	__host__ __device__
+	#endif
+	AtomicProcessesHandler(Array<AtomicProcess>& processes, RandomGenerator_t& ran_gen, MagneticField_t& B, Plasma& plasma, double Omega, double energy_conversion_factor, double n_conversion_factor_4_APs): processes(processes), ran_gen(ran_gen), B(B), plasma(plasma), Omega(Omega), energy_conversion_factor(energy_conversion_factor), n_conversion_factor_4_APs(n_conversion_factor_4_APs) {}
+
+	#ifdef __CUDACC__
+	__host__ __device__
+	#endif
+	void operator()(Particle& part, State& x, double t, double dt){
+		dt /= Omega; // Time in seconds
+		part.t += dt;
+
+		Vector3 r = get_position(x);
+		Vector3 v = get_velocity(x);
+
+		double energy = part.m * dot(v, v) * energy_conversion_factor;
+		double psi = B.psi(r, t);
+
+		Array<double> p(processes.size());
+		for (size_t i = 0; i < processes.size(); i++)
+			p[i] = processes[i].P(part, energy, psi, plasma, t, dt, n_conversion_factor_4_APs);
+		
+		for (size_t i = 1; i < processes.size(); i++)
+			p[i] += p[i - 1];
+
+		double ran = ran_gen.uniform();
+
+		for (size_t i = 0 ; i < processes.size(); i++)
+			if (ran < p[i]){
+				processes[i].apply(part);
+				return;
+			}
+	}
+};
+
 #endif // FOCUS_INCLUDE_COLLISIONS_ATOMIC_PROCESSES_HPP
