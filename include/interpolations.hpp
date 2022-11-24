@@ -27,7 +27,7 @@ __host__ __device__
 #endif
 double lagrange_interpolation_3(double xi, const Array<double>& f, double x_min, double x_max){
 	double d_x = (x_max - x_min) / (f.size() - 1); // Grid period
-	size_t index = std::floor((xi - x_min) / d_x); // Index of closest element to xi to the left
+	size_t index = floor((xi - x_min) / d_x); // Index of closest element to xi to the left
 
 	// Keep index inside boundaries
 	if (index <= 0) index = 1;
@@ -188,8 +188,8 @@ double four_point_formula(double x, double y, ScalarField f){
 	double h = (f.x_max - f.x_min) / (Nx - 1);
 	double k = (f.y_max - f.y_min) / (Ny - 1);
 
-	size_t i = std::floor((x - f.x_min) / h);
-	size_t j = std::floor((y - f.y_min) / k);
+	size_t i = floor((x - f.x_min) / h);
+	size_t j = floor((y - f.y_min) / k);
 
 	if (i >= Nx - 1 || j >= Ny - 1){
 		// HERE THERE MUST BE A WARNING LOG
@@ -235,8 +235,8 @@ double six_point_formula(double x, double y, ScalarField f){
 	double h = (f.x_max - f.x_min) / (Nx - 1);
 	double k = (f.y_max - f.y_min) / (Ny - 1);
 
-	size_t i = std::floor((x - f.x_min) / h);
-	size_t j = std::floor((y - f.y_min) / k);
+	size_t i = floor((x - f.x_min) / h);
+	size_t j = floor((y - f.y_min) / k);
 
 	if (i >= Nx - 1 || j >= Ny - 1){
 		// HERE THERE MUST BE A WARNING LOG
