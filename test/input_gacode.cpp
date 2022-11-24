@@ -15,7 +15,8 @@ int main(int argc, char* argv[]){
 	try{
 		auto result = options.parse(argc, argv);
 		
-		Plasma plasma = read_input_gacode(result["file"].as<std::string>());
+		std::vector<std::string> species_identifiers;
+		Plasma plasma = read_input_gacode(result["file"].as<std::string>(), species_identifiers);
 
 		std::cout << "nexp " << plasma.nexp << '\n';
 		std::cout << "nion " << plasma.nion << '\n';
@@ -25,9 +26,9 @@ int main(int argc, char* argv[]){
 		 
 		std::cout << "species identifiers\n";
 		for(size_t i = 0; i< plasma.nion; i++)
-			std::cout << plasma.species_identifier[i] << '\n';
+			std::cout << species_identifiers[i] << ' ';
 		 
-		std::cout << "mass\n";
+		std::cout << "\nmass\n";
 		for(size_t i = 0; i< plasma.nion; i++)
 			std::cout << plasma.mass[i] << '\n';
 

@@ -75,7 +75,8 @@ int main(int argc, char* argv[]){
 	// Particles
 	Particle alpha(1.0, 4.001506);
 
-	Plasma plasma = read_input_gacode(argv[2]);
+	std::vector<std::string> species_identifiers;
+	Plasma plasma = read_input_gacode(argv[2], species_identifiers);
 	plasma.logl_prefactor = logl_prefactor;
 
 	// System with Lorentz force

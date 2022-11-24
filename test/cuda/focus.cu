@@ -212,10 +212,10 @@ int main(int argc, char* argv[]){
 		double eta = 2.27418e-12;
 		double kappa = 0.016870543;
 
-
-		Plasma plasma = read_input_gacode(result["input-gacode"].as<std::string>());
+		std::vector<std::string> species_identifiers;
+		Plasma plasma = read_input_gacode(result["input-gacode"].as<std::string>(), species_identifiers);
 		plasma.logl_prefactor = logl_prefactor;
-		Particle test_particle(1, 2.01410177811);
+		Particle test_particle(2.01410177811, 0);
 
 
 		Array<State> states = load_states(result["initial-states"].as<std::string>());

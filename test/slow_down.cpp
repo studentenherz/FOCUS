@@ -105,7 +105,8 @@ int main(int argc, char* argv[]){
 		// Particles
 		Particle alpha(2.01410177811, 1); // Deuteron
 
-		Plasma plasma = read_input_gacode(result["input"].as<std::string>());
+		std::vector<std::string> species_identifiers;
+		Plasma plasma = read_input_gacode(result["input"].as<std::string>(), species_identifiers);
 		plasma.logl_prefactor = logl_prefactor;
 
 
