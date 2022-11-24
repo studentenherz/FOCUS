@@ -3,6 +3,7 @@
 
 #include <string>
 #include <fstream>
+#include <sstream>
 
 #include "types/matrix_2d.hpp"
 #include "types/array.hpp"
@@ -171,5 +172,122 @@ public:
 		part.t = 0;
 	}
 };
+
+/**
+ * @brief Loads the atomic processes for a specific species
+ * 
+ * Inside the directory there should be a file names .index for ease of 
+ * reading, .index is structured like this:
+ * 
+ * nfiles 
+ * filename_1
+ * # Comments start with #
+ * filename_2
+ * ...
+ * filename_n
+ * 
+ * nfiles is the number filenames to come
+ * 
+ * Each filename afterwards represents a file inside the same directory with 
+ * the needed information about the atomic process.
+ * 
+ * Each filename is in the following format
+ * 
+ * [type of process (Io|CE|Ex|DE)]_[identifier of particle type]_[identifier of the other reactant particle type]_[q]_[n]_[next_q]_[next_n]
+ * 
+ * For example:
+ * 
+ * 		Ex_D_e_0_2_0_3
+ * 
+ * would have the data for the process of excitation of a neutral Deuterium by electrons from n = 2 to n = 3 (both states q = 0)
+ * 
+ * The type of process (for now) is only relevant when the process is a DeExcitation, as it is calculated
+ * in a different fashion than the other processes.
+ * 
+ * @param plasma Plasma object
+ * @param directory Directory from which to retrieve the information
+ * 
+ * @returns Array of pointers to atomic processes
+ */
+Array<AtomicProcess> load_atomic_processes(std::vector<std::string> species_identifiers, std::string directory){
+	std::string index_filename = directory + "/.index";
+	std::ifstream index_file (index_filename);
+	if (!index_file.is_open()){
+		std::cerr << "Error loading atomic processes, couldn't open " << index_filename << '\n';
+		exit(1);
+	}
+	size_t nfiles;
+	index_file >> nfiles;
+
+	std::cout << "Loading " << nfiles << " atomic processes\nPlasma species: ";
+	for (auto id: species_identifiers)
+		std::cout << id << ' ';
+	std::cout << '\n'; 
+
+	Array<AtomicProcess> processes(nfiles);
+
+	std::string filename;
+	AtomicProcessType type;
+	size_t other_index = 0;
+	ulong q, n, next_q, next_n;
+
+	
+	size_t count = 0;
+	for (size_t i = 0; i < nfiles; i++){
+		std::getline(index_file, filename);
+		if (filename.empty() || filename[0] == '#'){ // Ignore comments and empty lines
+			i--;
+			continue;
+		}
+
+		std::stringstream ss(filename);
+		std::string token;
+		
+		// Type
+		std::getline(ss, token, '_');
+		if (token == "DE")
+			type = AtomicProcessType::DeExcitation;
+		else
+			type = AtomicProcessType::Other;
+
+		// Test particle species. Won't use for now
+		std::getline(ss, token, '_');
+
+		// Other particle species
+		std::getline(ss, token, '_');
+		if (type != AtomicProcessType::DeExcitation){ // This does not matter for de-excitation
+			if (token == "e") other_index = species_identifiers.size();
+			else{
+				other_index = 0;
+				while (other_index < species_identifiers.size() && species_identifiers[other_index] != token) other_index++;
+				if (other_index == species_identifiers.size()) // Not present in this plasma, next file
+					continue;
+			}
+		}
+
+		std::getline(ss, token, '_');
+		q = std::stoi(token);
+
+		std::getline(ss, token, '_');
+		n = std::stoul(token);
+		
+		std::getline(ss, token, '_');
+		next_q = std::stoi(token);
+		
+		std::getline(ss, token, '_');
+		next_n = std::stoul(token);
+
+		processes[i].constructor(directory + "/" + filename, other_index, q, n, next_q, next_n, type);
+
+		std::cout << ++count << " Loaded " << filename << '\n';
+	}
+
+	if (count != nfiles){
+		std::cerr << nfiles << " atomic processes files were spected but only got " << count << '\n';
+		exit(1);
+	}
+
+	return processes;
+}
 
 #endif // FOCUS_INCLUDE_COLLISIONS_ATOMIC_PROCESSES_HPP
