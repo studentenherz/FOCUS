@@ -217,7 +217,7 @@ public:
 	void resize(size_t n){
 		delete[] _arr;
 		_size = n;
-		_arr = new T[_size + 1];
+		_arr = new T[_size];
 	}
 }; // class Array
 
