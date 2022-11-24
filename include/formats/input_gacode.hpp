@@ -12,11 +12,12 @@
 #include <string>
 #include <sstream>
 #include <regex>
+#include <vector>
 
 #include "formats/regex_tokenizer.hpp"
 #include "types/plasma.hpp"
 
-Plasma read_input_gacode(std::string filename, bool negative_psi = true){
+Plasma read_input_gacode(std::string filename, std::vector<std::string>& species_identifiers, bool negative_psi = true){
 	std::ifstream fi(filename);
 	if(!fi.is_open()){
 		std::cerr << "Couldn't open file " << filename << '\n';
@@ -70,7 +71,7 @@ Plasma read_input_gacode(std::string filename, bool negative_psi = true){
 			for (size_t i = 0; i < plasma.nion; i++){
 				std::string name;
 				ss >> name;
-				plasma.species_identifier.push_back(name);
+				species_identifiers.push_back(name);
 			}
 			continue;
 		}

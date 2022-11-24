@@ -29,15 +29,6 @@ struct Plasma{
 	Array<double> te;
 	Matrix2D<double> ti;
 
-	#ifndef __CUDA_ARCH__
-	/*
-		In the host create a vector of the species identifiers in order to
-		later link the corresponding atomic processes with each species in the plasma.
-	*/  
-
-	std::vector<std::string> species_identifier;
-	#endif
-
 	Plasma(int shot, size_t nexp, size_t nion): shot(shot), nexp(nexp), nion(nion), mass(nion), z(nion), polflux(nexp), ne(nexp), ni(nion, nexp), te(nexp), ti(nion, nexp) {}
 
 	#ifdef __CUDACC__

@@ -228,8 +228,8 @@ int main(int argc, char* argv[]){
 		size_t nskip 	= 999;
 		double logl_prefactor = 18.4527;
 
-
-		Plasma plasma = read_input_gacode(result["input_gacode_file"].as<std::string>());
+		std::vector<std::string> species_identifiers;
+		Plasma plasma = read_input_gacode(result["input_gacode_file"].as<std::string>(), species_identifiers);
 		plasma.logl_prefactor = logl_prefactor;
 		
 		integrate_in_host(B_matrix, eq, x0, t0, dt, N, result["host_file"].as<std::string>(), nskip, plasma);
