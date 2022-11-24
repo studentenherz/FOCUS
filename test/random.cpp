@@ -30,7 +30,7 @@ int main(int argc, char* argv[]){
 		Ran2 ran(seed);
 		std::ofstream uniform(result["uniform_ofile"].as<std::string>());
 		for(int i =0 ; i<10000; i++)
-			uniform << ran.doub() << '\n';
+			uniform << ran.uniform() << '\n';
 
 		NormalRand norm(seed, 1.0, 5.0);
 		std::ofstream normal(result["normal_ofile"].as<std::string>());
