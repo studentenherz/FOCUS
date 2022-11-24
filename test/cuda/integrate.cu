@@ -44,7 +44,7 @@ void k_integrate(MagneticFieldMatrix B_matrix, Equilibrium eq, State x0, double 
 	double a = eq.rdim; // m
 	double gam = v0 / (a * Omega); // dimensionless factor
 
-	Particle part(1, 1.04);
+	Particle part(1.04, 1);
 	typedef Lorentz<NullForce, MagneticFieldFromMatrix, NullVectorField> System;
 	System sys(gam, part, B, d_null_vector_field, d_null_force);
 	State x = x0;
@@ -87,7 +87,7 @@ void integrate_in_host(MagneticFieldMatrix& B_matrix, Equilibrium& eq, State x0,
 	double a = eq.rdim; // m
 	double gam = v0 / (a * Omega); // dimensionless factor
 
-	Particle part(1, 1.04);
+	Particle part(1.04, 1);
 	typedef Lorentz<NullForce, MagneticFieldFromMatrix, NullVectorField> System;
 	System sys(gam, part, B, null_vector_field, null_force);
 	State x = x0;

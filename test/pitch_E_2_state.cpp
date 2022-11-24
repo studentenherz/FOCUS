@@ -110,7 +110,7 @@ int main(int argc, char* argv[]){
     ("p,pitch-e", "pitch-E input file", cxxopts::value<std::string>())
     ("o,output", "Output stetes file", cxxopts::value<std::string>())
     ("m", "Particle mass [Da]", cxxopts::value<double>()->default_value("2.0147294"))
-    ("Z", "Particle Z", cxxopts::value<double>()->default_value("1"))
+    ("Z", "Particle Z", cxxopts::value<int>()->default_value("1"))
     ("h,help", "Display this help message");
 
   try{
@@ -129,7 +129,7 @@ int main(int argc, char* argv[]){
     MagneticFieldMatrix B_matrix(eq, 26, 600);
     MagneticFieldFromMatrix B(B_matrix, eq.bcentr);
 
-    Particle part(result["Z"].as<double>(), result["m"].as<double>());
+    Particle part(result["m"].as<double>(), result["Z"].as<int>());
     Ran2 ran(12);
 
     Array<State> states = load_states_from_pitch_E(pitch_e, part, B, eq.rdim, ran);

@@ -22,7 +22,7 @@ int main(int argc, char* argv[]){
 
 		Array<State> states = load_states(result["input"].as<std::string>());
 
-		Particle part(1, 1.2);
+		Particle part(1.2, 1);
 
 		dump_states(result["output"].as<std::string>(), states, part);
 
