@@ -103,7 +103,7 @@ int main(int argc, char* argv[]){
 
 
 		// Particles
-		Particle alpha(1, 2.01410177811); // Deuteron
+		Particle alpha(2.01410177811, 1); // Deuteron
 
 		Plasma plasma = read_input_gacode(result["input"].as<std::string>());
 		plasma.logl_prefactor = logl_prefactor;

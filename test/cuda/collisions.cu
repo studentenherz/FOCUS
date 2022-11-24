@@ -104,7 +104,7 @@ void integrate_in_device(MagneticFieldMatrix& B_matrix, Equilibrium& eq, State x
 	double kappa = 0.0238557;
 
 	// Particles
-	Particle alpha(1.0, 4.001506);
+	Particle alpha(4.001506, 1);
 
 	PhiloxCuRand philox(nparts);
 	kernel_init_philox_rand<<<1, nparts>>>(philox, 1);
@@ -139,7 +139,7 @@ void integrate_in_host(MagneticFieldMatrix& B_matrix, Equilibrium& eq, State x0,
 	double gam = v0 / (a * Omega); // dimensionless factor
 
 	typedef Lorentz<NullForce, MagneticFieldFromMatrix, NullVectorField> System;
-	Particle alpha(1.0, 4.001506);
+	Particle alpha(4.001506, 1);
 	System sys(gam, alpha, B, null_vector_field, null_force);
 	
 	double eta = 2.27418e-12;
