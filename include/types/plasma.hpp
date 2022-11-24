@@ -33,7 +33,7 @@ struct Plasma{
 
 	#ifdef __CUDACC__
 	__host__
-	void construct_in_host_for_device(Plasma& other){
+	cudaError_t construct_in_host_for_device(Plasma& other){
 		logl_prefactor = other.logl_prefactor;
 		shot = other.shot;
 		nexp = other.nexp;
@@ -41,16 +41,18 @@ struct Plasma{
 		masse = other.masse;
 		ze = other.ze;
 
-		mass.construct_in_host_for_device(other.mass);
-		z.construct_in_host_for_device(other.z);
+		propagateCUDAErr( mass.construct_in_host_for_device(other.mass) );
+		propagateCUDAErr( z.construct_in_host_for_device(other.z) );
 
-		polflux.construct_in_host_for_device(other.polflux);
+		propagateCUDAErr( polflux.construct_in_host_for_device(other.polflux) );
 
-		ne.construct_in_host_for_device(other.ne);
-		te.construct_in_host_for_device(other.te);
+		propagateCUDAErr( ne.construct_in_host_for_device(other.ne) );
+		propagateCUDAErr( te.construct_in_host_for_device(other.te) );
 
-		ni.construct_in_host_for_device(other.ni);
-		ti.construct_in_host_for_device(other.ti);
+		propagateCUDAErr( ni.construct_in_host_for_device(other.ni) );
+		propagateCUDAErr( ti.construct_in_host_for_device(other.ti) );
+
+		return cudaSuccess;
 	}
 	#endif
 

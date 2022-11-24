@@ -78,7 +78,7 @@ struct Equilibrium{
 	 */
 	#ifdef __CUDACC__
 	__host__
-	void construct_in_host_for_device(Equilibrium& other){
+	cudaError_t construct_in_host_for_device(Equilibrium& other){
 		// Single parameters
 		idnum 	= other.idnum;
 		nx 			= other.nx;
@@ -96,19 +96,21 @@ struct Equilibrium{
 		cpasma 	= other.cpasma;
 
 		// Profiles
-		fpol.construct_in_host_for_device(other.fpol);
-		pres.construct_in_host_for_device(other.pres);
-		qpsi.construct_in_host_for_device(other.qpsi);
+		propagateCUDAErr( fpol.construct_in_host_for_device(other.fpol) );
+		propagateCUDAErr( pres.construct_in_host_for_device(other.pres) );
+		propagateCUDAErr( qpsi.construct_in_host_for_device(other.qpsi) );
 
 		// Poloidal flux
-		psi.construct_in_host_for_device(other.psi);
+		propagateCUDAErr( psi.construct_in_host_for_device(other.psi) );
 
 		// Boundaries description
 		nbdry = other.nbdry; nlim = other.nlim;
-		rbdry.construct_in_host_for_device(other.rbdry);
-		zbdry.construct_in_host_for_device(other.zbdry);
-		rlim.construct_in_host_for_device(other.rlim);
-		zlim.construct_in_host_for_device(other.zlim);
+		propagateCUDAErr( rbdry.construct_in_host_for_device(other.rbdry) );
+		propagateCUDAErr( zbdry.construct_in_host_for_device(other.zbdry) );
+		propagateCUDAErr( rlim.construct_in_host_for_device(other.rlim) );
+		propagateCUDAErr( zlim.construct_in_host_for_device(other.zlim) );
+
+		return cudaSuccess;
 	}
 	#endif
 

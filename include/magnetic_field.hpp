@@ -79,7 +79,7 @@ struct MagneticFieldMatrix{
 	 */
 	#ifdef __CUDACC__
 	__host__
-	void construct_in_host_for_device(MagneticFieldMatrix& other){
+	cudaError_t construct_in_host_for_device(MagneticFieldMatrix& other){
 		// Single parameters
 		r_min = other.r_min;
 		r_max = other.r_max;
@@ -87,10 +87,12 @@ struct MagneticFieldMatrix{
 		z_max = other.z_max;
 
 		// Containers
-		psi.construct_in_host_for_device(other.psi);
-		Br.construct_in_host_for_device(other.Br);
-		Bt.construct_in_host_for_device(other.Bt);
-		Bz.construct_in_host_for_device(other.Bz);
+		propagateCUDAErr( psi.construct_in_host_for_device(other.psi) );
+		propagateCUDAErr( Br.construct_in_host_for_device(other.Br) );
+		propagateCUDAErr( Bt.construct_in_host_for_device(other.Bt) );
+		propagateCUDAErr( Bz.construct_in_host_for_device(other.Bz) );
+
+		return cudaSuccess;
 	}
 	#endif
 };
