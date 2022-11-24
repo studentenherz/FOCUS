@@ -1,6 +1,8 @@
 #if !defined(FOCUS_INCLUDE_TYPES_ARRAY_HPP)
 #define FOCUS_INCLUDE_TYPES_ARRAY_HPP
 
+#include "handle_cuda_errors.hpp"
+
 template <typename T>
 class Array{
 	T *_arr;
@@ -38,8 +40,8 @@ public:
 	#ifdef __CUDACC__
 	__host__
 	Array(T* other_arr, size_t size): _size(size), _copied(false) {
-		cudaMalloc(&_arr, sizeof(T) * (_size));
-		cudaMemcpy(_arr, other_arr, sizeof(T) * _size, cudaMemcpyHostToDevice);
+		gpuErrchk(cudaMalloc(&_arr, sizeof(T) * (_size)));
+		gpuErrchk(cudaMemcpy(_arr, other_arr, sizeof(T) * _size, cudaMemcpyHostToDevice));
 	}
 	#endif
 
@@ -81,11 +83,12 @@ public:
 	 */
 	#ifdef __CUDACC__
 	__host__
-	void construct_in_host_for_device(Array<T>& other){
+	cudaError_t construct_in_host_for_device(Array<T>& other){
 		_copied = true;
 		_size = other._size;
-		cudaMalloc(&_arr, sizeof(T) * _size);
-		cudaMemcpy(_arr, other._arr, sizeof(T) * _size, cudaMemcpyHostToDevice);
+		propagateCUDAErr( cudaMalloc(&_arr, sizeof(T) * _size) );
+		propagateCUDAErr( cudaMemcpy(_arr, other._arr, sizeof(T) * _size, cudaMemcpyHostToDevice) );
+		return cudaSuccess;
 	}
 	#endif
 	
@@ -95,11 +98,12 @@ public:
 	 */
 	#ifdef __CUDACC__
 	__host__
-	void copy_to_host_from_device(Array<T>& other){
+	cudaError_t copy_to_host_from_device(Array<T>& other){
 		_copied = false;
 		_size = other._size;
 		_arr = new T[_size];
-		cudaMemcpy(_arr, other._arr, sizeof(T) * _size, cudaMemcpyDeviceToHost);
+		propagateCUDAErr( cudaMemcpy(_arr, other._arr, sizeof(T) * _size, cudaMemcpyDeviceToHost) );
+		return cudaSuccess;
 	}
 	#endif
 
@@ -117,8 +121,9 @@ public:
 
 	#ifdef __CUDACC__
 	__host__
-	void deallocate_cuda(){
-		cudaFree(_arr);
+	cudaError_t deallocate_cuda(){
+		propagateCUDAErr( cudaFree(_arr) );
+		return cudaSuccess;
 	}
 	#endif
 
@@ -126,7 +131,7 @@ public:
 	__host__
 	T from_device_at(size_t i){
 		T h_val;
-		cudaMemcpy(&h_val, &_arr[i], sizeof(T), cudaMemcpyDeviceToHost);
+		gpuErrchk( cudaMemcpy(&h_val, &_arr[i], sizeof(T), cudaMemcpyDeviceToHost) );
 		return h_val;
 	}
 	#endif

@@ -2,6 +2,7 @@
 #define FOCUS_INCLUDE_TYPES_MATRIX_2D_HPP
 
 #include "pair.hpp"
+#include "handle_cuda_errors.hpp"
 
 using shape_t = pair<size_t>;
 
@@ -64,12 +65,13 @@ public:
 	 */
 	#ifdef __CUDACC__
 	__host__
-	void construct_in_host_for_device(Matrix2D<T>& other){
+	cudaError_t construct_in_host_for_device(Matrix2D<T>& other){
 		_copied = true;
 		_shape = other._shape;
 		size_t _size = _shape.first * _shape.second;
-		cudaMalloc(&_arr, sizeof(T) * _size);
-		cudaMemcpy(_arr, other._arr, sizeof(T) * _size, cudaMemcpyHostToDevice);
+		propagateCUDAErr( cudaMalloc(&_arr, sizeof(T) * _size) );
+		propagateCUDAErr( cudaMemcpy(_arr, other._arr, sizeof(T) * _size, cudaMemcpyHostToDevice) );
+		return cudaSuccess;
 	}
 	#endif
 
@@ -79,11 +81,12 @@ public:
 	 */
 	#ifdef __CUDACC__
 	__host__
-	void copy_to_host_from_device(Matrix2D<T>& other){
+	cudaError_t copy_to_host_from_device(Matrix2D<T>& other){
 		_copied = false;
 		_shape = other._shape;
 		size_t _size = _shape.first * _shape.second;
-		cudaMemcpy(_arr, other._arr, sizeof(T) * _size, cudaMemcpyDeviceToHost);
+		propagateCUDAErr( cudaMemcpy(_arr, other._arr, sizeof(T) * _size, cudaMemcpyDeviceToHost) );
+		return cudaSuccess;
 	}
 	#endif
 
