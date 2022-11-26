@@ -25,7 +25,7 @@ struct Particle{
 	#ifdef __CUDACC__
 	__host__ __device__
 	#endif
-	Particle(double m, uint q, uint n = 0): m(m), q(q), n(n) {}
+	Particle(double m, uint q, uint n = 1): m(m), q(q), n(n) {}
 };
 
 #endif // FOCUS_INCLUDE_TYPES_PARTICLE_HPP
