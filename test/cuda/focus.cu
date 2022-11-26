@@ -42,7 +42,7 @@ void dimensionalize(Array<State> states, double v0, double a){
 	}
 }
 
-template<typename system_type, typename state_type, typename scalar_type, typename CollisionOperator_t, typename AtomicProcesses_t>
+template<typename system_type, typename state_type, typename scalar_type, typename CollisionOperator_t, typename RandomGenerator_t, typename MagneticField_t>
 class CollisionStepper{
 	const size_t collisions_nstep;
 	const size_t atomic_nstep;
@@ -50,13 +50,18 @@ class CollisionStepper{
 	Boris<system_type, state_type, scalar_type> boris;
 	RK46NL<system_type, state_type, scalar_type> rk46nl;
 	CollisionOperator_t& collision_operator;
-	AtomicProcesses_t& atomic_processes;
-	state_type initial_injection_state;
-	double rbdry_min, rbdry_max;
-	double zbdry_min, zbdry_max;
+	// AtomicProcesses_t& atomic_processes;
+
+	Array<AtomicProcess>& processes;
+	RandomGenerator_t& ran_gen;
+	MagneticField_t& B;
+	Plasma& plasma;
+	double energy_conversion_factor;
+	double n_conversion_factor_4_APs;
+	double Omega;
 public:
 	__host__ __device__
-	CollisionStepper(size_t offset, size_t nstep, CollisionOperator_t& collisions, size_t atomic_nstep, AtomicProcesses_t atomic_processes, state_type initial_state, double rbdry_min, double rbdry_max, double zbdry_min, double zbdry_max): collisions_nstep(nstep), steps(offset), collision_operator(collisions), atomic_nstep(atomic_nstep), atomic_processes(atomic_processes), initial_injection_state(initial_state), rbdry_min(rbdry_min), rbdry_max(rbdry_max), zbdry_min(zbdry_min), zbdry_max(zbdry_max) {}
+	CollisionStepper(size_t offset, size_t nstep, CollisionOperator_t& collisions, size_t atomic_nstep, Array<AtomicProcess>& processes, RandomGenerator_t& ran_gen, MagneticField_t& B, Plasma& plasma, double energy_conversion, double n_conversion, double Omega): collisions_nstep(nstep), steps(offset), collision_operator(collisions), atomic_nstep(atomic_nstep), processes(processes), ran_gen(ran_gen), B(B), plasma(plasma), energy_conversion_factor(energy_conversion), n_conversion_factor_4_APs(n_conversion), Omega(Omega) {}
 
 	__host__ __device__	
 	void do_step(system_type& sys, state_type& x, scalar_type t, scalar_type dt){
@@ -68,14 +73,34 @@ public:
 		*/
 		if (sys.part.q == 0){
 			rk46nl.do_step(sys, x, t, dt);
+
 			
-			// If outside re-inject it 
-			if (x[0] < rbdry_min || x[0] > rbdry_max || x[2] < zbdry_min || x[2] > zbdry_max)
-				x = initial_injection_state;
+			dt /= Omega; // Time in seconds
+			sys.part.t += dt;
 
 			Vector3 r = get_position(x);
-			double psi = atomic_processes.B.psi(r, t);
-			printf("%lf", psi);
+			Vector3 v = get_velocity(x);
+
+			double energy = sys.part.m * dot(v, v) * energy_conversion_factor;
+			double psi = B.psi(r, t);
+
+			Array<double> p(processes.size());
+			for (size_t i = 0; i < processes.size(); i++)
+				p[i] = processes[i].P(sys.part, energy, psi, plasma, t, dt, n_conversion_factor_4_APs);
+			
+			for (size_t i = 1; i < processes.size(); i++)
+				p[i] += p[i - 1];
+
+			// if (threadIdx.x + blockDim.x * blockIdx.x == 0)
+			// 	printf("P = %e\n", p[p.size() - 1]);
+
+			double ran = ran_gen.uniform();
+
+			for (size_t i = 0 ; i < processes.size(); i++)
+				if (ran < p[i]){
+					processes[i].apply(sys.part);
+					return;
+				}
 
 			// if (steps % atomic_nstep == 0)
 			// 	atomic_processes(sys.part, x, t, dt * atomic_nstep);
@@ -91,14 +116,25 @@ public:
 
 template<typename System_t>
 class IonizedStoppingCondition{
+	double rbdry_min, rbdry_max;
+	double zbdry_min, zbdry_max;
+	State& birth;
 public:
 	__device__
-	IonizedStoppingCondition() {}
+	IonizedStoppingCondition(double rbdry_min, double rbdry_max, double zbdry_min, double zbdry_max, State& birth): rbdry_min(rbdry_min), rbdry_max(rbdry_max), zbdry_min(zbdry_min), zbdry_max(zbdry_max), birth(birth) {}
 	__device__
 	bool operator()(System_t& sys, State& x, double t){
+		int idx = threadIdx.x + blockDim.x * blockIdx.x;
 		if (sys.part.q != 0){
-			int idx = threadIdx.x + blockDim.x * blockIdx.x;
-			printf("Ionized thread %d\n", idx);
+			birth = x;
+			printf("Ionized particle at thread %d\n", idx);
+			sys.part.n = 777;
+			return true;
+		}
+		// Check if it's out and not comig in
+		if (x[0] < rbdry_min || (x[0] > rbdry_max && x[3] > 0) || (x[2] < zbdry_min && x[5] < 0) || (x[2] > zbdry_max && x[5] > 0)){
+			printf("Out of boundary (%lf, %lf, %lf) particle at thread %d\n",x[0], x[1], x[2], idx);
+			sys.part.n = 777;
 			return true;
 		}
 		return false;
@@ -108,11 +144,12 @@ public:
 typedef Lorentz<NullForce, MagneticFieldFromMatrix, NullVectorField> system_t;
 
 __global__
-void k_integrate(MagneticFieldMatrix B_matrix, Equilibrium eq, Plasma plasma, Array<Particle> test_particles, double gamma, double eta, double kappa, PhiloxCuRand philox, Array<State> x, double t0, double dt, size_t Nsteps, size_t offset, Array<double> pitch, Array<double> energy, Array<AtomicProcess> atomic_processes, double Omega, double energy_conversion_factor, double n_conversion_factor_4_APs, State initial_injection_state, double rbdry_min, double rbdry_max, double zbdry_min, double zbdry_max){
+void k_integrate(MagneticFieldMatrix B_matrix, Equilibrium eq, Plasma plasma, Array<Particle> test_particles, double gamma, double eta, double kappa, PhiloxCuRand philox, Array<State> x, double t0, double dt, size_t Nsteps, size_t offset, Array<double> pitch, Array<double> energy, Array<AtomicProcess> atomic_processes, double Omega, double energy_conversion_factor, double n_conversion_factor_4_APs, State initial_injection_state, double rbdry_min, double rbdry_max, double zbdry_min, double zbdry_max, Array<State> birth){
 	// Index of thread	
 	size_t idx = threadIdx.x + blockDim.x * blockIdx.x;
 
 	if (idx < x.size()){
+		if (test_particles[idx].n == 777) return;
 
 		// Magnetic field
 		MagneticFieldFromMatrix B(B_matrix, eq.bcentr);
@@ -123,12 +160,12 @@ void k_integrate(MagneticFieldMatrix B_matrix, Equilibrium eq, Plasma plasma, Ar
 		// Collision operator
 		FockerPlank<PhiloxCuRand, MagneticFieldFromMatrix> collision(plasma, test_particles[idx], B, eta, kappa, philox);
 
-		AtomicProcessesHandler<PhiloxCuRand, MagneticFieldFromMatrix> atomic_processes_handler(atomic_processes, philox, B, plasma, Omega, energy_conversion_factor, n_conversion_factor_4_APs);
+		// AtomicProcessesHandler<PhiloxCuRand, MagneticFieldFromMatrix> atomic_processes_handler(atomic_processes, philox, B, plasma, Omega, energy_conversion_factor, n_conversion_factor_4_APs);
 
 		// Stepper
-		CollisionStepper<system_t, State, double, FockerPlank<PhiloxCuRand, MagneticFieldFromMatrix>, AtomicProcessesHandler<PhiloxCuRand, MagneticFieldFromMatrix>> stepper(offset, 200, collision, 1, atomic_processes_handler, initial_injection_state, rbdry_min, rbdry_max, zbdry_min, zbdry_max);
+		CollisionStepper<system_t, State, double, FockerPlank<PhiloxCuRand, MagneticFieldFromMatrix>, PhiloxCuRand, MagneticFieldFromMatrix> stepper(offset, 200, collision, 1, atomic_processes, philox, B, plasma, energy_conversion_factor, n_conversion_factor_4_APs, Omega);
 
-		IonizedStoppingCondition<system_t> isc;
+		IonizedStoppingCondition<system_t> isc(rbdry_min, rbdry_max, zbdry_min, zbdry_max, birth[idx]);
 
 		// Integrate
 		stopping_condition_integrate(stepper, sys, x[idx], t0, dt, Nsteps, isc);
@@ -178,6 +215,7 @@ void device_integrate(MagneticFieldMatrix& B_matrix, Equilibrium& eq, Plasma& pl
 	Array<double> pitch(states.size());
 	Array<double> energy(states.size());
 
+
 	// Same for device
 	Array<double> d_pitch; gpuErrchk( d_pitch.construct_in_host_for_device(pitch) );
 	Array<double> d_energy; gpuErrchk( d_energy.construct_in_host_for_device(energy) );
@@ -207,6 +245,10 @@ void device_integrate(MagneticFieldMatrix& B_matrix, Equilibrium& eq, Plasma& pl
 	Array<AtomicProcess> d_atomic_processes;
 	gpuErrchk( d_atomic_processes.construct_in_host_for_device(pre_device_atomic_processes) );
 
+	// Birth
+	Array<State> birth(states.size()); // all initialized to 0
+	Array<State> d_birth; gpuErrchk( d_birth.construct_in_host_for_device(birth) );
+
 	double rbdry_min = eq.rbdry[0], rbdry_max = eq.rbdry[0];
 	double zbdry_min = eq.zbdry[0], zbdry_max = eq.zbdry[0];
 
@@ -214,8 +256,17 @@ void device_integrate(MagneticFieldMatrix& B_matrix, Equilibrium& eq, Plasma& pl
 		if (eq.rbdry[i] < rbdry_min) rbdry_min = eq.rbdry[i];
 		if (eq.rbdry[i] > rbdry_max) rbdry_max = eq.rbdry[i];
 		if (eq.zbdry[i] < zbdry_min) zbdry_min = eq.zbdry[i];
-		if (eq.zbdry[i] < zbdry_max) zbdry_max = eq.zbdry[i];
+		if (eq.zbdry[i] > zbdry_max) zbdry_max = eq.zbdry[i];
 	}
+
+
+	// Dimensionless is what we need to compare
+	rbdry_min /= a;
+	rbdry_max /= a;
+	zbdry_min /= a;
+	zbdry_max /= a;
+
+	std::cout << "r = (" << rbdry_min << ", " << rbdry_max << ")\tz = (" << zbdry_min << ", " << zbdry_max << ")\n";
 
 	State intial_injection_state = states[0];
 
@@ -227,7 +278,7 @@ void device_integrate(MagneticFieldMatrix& B_matrix, Equilibrium& eq, Plasma& pl
 
 	double t = t0;
 	for (size_t i = 0; i <= Nsteps / Nobs; i++){
-		k_integrate<<<gridSize, blockSize>>>(d_B_matrix, d_eq, d_plasma, d_test_particles, gamma, eta, kappa, philox, d_states, t, dt, Nobs, i * Nobs, d_pitch, d_energy, d_atomic_processes, Omega, energy_conversion_factor, n_conversion_factor_4_APs, intial_injection_state, rbdry_min, rbdry_max, zbdry_min, zbdry_max);
+		k_integrate<<<gridSize, blockSize>>>(d_B_matrix, d_eq, d_plasma, d_test_particles, gamma, eta, kappa, philox, d_states, t, dt, Nobs, i * Nobs, d_pitch, d_energy, d_atomic_processes, Omega, energy_conversion_factor, n_conversion_factor_4_APs, intial_injection_state, rbdry_min, rbdry_max, zbdry_min, zbdry_max, d_birth);
 		cudaDeviceSynchronize();
 		checkKernelErr();
 
@@ -245,6 +296,10 @@ void device_integrate(MagneticFieldMatrix& B_matrix, Equilibrium& eq, Plasma& pl
 			std::cout << "\x1b[32m done\x1b[0m\n";
 		}
 	}
+
+	gpuErrchk( birth.copy_to_host_from_device(d_birth) );
+	dimensionalize(birth, v0, a);
+	dump_states("birth.dat", birth, test_particle);
 
 	std::cout << "\x1b[32mAll done\x1b[0m, no errors (that I know of)\n";
 }
@@ -274,14 +329,14 @@ int main(int argc, char* argv[]){
 
 		double t0 = 0;
 		double dt = 0.01;
-		// size_t N 	= 5000000;
-		// size_t N =   10000;
+		size_t N 	=   500000;
+		size_t nobs =  10000;
 		// size_t nobs = 500;
-		size_t N =   2; // Enough for slow down
-		size_t nobs = 1;
+		// size_t N =   10000; // Enough for slow down
+		// size_t nobs = 10;
 		// size_t N = 410000000; // Enough for slow down
 		// size_t nobs = 1000000;
-		// size_t N = 10;
+		// size_t N = 1;
 		// size_t nobs = 1;
 		// size_t N 	= 500000;
 		// size_t nobs = 50000;
