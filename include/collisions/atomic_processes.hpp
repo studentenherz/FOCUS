@@ -294,12 +294,12 @@ template <typename RandomGenerator_t, typename MagneticField_t>
 class AtomicProcessesHandler{
 	Array<AtomicProcess>& processes;
 	RandomGenerator_t& ran_gen;
+	MagneticField_t& B;
 	Plasma& plasma;
 	double energy_conversion_factor;
 	double n_conversion_factor_4_APs;
 	double Omega;
 public:
-	MagneticField_t& B;
 	#ifdef __CUDACC__
 	__host__ __device__
 	#endif
