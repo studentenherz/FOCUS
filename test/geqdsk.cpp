@@ -7,14 +7,12 @@
 
 int main(int argc, char* argv[]){
 	
-	cxxopts::options options("geqdsk", "Test geqdsk read");
+	cxxopts::options options("geqdsk", "Get poloidal flux and other information out of G-EQDSK files");
 
 	options.add_options()
-		("file", "", cxxopts::value<std::string>())
+		("g,geqdsk", "G-EQDSK input file", cxxopts::value<std::string>())
+		("o,output", "Output directory", cxxopts::value<std::string>())
 		("h,help", "Show this help message");
-
-	options.positional_help("<G-EQDSK input file>");
-	options.parse_positional({"file"});
 
 	try{
 		auto result = options.parse(argc, argv);
@@ -24,7 +22,8 @@ int main(int argc, char* argv[]){
 			return 0;
 		}
 
-		Equilibrium eq = read_geqdsk(result["file"].as<std::string>().c_str());
+		Equilibrium eq = read_geqdsk(result["geqdsk"].as<std::string>());
+
 		std::cout << "idnum " << eq.idnum   << '\n';
 		std::cout << "nx    " << eq.nx      << '\n';
 		std::cout << "ny    " << eq.ny      << '\n';
@@ -44,29 +43,22 @@ int main(int argc, char* argv[]){
 		std::cout << "zmagx " << eq.zmagx   << '\n';
 		std::cout << "sibdry " << eq.sibdry  << '\n';
 
-		 for (size_t i = 0; i < eq.nx; i++)
-		 	std::cout << eq.fpol[i] << '\t' << eq.pres[i] << '\t' << eq.qpsi[i] << '\n';
+		std::string odirname = result["output"].as<std::string>();
 
-		dump("psi_from_geqdsk.dat", eq.psi, false);
-		
-		std::ofstream fo1("psi.dat");
-		for (size_t j = 0; j < eq.ny; j++)
-			for (size_t i = 0; i < eq.nx; i++){
-				double r = eq.rleft + i * eq.rdim / eq.nx;
-				double z = eq.zmid - eq.zdim / 2 + j * eq.zdim / eq.ny;
-				fo1 << r << ' ' << z << ' ' << eq.psi(i, j) << '\n';
-			}
+		std::ofstream psilims(odirname + "/psilims.dat");
+		psilims << eq.rleft << ' ' << eq.rleft + eq.rdim << ' ' << eq.zmid - 0.5 * eq.zdim << ' ' << eq.zmid + 0.5 * eq.zdim;
+		psilims.close();
 
+		dump(odirname + "/psi_from_geqdsk.dat", eq.psi, false);
 
 		// Output limit
-		std::ofstream fo("limit.dat");
+		std::ofstream fo(odirname + "/lim.dat");
 		for (size_t i = 0; i < eq.nlim; i++)
 			fo << eq.rlim[i] << ' ' << eq.zlim[i] << '\n';
 
-		std::ofstream fo2("boundary.dat");
-		for (size_t i = 0; i < eq.nlim; i++)
-			fo2 << eq.rlim[i] << ' ' << eq.zlim[i] << '\n';
-		
+		std::ofstream fo2(odirname + "/bdry.dat");
+		for (size_t i = 0; i < eq.nbdry; i++)
+			fo2 << eq.rbdry[i] << ' ' << eq.zbdry[i] << '\n';
 
 		return 0;
 	}catch(cxxopts::option_error const& e){
