@@ -119,9 +119,10 @@ class IonizedStoppingCondition{
 	double rbdry_min, rbdry_max;
 	double zbdry_min, zbdry_max;
 	State& birth;
+	int* N_integrate;
 public:
 	__device__
-	IonizedStoppingCondition(double rbdry_min, double rbdry_max, double zbdry_min, double zbdry_max, State& birth): rbdry_min(rbdry_min), rbdry_max(rbdry_max), zbdry_min(zbdry_min), zbdry_max(zbdry_max), birth(birth) {}
+	IonizedStoppingCondition(double rbdry_min, double rbdry_max, double zbdry_min, double zbdry_max, State& birth, int* N_integrate): rbdry_min(rbdry_min), rbdry_max(rbdry_max), zbdry_min(zbdry_min), zbdry_max(zbdry_max), birth(birth), N_integrate(N_integrate) {}
 	__device__
 	bool operator()(System_t& sys, State& x, double t){
 		int idx = threadIdx.x + blockDim.x * blockIdx.x;
@@ -129,12 +130,14 @@ public:
 			birth = x;
 			printf("Ionized particle at thread %d\n", idx);
 			sys.part.n = 777;
+			atomicSub(N_integrate, 1);
 			return true;
 		}
 		// Check if it's out and not comig in
-		if (x[0] < rbdry_min || (x[0] > rbdry_max && x[3] > 0) || (x[2] < zbdry_min && x[5] < 0) || (x[2] > zbdry_max && x[5] > 0)){
+		if ((x[0] > rbdry_max && x[3] > 0) || (x[2] < zbdry_min && x[5] < 0) || (x[2] > zbdry_max && x[5] > 0)){
 			printf("Out of boundary (%lf, %lf, %lf) particle at thread %d\n",x[0], x[1], x[2], idx);
 			sys.part.n = 777;
+			atomicSub(N_integrate, 1);
 			return true;
 		}
 		return false;
@@ -144,7 +147,7 @@ public:
 typedef Lorentz<NullForce, MagneticFieldFromMatrix, NullVectorField> system_t;
 
 __global__
-void k_integrate(MagneticFieldMatrix B_matrix, Equilibrium eq, Plasma plasma, Array<Particle> test_particles, double gamma, double eta, double kappa, PhiloxCuRand philox, Array<State> x, double t0, double dt, size_t Nsteps, size_t offset, Array<double> pitch, Array<double> energy, Array<AtomicProcess> atomic_processes, double Omega, double energy_conversion_factor, double n_conversion_factor_4_APs, State initial_injection_state, double rbdry_min, double rbdry_max, double zbdry_min, double zbdry_max, Array<State> birth){
+void k_integrate(MagneticFieldMatrix B_matrix, Equilibrium eq, Plasma plasma, Array<Particle> test_particles, double gamma, double eta, double kappa, PhiloxCuRand philox, Array<State> x, double t0, double dt, size_t Nsteps, size_t offset, Array<double> pitch, Array<double> energy, Array<AtomicProcess> atomic_processes, double Omega, double energy_conversion_factor, double n_conversion_factor_4_APs, State initial_injection_state, double rbdry_min, double rbdry_max, double zbdry_min, double zbdry_max, Array<State> birth, int* N_integarte){
 	// Index of thread	
 	size_t idx = threadIdx.x + blockDim.x * blockIdx.x;
 
@@ -165,7 +168,7 @@ void k_integrate(MagneticFieldMatrix B_matrix, Equilibrium eq, Plasma plasma, Ar
 		// Stepper
 		CollisionStepper<system_t, State, double, FockerPlank<PhiloxCuRand, MagneticFieldFromMatrix>, PhiloxCuRand, MagneticFieldFromMatrix> stepper(offset, 200, collision, 1, atomic_processes, philox, B, plasma, energy_conversion_factor, n_conversion_factor_4_APs, Omega);
 
-		IonizedStoppingCondition<system_t> isc(rbdry_min, rbdry_max, zbdry_min, zbdry_max, birth[idx]);
+		IonizedStoppingCondition<system_t> isc(rbdry_min, rbdry_max, zbdry_min, zbdry_max, birth[idx], N_integarte);
 
 		// Integrate
 		stopping_condition_integrate(stepper, sys, x[idx], t0, dt, Nsteps, isc);
@@ -276,11 +279,20 @@ void device_integrate(MagneticFieldMatrix& B_matrix, Equilibrium& eq, Plasma& pl
 	Array<Particle> d_test_particles;
 	gpuErrchk( d_test_particles.construct_in_host_for_device(test_particles) );
 
+	int N_integrating = test_particles.size();
+	int* d_N_int;
+
+	gpuErrchk( cudaMalloc(&d_N_int, sizeof(int)) );
+	gpuErrchk( cudaMemcpy(d_N_int, &N_integrating, sizeof(int), cudaMemcpyHostToDevice) );
+
 	double t = t0;
 	for (size_t i = 0; i <= Nsteps / Nobs; i++){
-		k_integrate<<<gridSize, blockSize>>>(d_B_matrix, d_eq, d_plasma, d_test_particles, gamma, eta, kappa, philox, d_states, t, dt, Nobs, i * Nobs, d_pitch, d_energy, d_atomic_processes, Omega, energy_conversion_factor, n_conversion_factor_4_APs, intial_injection_state, rbdry_min, rbdry_max, zbdry_min, zbdry_max, d_birth);
+		k_integrate<<<gridSize, blockSize>>>(d_B_matrix, d_eq, d_plasma, d_test_particles, gamma, eta, kappa, philox, d_states, t, dt, Nobs, i * Nobs, d_pitch, d_energy, d_atomic_processes, Omega, energy_conversion_factor, n_conversion_factor_4_APs, intial_injection_state, rbdry_min, rbdry_max, zbdry_min, zbdry_max, d_birth, d_N_int);
 		cudaDeviceSynchronize();
 		checkKernelErr();
+
+		gpuErrchk( cudaMemcpy(&N_integrating, d_N_int, sizeof(int), cudaMemcpyDeviceToHost) );
+		if (N_integrating <= 0) break;
 
 		gpuErrchk( states.copy_to_host_from_device(d_states) );
 		gpuErrchk( pitch.copy_to_host_from_device(d_pitch) );
