@@ -1,0 +1,31 @@
+18
+
+# Excitation with electrons
+EX_D_e_0_1_0_2
+EX_D_e_0_1_0_3
+EX_D_e_0_2_0_3
+
+# Excitation with deuterons
+EX_D_D_0_1_0_2
+EX_D_D_0_1_0_3
+EX_D_D_0_2_0_3
+
+# De-excitations
+DE_D_X_0_2_0_1
+DE_D_X_0_3_0_1
+DE_D_X_0_3_0_2
+
+# Ionizations with electrons
+Io_D_e_0_1_1_0
+Io_D_e_0_2_1_0
+Io_D_e_0_3_1_0
+
+# Ionizations with deuterons
+Io_D_D_0_1_1_0
+Io_D_D_0_2_1_0
+Io_D_D_0_3_1_0
+
+# Electron captures with deuterons
+EC_D_D_0_1_1_0
+EC_D_D_0_2_1_0
+EC_D_D_0_3_1_0
