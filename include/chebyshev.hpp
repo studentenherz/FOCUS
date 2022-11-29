@@ -21,7 +21,7 @@
  * \f]
  * where
  * \f[
- * 	a_{i, j} = \left(\frac{2 - \delta_{0k}}{N_x}\right) \left(\frac{2 - \delta_{0l}}{N_y} \right) \sum_{i}^{N_x}\sum_{j}^{N_y}a_{i, j} \Psi(r_k, z_l)T_i(x_k)T_j(y_l)
+ * 	a_{i, j} = \left(\frac{2 - \delta_{0k}}{N_x}\right) \left(\frac{2 - \delta_{0l}}{N_y} \right) \sum_{i}^{N_x}\sum_{j}^{N_y} \Psi(r_k, z_l)T_i(x_k)T_j(y_l)
  * \f]
  * and
  * \f[
