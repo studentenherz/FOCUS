@@ -149,7 +149,7 @@ double G(double x){
 template<typename NormalRand_t, typename MagneticField_t>
 class FockerPlank{
 	Plasma beta;	// Particle species involved
-	Particle alpha;				// Test particle species
+	Particle& alpha;				// Test particle species
 
 	MagneticField_t& _B;
 
@@ -160,7 +160,7 @@ public:
 	#ifdef __CUDACC__
 	__host__ __device__
 	#endif
-	FockerPlank(Plasma& plasma_particles, Particle test_particle, MagneticField_t& B, double eta, double kappa, NormalRand_t& normal_rand): beta(plasma_particles), alpha(test_particle), _B(B), _eta(eta), _kappa(kappa), gauss(normal_rand) {}
+	FockerPlank(Plasma& plasma_particles, Particle& test_particle, MagneticField_t& B, double eta, double kappa, NormalRand_t& normal_rand): beta(plasma_particles), alpha(test_particle), _B(B), _eta(eta), _kappa(kappa), gauss(normal_rand) {}
 
 	/**
 	 * Slowing down from elastic collisions
