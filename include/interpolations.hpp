@@ -320,8 +320,6 @@ double six_point_formula(double x, double y, Matrix2D<double>& M, double x_min, 
 	// where (h, k) are the periods and (x0, y0)
 	// is a point of the 2D lattice.
 
-	return 0;
-
 	if (x < x_min || x >= x_max || y < y_min || y >= y_max){
 		// HERE THERE MUST BE A WARNING LOG
 		return nan("");
