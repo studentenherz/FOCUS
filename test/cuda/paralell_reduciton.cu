@@ -7,7 +7,7 @@ int main(){
 	size_t N = 1000000;
 	Array<unsigned long long> h_Arr(N);
 	unsigned long long sum = 0;
-	for (int i = 0; i < N; i++) {
+	for (size_t i = 0; i < N; i++) {
 		h_Arr[i] = i;
 		sum += i;
 	}
