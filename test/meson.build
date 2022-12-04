@@ -18,6 +18,7 @@ input_gacode = executable('input_gacode', 'input_gacode.cpp', include_directorie
 particle_states = executable('particle_states', 'particle_states.cpp', include_directories: incdir, implicit_include_directories: false, cpp_args: '-DGIT_VERSION="@0@"'.format(git_version.stdout().strip()))
 pitch_E_2_state = executable('pitch_E_2_state', 'pitch_E_2_state.cpp', include_directories: incdir, implicit_include_directories: false, cpp_args: '-DGIT_VERSION="@0@"'.format(git_version.stdout().strip()))
 
+subdir('cuda')
 
 copy = find_program('scripts/copy.py')
 cmp = find_program('cmp')
